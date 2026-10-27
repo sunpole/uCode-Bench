@@ -3,7 +3,7 @@ $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 Set-Location -LiteralPath $root
 $venv = Join-Path $root '.venv\Scripts\python.exe'
-$env:PIP_CACHE_DIR = Join-Path $root '.cache\pip'
+$env:PIP_CACHE_DIR = Join-Path $root '.pip-cache'
 $env:PYTHONUTF8 = '1'
 
 if (Test-Path -LiteralPath $venv -PathType Leaf) {
@@ -25,6 +25,7 @@ if (-not (Test-Path -LiteralPath $venv -PathType Leaf)) {
     $selected = $null
     foreach ($candidate in $candidates) {
         $exe = $candidate[0]
+        if (-not (Test-Path -LiteralPath $exe -PathType Leaf)) { continue }
         $extra = @()
         if ($candidate.Count -gt 1) { $extra = @($candidate[1..($candidate.Count - 1)]) }
         & $exe @extra -c 'import sys; sys.exit(0 if sys.version_info >= (3, 10) else 1)' 2>$null
