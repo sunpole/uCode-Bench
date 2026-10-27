@@ -102,7 +102,7 @@ class BatchWindow:
 
         output = ttk.LabelFrame(main, text="2. Какие PDF нужны?", padding=11)
         output.grid(row=2, column=0, sticky="ew", pady=(0, 10))
-        self.mode_var = tk.StringVar(value="both")
+        self.mode_var = tk.StringVar(value="multipage")
         self.mode_buttons = []
         for text, value in (
             ("Оба варианта: отдельные + общий", "both"),
@@ -112,7 +112,7 @@ class BatchWindow:
             radio = ttk.Radiobutton(output, text=text, variable=self.mode_var, value=value)
             radio.pack(anchor="w", pady=2)
             self.mode_buttons.append(radio)
-        ttk.Label(output, text="Для большого заказа один общий PDF обычно удобнее; скорость зависит от числа и типа файлов.", foreground="#555555").pack(anchor="w", pady=(5, 0))
+        ttk.Label(output, text="По умолчанию выбран один PDF: меньше файлов, меньше операций записи. Режим не означает автоматический подбор движка.", foreground="#555555", wraplength=820).pack(anchor="w", pady=(5, 0))
 
         geometry = ttk.LabelFrame(main, text="3. Размер и белое поле", padding=11)
         geometry.grid(row=3, column=0, sticky="ew", pady=(0, 10))
@@ -144,7 +144,7 @@ class BatchWindow:
         self.elapsed_var = tk.StringVar(value="")
         ttk.Label(controls, textvariable=self.elapsed_var, font=("Segoe UI", 10, "bold")).pack(side="right")
 
-        self.status_var = tk.StringVar(value="Готово к работе. Сначала выберите TXT.")
+        self.status_var = tk.StringVar(value=f"Готово. Движок ReportLab · один процесс · доступно логических CPU: {os.cpu_count() or 'неизвестно'}. Начните с TXT.")
         ttk.Label(main, textvariable=self.status_var, wraplength=830).grid(row=5, column=0, sticky="w", pady=(2, 8))
         self.progress = ttk.Progressbar(main, mode="indeterminate")
         self.progress.grid(row=6, column=0, sticky="ew", pady=(0, 8))
