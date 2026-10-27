@@ -15,6 +15,7 @@ from .batch import load_codes, make_template, run_batch
 from .print_settings import PrintSettings, format_duration
 from .app_settings import load_preferences, save_preferences
 from .generators import generators
+from .engines import get_engine
 
 PROJECT = Path(__file__).resolve().parents[1]
 HELP_TEXT = """1. База TXT → Открыть: UTF-8, одна строка — ровно 12 цифр.
@@ -36,6 +37,10 @@ HELP_TEXT = """1. База TXT → Открыть: UTF-8, одна строка 
 «Тесты» — отдельная научная методика: 3 повтора, раздельные времена
 создания и объединения, QA. Перед 1000/10000 проверяется допуск.
 Производственные результаты и результаты тестов не смешиваются.
+Сейчас — наблюдаемая скорость по короткому окну (около 3 секунд).
+Средняя этапа — обработанный объём / время с начала данного этапа.
+У стороннего объединителя без обратной связи промежуточных процентов нет:
+секундомер продолжает работать, остановка ожидает возврата этого вызова.
 """
 
 
@@ -61,6 +66,9 @@ class BatchWindow:
         self.current_event = None
         self.input_valid = False
         self.selected_engines = None
+        self.generator_key = "qr"
+        self.engine_key = "reportlab"
+        self.engine_info = get_engine(self.engine_key).info()
         self.input_var = tk.StringVar()
         self.mode_var = tk.StringVar(value=mode)
         self.filename = tk.StringVar(value="База не выбрана")
@@ -87,7 +95,8 @@ class BatchWindow:
         body.pack(fill="both", expand=True)
         body.columnconfigure(0, weight=1)
         ttk.Label(body, text="uCode", style="Title.TLabel").grid(row=0, column=0, sticky="w")
-        ttk.Label(body, text="Коды из TXT → готовые печатные PDF", foreground="#4c5868").grid(row=1, column=0, sticky="w", pady=(0, 10))
+        ttk.Label(body, text=f"TXT → печатные PDF · {self.engine_info.name} {self.engine_info.version}",
+                  wraplength=900, foreground="#4c5868").grid(row=1, column=0, sticky="w", pady=(0, 10))
         toolbar = ttk.Frame(body)
         toolbar.grid(row=2, column=0, sticky="ew", pady=(0, 10))
         self.menus = []
@@ -238,6 +247,7 @@ class BatchWindow:
         self.begin()
         path, mode, settings = Path(self.input_var.get()), self.mode_var.get(), self.print_settings
         self.launch(lambda: run_batch(path, self.output_root / "jobs", mode=mode, settings=settings, cancel=self.cancel,
+                    generator=self.generator_key, engine=self.engine_key,
                     progress=lambda s: self.events.put(("status", s)), events=lambda e: self.events.put(("progress", e))))
 
     def start_test(self, count):
@@ -273,7 +283,11 @@ class BatchWindow:
                     counts = f"{value['done']:,} / {value['total']:,}".replace(",", " ")
                     percent = f"{value['percent']:.1f}".replace(".", ",")
                     self.status_var.set(f"{value['stage']} · {counts} · всего {percent}%")
-                    self.speed_var.set(f"Скорость: {value['speed']:.1f} {value.get('unit', 'кодов')}/сек")
+                    unit = value.get("unit", "кодов")
+                    average = value.get("average_speed", value["speed"])
+                    text = (f"Итоговая: {average:.1f} {unit}/сек" if value["percent"] == 100 else
+                            f"Сейчас: {value['speed']:.1f} · средняя этапа: {average:.1f} {unit}/сек")
+                    self.speed_var.set(text.replace(".", ","))
                 else:
                     self.busy = False
                     if kind == "done":

@@ -99,16 +99,18 @@ def human_report(report: dict) -> str:
         f"Количество PDF: {report.get('files', {}).get('singles', {}).get('count', 0) + bool(report.get('files', {}).get('multipage'))}",
         f"Объём PDF: {(report.get('files', {}).get('singles', {}).get('bytes', 0) + report.get('files', {}).get('multipage', {}).get('bytes', 0)) / 1024**2:.2f} МиБ",
         f"Входной файл: {report.get('input_filename', '')}",
+        f"Движок: {report.get('engine', {}).get('name', 'не записан в этом отчёте')} "
+        f"{report.get('engine', {}).get('version') or ''}".rstrip(),
         f"Режим: {report.get('mode', '')}",
         f"Размер PDF: {cfg.get('page_mm', ['?', '?'])[0]:.3f} × {cfg.get('page_mm', ['?', '?'])[1]:.3f} мм" if isinstance(cfg.get("page_mm"), list) else "Размер PDF: нет данных",
         f"Белое поле: {cfg.get('quiet_modules', '?')} модуля(ей)",
         "Цвет CMYK (%): " + " / ".join(str(v) for v in cfg.get("ink", [0, 0, 0, 100])) +
         ("; K100, одна чёрная краска" if cfg.get("k100", True) else "; цветной режим CMYK") +
-        "; векторный QR V1-M; PDF/X не сертифицирован",
+        "; " + cfg.get("description", "векторный QR V1-M") + "; PDF/X не сертифицирован",
         "",
         "ФАКТИЧЕСКОЕ ВРЕМЯ",
         f"Вся операция с QA: {format_duration(values.get('total_including_qa'))}",
-        f"Кодирование QR: {format_duration(values.get('qr_encoding'))}",
+        f"Кодирование {cfg.get('symbology', 'QR')}: {format_duration(values.get('code_encoding', values.get('qr_encoding')))}",
         f"Запись отдельных PDF: {format_duration(values.get('write_singles'))}",
         f"Запись общего PDF: {format_duration(values.get('write_multipage'))}",
         f"Проверка качества: {format_duration(values.get('quality_checks'))}",

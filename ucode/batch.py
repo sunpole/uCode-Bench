@@ -13,10 +13,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable
 
-from .print_settings import PrintSettings, human_report
+from .print_settings import human_report
 from .data import write_numbers
-from .pdf import write_pdf
-from .qr import encode_numbers
+from .engines import get_engine
+from .generators import get_generator
 from .progress import ProgressTracker
 from .resources import check_resources
 from . import __version__
@@ -57,9 +57,10 @@ def make_template(output_root: Path, count: int, *, start: int = FIRST_NUMBER) -
     return target
 
 
-def load_codes(path: Path, *, max_lines: int = MAX_LINES) -> list[str]:
+def load_codes(path: Path, *, max_lines: int = MAX_LINES, generator="qr") -> list[str]:
     """Accept UTF-8/UTF-8 BOM, LF/CRLF; reject blanks and non-numeric lines."""
     path = Path(path)
+    code_module = get_generator(generator)
     with path.open("rb") as stream:
         raw_bytes = stream.read(2 * 1024 * 1024 + 1)
     if len(raw_bytes) > 2 * 1024 * 1024:
@@ -74,8 +75,8 @@ def load_codes(path: Path, *, max_lines: int = MAX_LINES) -> list[str]:
     if len(codes) > max_lines:
         raise ValueError(f"Слишком много строк: {len(codes)}; максимум {max_lines}")
     for index, code in enumerate(codes, 1):
-        if len(code) != 12 or not code.isascii() or not code.isdigit():
-            raise ValueError(f"Строка {index}: нужен QR V1-M с ровно 12 ASCII-цифрами, без пробелов")
+        if not code_module.validate(code):
+            raise ValueError(f"Строка {index}: {code_module.input_description}")
     return codes
 
 
@@ -88,8 +89,9 @@ def _sha256(path: Path) -> str:
 
 
 def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
-              settings: PrintSettings | None = None,
-              progress: Callable[[str], None] | None = None, cancel=None, events=None) -> Path:
+              settings=None,
+              progress: Callable[[str], None] | None = None, cancel=None, events=None,
+              generator="qr", engine="reportlab") -> Path:
     """Create actual PDF files and QA evidence, without overwriting old runs.
 
     Encoding and PDF writing are measured separately from quality checks.
@@ -98,13 +100,17 @@ def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
     """
     if mode not in FORMATS:
         raise ValueError(f"Формат должен быть одним из: {', '.join(FORMATS)}")
-    numbers = load_codes(input_txt)
+    code_module = get_generator(generator)
+    config = settings if settings is not None else code_module.default_settings()
+    code_module.validate_settings(config)
+    print_metadata = code_module.describe_settings(config)
+    selected_engine = get_engine(engine, generator=generator, mode=mode, colorspace=print_metadata["colorspace"])
+    engine_metadata = selected_engine.info().to_dict()
+    numbers = load_codes(input_txt, generator=generator)
     progress = progress or (lambda message: None)
-    config = settings if settings is not None else PrintSettings()
-    if not isinstance(config, PrintSettings):
-        raise ValueError("Ожидаются безопасные настройки PrintSettings")
     _check_cancel(cancel)
     resource_info = check_resources(output_root, len(numbers))
+    selected_engine.prepare()
     directory = _make_directory(output_root, f"pdf-{len(numbers)}")
     raster = shutil.which("pdftoppm") is not None
     copies = 2 if mode == "both" else 1
@@ -114,12 +120,10 @@ def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
     report = {
         "schema_version": 1, "kind": "txt-batch-pdf", "status": "RUNNING",
         "software_version": __version__,
+        "generator": generator, "engine": engine_metadata, "pipeline_contract": 1,
         "mode": mode, "count": len(numbers), "input_filename": Path(input_txt).name,
         "first_code": numbers[0], "last_code": numbers[-1],
-        "print": {"symbology": "QR Code", "version": 1, "ecc": "M", "numeric_digits": 12,
-                  **config.to_dict(),
-                  "colorspace": "DeviceCMYK",
-                  "vector": True, "pdf_x_certified": False},
+        "print": print_metadata,
         "resources": resource_info,
         "files": {}, "seconds": {}, "qa": {}, "errors": [],
     }
@@ -139,25 +143,34 @@ def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
         txt_path = directory / "codes.txt"
         write_numbers(numbers, txt_path)
         report["files"]["txt"] = {"name": txt_path.name, "sha256": _sha256(txt_path)}
-        progress(f"Читаем {len(numbers)} строк TXT и создаём матрицы QR")
+        progress(f"Читаем {len(numbers)} строк TXT и создаём {code_module.name}")
+        tracker.step(f"Кодирование {code_module.progress_name}", 0, len(numbers), base, force=True)
         t = time.perf_counter()
-        frames = encode_numbers(numbers, cancel=cancel,
-                                on_progress=lambda done, total: tracker.step("Кодирование QR", done, total, base))
-        report["seconds"]["qr_encoding"] = round(time.perf_counter() - t, 6)
+        frames = selected_engine.encode(numbers, cancel=cancel,
+            on_progress=lambda done, total: tracker.step(f"Кодирование {code_module.progress_name}", done, total, base))
+        if len(frames) != len(numbers) or any(frame.payload != number for frame, number in zip(frames, numbers)):
+            raise ValueError("Движок изменил количество или порядок значений относительно TXT")
+        report["seconds"]["code_encoding"] = round(time.perf_counter() - t, 6)
+        legacy_key = getattr(code_module, "legacy_timing_key", None)
+        if legacy_key:
+            report["seconds"][legacy_key] = report["seconds"]["code_encoding"]
         base += len(numbers)
         _check_cancel(cancel)
 
         singles = []
         if mode in ("both", "singles"):
             progress(f"Запись {len(frames)} отдельных одностраничных PDF")
+            tracker.step("Отдельные PDF", 0, len(frames), base, force=True)
             t = time.perf_counter()
             folder = directory / "singles"
             folder.mkdir(exist_ok=False)
             digits = max(4, len(str(len(frames))))
             for i, frame in enumerate(frames, 1):
                 _check_cancel(cancel)
-                path = folder / f"{i:0{digits}d}_{frame.payload}.pdf"
-                write_pdf([frame], path, config)
+                label = (frame.payload if frame.payload.isascii() and frame.payload.isdigit() and len(frame.payload) <= 64
+                         else hashlib.sha256(frame.payload.encode("utf-8")).hexdigest()[:16])
+                path = folder / f"{i:0{digits}d}_{label}.pdf"
+                selected_engine.write_pdf([frame], path, config)
                 singles.append(path)
                 tracker.step("Отдельные PDF", i, len(frames), base)
                 if i == 1 or i % 100 == 0 or i == len(frames):
@@ -170,32 +183,34 @@ def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
         if mode in ("both", "multipage"):
             _check_cancel(cancel)
             progress(f"Запись одного PDF на {len(frames)} страниц")
+            tracker.step("Создание PDF", 0, len(frames), base, force=True)
             t = time.perf_counter()
             combined = directory / f"all-{len(frames)}-pages.pdf"
-            write_pdf(frames, combined, config, cancel=cancel,
+            selected_engine.write_pdf(frames, combined, config, cancel=cancel,
                       on_progress=lambda done, total: tracker.step("Создание PDF", done, total, base))
             report["seconds"]["write_multipage"] = round(time.perf_counter() - t, 6)
             report["files"]["multipage"] = {"name": combined.name, "bytes": combined.stat().st_size,
                                                "sha256": _sha256(combined), "pages": len(frames)}
             base += len(frames)
 
-        from .quality import check_pdf
         progress("Независимая проверка всех страниц: матрицы, размеры и CMYK")
         qa_start = time.perf_counter()
         if combined is not None:
             _check_cancel(cancel)
-            report["qa"]["multipage"] = check_pdf(combined, frames, config, render_samples=raster, cancel=cancel,
-                on_progress=lambda done, total: tracker.step("Проверка PDF", done, total, base))
+            tracker.step("Проверка PDF", 0, len(frames) + samples, base, force=True, unit="проверок")
+            report["qa"]["multipage"] = code_module.verify(combined, frames, config, render_samples=raster, cancel=cancel,
+                on_progress=lambda done, total: tracker.step("Проверка PDF", done, total, base, unit="проверок"))
             base += len(frames) + samples
         if singles:
+            tracker.step("Проверка отдельных PDF", 0, len(singles), base, force=True, unit="проверок")
             sample_indices = sorted({0, len(frames) // 2, len(frames) - 1})
             failures = []
             failed_count = 0
             for i, (path, frame) in enumerate(zip(singles, frames), 1):
                 _check_cancel(cancel)
                 # All files structural; only 3 independently rendered samples.
-                result = check_pdf(path, [frame], config, render_samples=raster and (i - 1 in sample_indices), cancel=cancel)
-                tracker.step("Проверка отдельных PDF", i, len(singles), base)
+                result = code_module.verify(path, [frame], config, render_samples=raster and (i - 1 in sample_indices), cancel=cancel)
+                tracker.step("Проверка отдельных PDF", i, len(singles), base, unit="проверок")
                 if result["status"] != "PASS":
                     failed_count += 1
                     if len(failures) < 20:

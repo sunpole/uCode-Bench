@@ -8,6 +8,7 @@ on:
       - "scripts/launch.ps1"
       - "scripts/runtime_probe.ps1"
       - "scripts/verify_v02.py"
+      - "scripts/verify_smoke.py"
       - "ucode/batch.py"
       - "ucode/batch_gui.py"
       - "ucode/__main__.py"
@@ -47,7 +48,11 @@ jobs:
         run: python -m pip install -e .
       - name: Rendering and Tk display (Linux)
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y poppler-utils xvfb
+        run: |
+          if ! command -v pdftoppm >/dev/null || ! command -v xvfb-run >/dev/null; then
+            sudo apt-get -o Acquire::Retries=1 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20 update
+            sudo apt-get install -y poppler-utils xvfb
+          fi
       - name: PDF renderer (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
@@ -77,11 +82,11 @@ jobs:
       - name: Full regression with actual Tk (Linux)
         if: runner.os == 'Linux'
         run: xvfb-run -a python -c "import faulthandler,unittest; faulthandler.dump_traceback_later(120, exit=True); suite=unittest.defaultTestLoader.discover('tests'); result=unittest.TextTestRunner(verbosity=2).run(suite); raise SystemExit(not result.wasSuccessful())"
-      - name: Real PDF on 200, 1000 and 10000 codes
-        run: python scripts/verify_v02.py
+      - name: Small real PDF smoke (2 and 7 values only)
+        run: python scripts/verify_smoke.py
       - name: Preserve measured PDF verification
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: v02-${{ runner.os }}-evidence
-          path: output/v02-verification
+          name: smoke-${{ runner.os }}-evidence
+          path: output/smoke

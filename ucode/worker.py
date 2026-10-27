@@ -33,28 +33,32 @@ def main():
                     # FILE_SHARE_DELETE. Progress is advisory; retry next tick.
                     pass
         notify = update if request.get("progress_file") else None
+        engine = None
+        if kind in ("encode", "direct", "singles"):
+            from .engines import get_engine
+            # The historical scientific profile remains fixed to QR V1-M.
+            engine = get_engine(request.get("engine", "reportlab"), generator="qr",
+                                mode="singles" if kind == "singles" else "multipage")
+            engine.prepare()
         if kind in ("encode", "direct"):
             from .data import generate_numbers
-            from .qr import encode_numbers
             numbers = generate_numbers(config)
         if kind in ("singles",):
             frames = [QRFrame.from_dict(f) for f in json.loads(Path(request["frames"]).read_text(encoding="utf-8"))]
         if kind == "encode":
             frames = []
             def action():
-                frames.extend(encode_numbers(numbers, on_progress=notify, cancel=cancel))
+                frames.extend(engine.encode(numbers, on_progress=notify, cancel=cancel))
             metrics = measure(action)
             with output.open("x", encoding="utf-8") as stream:
                 json.dump([f.to_dict() for f in frames], stream)
         elif kind == "singles":
-            from .pdf import write_single_files
-            metrics = measure(lambda: write_single_files(frames, output, config, on_progress=notify, cancel=cancel))
+            metrics = measure(lambda: engine.write_singles(frames, output, config, on_progress=notify, cancel=cancel))
         elif kind == "direct":
-            from .pdf import write_pdf
             def direct():
-                frames = encode_numbers(numbers, cancel=cancel,
+                frames = engine.encode(numbers, cancel=cancel,
                     on_progress=(lambda d, t: update(d, 2 * t)) if notify else None)
-                write_pdf(frames, output, config, cancel=cancel,
+                engine.write_pdf(frames, output, config, cancel=cancel,
                     on_progress=(lambda d, t: update(t + d, 2 * t)) if notify else None)
             metrics = measure(direct)
         elif kind == "merge":
@@ -68,6 +72,8 @@ def main():
         else:
             raise ValueError(f"Unknown worker kind: {kind}")
         result = {"status": "OK", **metrics}
+        if engine is not None:
+            result["engine"] = engine.info().to_dict()
     except Exception as exc:
         result = {"status": "ERROR", "error": f"{type(exc).__name__}: {exc}", "traceback": traceback.format_exc()}
     with destination.open("x", encoding="utf-8") as stream:
