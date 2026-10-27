@@ -171,3 +171,9 @@ CPU/RAM/file sizes and all repeats are in the JSON/CSV. Full suite status: COMPL
 Третий CI быстро показал 5 родственных сбоев старых тестов: Windows TEMP использует RUNNER~1, тогда как validate_paths возвращает runneradmin. Производственные адаптеры правильно канонизируют путь; ожидаемые fixture пути external_extra/qpdf/mutool приведены к resolve(). Проверки порядка, Unicode, короткого argv и запрета перезаписи сохранены. Повтор локально: 99 тестов, 98 PASS, 1 SKIPPED; output/v02-tests-final-4.log. Второй диагностический timeout сохранён в output/v02-ci-watchdog-failure.log.
 
 Windows CI на e7c3af8: все 99 тестов завершились (94 PASS, 5 необязательных SKIPPED); этап реальных PDF остановился до кодирования из-за русского print в cp1252 stdout. Launcher уже задаёт PYTHONUTF8=1; такая же явная кодировка добавлена для CI. Ошибка не скрыта и не зачтена как успешный PDF; исходный ERROR manifest и журнал сохранены: output/v02-ci-fixtures-windows.log / artifact первого неуспешного PDF.
+
+### Итог v0.2: Windows/Linux PASS
+
+CI https://github.com/sunpole/uCode-Bench/actions/runs/40558796902 на 0ef0732: SUCCESS обе ОС; 99 тестов на каждой (94 PASS, 5 необязательных SKIPPED). PDF 200/1000/10000 и цветной 200 — COMPLETE, полная QA + 3 raster controls. Скачаны оба evidence-пакета в output/v02-ci/ и повторно прочитаны манифесты. Полный журнал сохранён локально; очищенная сводка с SHA-256 в results/v0.2/verification.json. Итоговое сохранение документов не меняет проверенный код.
+
+Осталось для оператора: визуально просмотреть окно на своём DPI и выполнить пробную печать. Полная матрица всех движков на 10000 в этой задаче не измерялась. Обновлять через новую папку; main и прежние результаты сохранены.

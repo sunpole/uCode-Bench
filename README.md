@@ -28,7 +28,7 @@
 
 ## Проверка и обновление v0.2
 
-Команды для разработчика: `python -m unittest discover -s tests -v`, `python scripts/verify_v02.py`, `python scripts/verify_scientific_v02.py --count 1000`. Последняя команда — настоящий научный тест, не unit mock. CI проверяет Windows/Linux, настоящий Tk, PDF на 200/1000/10000 и цветной CMYK. Локальные результаты и границы проверки записываются в `docs/V02_VERIFICATION.md` и `docs/WORK_LOG.md`.
+Команды для разработчика: `python -m unittest discover -s tests -v`, `python scripts/verify_v02.py`, `python scripts/verify_scientific_v02.py --count 1000`. Последняя команда — настоящий научный тест, не unit mock. CI проверяет Windows/Linux, настоящий Tk, PDF на 200/1000/10000 и цветной CMYK. Windows/Linux CI пройден: [результат 40558796902](https://github.com/sunpole/uCode-Bench/actions/runs/40558796902). На обеих ОС созданы реальные PDF 200/1000/10000 с QA PASS. Доказательства и границы проверки: [V02_VERIFICATION.md](docs/V02_VERIFICATION.md), [публичная сводка](results/v0.2/verification.json) и `docs/WORK_LOG.md`.
 
 Безопасное обновление: получить ZIP новой ветки/PR и распаковать **в новую соседнюю папку**; не заменять папку с незакоммиченными правками. Свой TXT выбрать заново через меню. Старые `output/`, настройки и файлы остаются в прежней копии. Для Git сначала проверить `git status`; при локальных изменениях не выполнять reset/clean или автоматическую замену. `main` этой задачей не изменяется.
 

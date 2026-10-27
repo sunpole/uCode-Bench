@@ -1,0 +1,338 @@
+{
+  "schema_version": 1,
+  "kind": "v0.2-functional-verification",
+  "tested_source_revision": "0ef073226bb95f568aad2f1d9e2936687d70be95",
+  "pull_request": "https://github.com/sunpole/uCode-Bench/pull/2",
+  "ci_url": "https://github.com/sunpole/uCode-Bench/actions/runs/40558796902",
+  "status": "PASS",
+  "methodology": "Single production generation per size/platform; not a scientific speed ranking. All vector pages QA; 3 raster samples per PDF.",
+  "local_tests": {
+    "total": 99,
+    "passed": 98,
+    "skipped": 1
+  },
+  "ci_tests_per_platform": {
+    "total": 99,
+    "passed": 94,
+    "skipped": 5
+  },
+  "pdfs": [
+    {
+      "platform": "windows",
+      "count": 1000,
+      "ink": [
+        0.0,
+        0.0,
+        0.0,
+        100.0
+      ],
+      "status": "COMPLETE",
+      "seconds": {
+        "qr_encoding": 3.130784,
+        "write_multipage": 1.163852,
+        "quality_checks": 4.233364,
+        "total_including_qa": 8.530699
+      },
+      "file": "all-1000-pages.pdf",
+      "bytes": 1168320,
+      "sha256": "1a25739de934314a0523b7bf9d65a0bdc89ef13c9c6cbae90a86363c97dabd6e",
+      "pages": 1000,
+      "qa": {
+        "status": "PASS",
+        "pages_checked": 1000,
+        "decoded_samples": [
+          {
+            "page": 1,
+            "payload": "200000000000"
+          },
+          {
+            "page": 501,
+            "payload": "200000000500"
+          },
+          {
+            "page": 1000,
+            "payload": "200000000999"
+          }
+        ]
+      }
+    },
+    {
+      "platform": "windows",
+      "count": 10000,
+      "ink": [
+        0.0,
+        0.0,
+        0.0,
+        100.0
+      ],
+      "status": "COMPLETE",
+      "seconds": {
+        "qr_encoding": 31.087102,
+        "write_multipage": 11.401867,
+        "quality_checks": 40.671392,
+        "total_including_qa": 83.173326
+      },
+      "file": "all-10000-pages.pdf",
+      "bytes": 11690762,
+      "sha256": "433ac2f388dc6795350a467904c1923af687b4b62e4081da2a6ae65ef28d07fb",
+      "pages": 10000,
+      "qa": {
+        "status": "PASS",
+        "pages_checked": 10000,
+        "decoded_samples": [
+          {
+            "page": 1,
+            "payload": "200000000000"
+          },
+          {
+            "page": 5001,
+            "payload": "200000005000"
+          },
+          {
+            "page": 10000,
+            "payload": "200000009999"
+          }
+        ]
+      }
+    },
+    {
+      "platform": "windows",
+      "count": 200,
+      "ink": [
+        0.0,
+        0.0,
+        0.0,
+        100.0
+      ],
+      "status": "COMPLETE",
+      "seconds": {
+        "qr_encoding": 0.640373,
+        "write_multipage": 0.230403,
+        "quality_checks": 0.972632,
+        "total_including_qa": 1.846104
+      },
+      "file": "all-200-pages.pdf",
+      "bytes": 233480,
+      "sha256": "b5de9499e96bc6f21cc0fd7989c52d80d783422cbe0786942423ce8a593942eb",
+      "pages": 200,
+      "qa": {
+        "status": "PASS",
+        "pages_checked": 200,
+        "decoded_samples": [
+          {
+            "page": 1,
+            "payload": "200000000000"
+          },
+          {
+            "page": 101,
+            "payload": "200000000100"
+          },
+          {
+            "page": 200,
+            "payload": "200000000199"
+          }
+        ]
+      }
+    },
+    {
+      "platform": "windows",
+      "count": 200,
+      "ink": [
+        100.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "status": "COMPLETE",
+      "seconds": {
+        "qr_encoding": 0.626928,
+        "write_multipage": 0.228495,
+        "quality_checks": 0.955568,
+        "total_including_qa": 1.812728
+      },
+      "file": "all-200-pages.pdf",
+      "bytes": 233628,
+      "sha256": "553264b4c80388848a199ad232b99eb33c4828ce852cbdf265a5bd73d40f8fef",
+      "pages": 200,
+      "qa": {
+        "status": "PASS",
+        "pages_checked": 200,
+        "decoded_samples": [
+          {
+            "page": 1,
+            "payload": "200000000000"
+          },
+          {
+            "page": 101,
+            "payload": "200000000100"
+          },
+          {
+            "page": 200,
+            "payload": "200000000199"
+          }
+        ]
+      }
+    },
+    {
+      "platform": "linux",
+      "count": 1000,
+      "ink": [
+        0.0,
+        0.0,
+        0.0,
+        100.0
+      ],
+      "status": "COMPLETE",
+      "seconds": {
+        "qr_encoding": 2.86488,
+        "write_multipage": 1.086265,
+        "quality_checks": 4.014161,
+        "total_including_qa": 7.966692
+      },
+      "file": "all-1000-pages.pdf",
+      "bytes": 1168320,
+      "sha256": "1a25739de934314a0523b7bf9d65a0bdc89ef13c9c6cbae90a86363c97dabd6e",
+      "pages": 1000,
+      "qa": {
+        "status": "PASS",
+        "pages_checked": 1000,
+        "decoded_samples": [
+          {
+            "page": 1,
+            "payload": "200000000000"
+          },
+          {
+            "page": 501,
+            "payload": "200000000500"
+          },
+          {
+            "page": 1000,
+            "payload": "200000000999"
+          }
+        ]
+      }
+    },
+    {
+      "platform": "linux",
+      "count": 10000,
+      "ink": [
+        0.0,
+        0.0,
+        0.0,
+        100.0
+      ],
+      "status": "COMPLETE",
+      "seconds": {
+        "qr_encoding": 28.429646,
+        "write_multipage": 10.939581,
+        "quality_checks": 39.318443,
+        "total_including_qa": 78.697499
+      },
+      "file": "all-10000-pages.pdf",
+      "bytes": 11690762,
+      "sha256": "433ac2f388dc6795350a467904c1923af687b4b62e4081da2a6ae65ef28d07fb",
+      "pages": 10000,
+      "qa": {
+        "status": "PASS",
+        "pages_checked": 10000,
+        "decoded_samples": [
+          {
+            "page": 1,
+            "payload": "200000000000"
+          },
+          {
+            "page": 5001,
+            "payload": "200000005000"
+          },
+          {
+            "page": 10000,
+            "payload": "200000009999"
+          }
+        ]
+      }
+    },
+    {
+      "platform": "linux",
+      "count": 200,
+      "ink": [
+        0.0,
+        0.0,
+        0.0,
+        100.0
+      ],
+      "status": "COMPLETE",
+      "seconds": {
+        "qr_encoding": 0.573619,
+        "write_multipage": 0.221399,
+        "quality_checks": 0.896143,
+        "total_including_qa": 1.692481
+      },
+      "file": "all-200-pages.pdf",
+      "bytes": 233480,
+      "sha256": "b5de9499e96bc6f21cc0fd7989c52d80d783422cbe0786942423ce8a593942eb",
+      "pages": 200,
+      "qa": {
+        "status": "PASS",
+        "pages_checked": 200,
+        "decoded_samples": [
+          {
+            "page": 1,
+            "payload": "200000000000"
+          },
+          {
+            "page": 101,
+            "payload": "200000000100"
+          },
+          {
+            "page": 200,
+            "payload": "200000000199"
+          }
+        ]
+      }
+    },
+    {
+      "platform": "linux",
+      "count": 200,
+      "ink": [
+        100.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "status": "COMPLETE",
+      "seconds": {
+        "qr_encoding": 0.570509,
+        "write_multipage": 0.216386,
+        "quality_checks": 0.875816,
+        "total_including_qa": 1.663282
+      },
+      "file": "all-200-pages.pdf",
+      "bytes": 233628,
+      "sha256": "553264b4c80388848a199ad232b99eb33c4828ce852cbdf265a5bd73d40f8fef",
+      "pages": 200,
+      "qa": {
+        "status": "PASS",
+        "pages_checked": 200,
+        "decoded_samples": [
+          {
+            "page": 1,
+            "payload": "200000000000"
+          },
+          {
+            "page": 101,
+            "payload": "200000000100"
+          },
+          {
+            "page": 200,
+            "payload": "200000000199"
+          }
+        ]
+      }
+    }
+  ],
+  "limitations": [
+    "Native mouse/screenshot verification unavailable",
+    "Full scientific all-engine matrix at 10000 was not measured",
+    "PDF/X certification and physical print scan not performed"
+  ]
+}
