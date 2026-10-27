@@ -14,7 +14,7 @@
 
 ## P01 — реальная модульность и достоверные счётчики (10 задач)
 
-Статус: VERIFIED локально (108 тестов, 107 PASS / 1 SKIPPED и настоящие PDF 2/7); Windows/Linux CI — в PR. Ветка codex/modernization-p01. Зависимости: существующая v0.2. Все 10 задач реализованы; границы приёмки и артефакты в [MODERNIZATION_P01.md](MODERNIZATION_P01.md).
+Статус: VERIFIED локально и [Windows/Linux CI](https://github.com/sunpole/uCode-Bench/actions/runs/40576709327); 108 тестов (локально 107 PASS / 1 SKIPPED, CI 103 PASS / 5 SKIPPED) и настоящие PDF 2/7. PR #3. Ветка codex/modernization-p01. Зависимости: существующая v0.2. Все 10 задач реализованы; границы приёмки и артефакты в [MODERNIZATION_P01.md](MODERNIZATION_P01.md).
 
 1. Сохранить новое ТЗ, аудит и карту всех долгов/патчей.
 2. Ввести реестр движков генерации отдельно от типов кодов и движков объединения.
