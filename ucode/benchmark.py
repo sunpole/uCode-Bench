@@ -151,6 +151,8 @@ def _prepare(directory, config, progress, cancel, stages, tracker=None, cursor=N
         progress(f"M02 QR-кодирование: повтор {repeat}/3, {config.count} кодов")
         frames_path = directory / f"frames-{repeat}.json"
         notify = (lambda d, t: tracker.step("Тест: кодирование QR", d, t, cursor[0])) if tracker else None
+        if tracker:
+            tracker.step("Тест: кодирование QR", 0, config.count, cursor[0], force=True)
         trial = _measure(directory, config, "encode", frames_path, tag=f"encode-{repeat}", notify=notify, cancel=cancel)
         if tracker:
             cursor[0] += config.count
@@ -163,6 +165,8 @@ def _prepare(directory, config, progress, cancel, stages, tracker=None, cursor=N
         progress(f"M04 Отдельные PDF: повтор {repeat}/3, {config.count} файлов")
         target = directory / f"singles-{repeat}"
         notify = (lambda d, t: tracker.step("Тест: отдельные PDF", d, t, cursor[0])) if tracker else None
+        if tracker:
+            tracker.step("Тест: отдельные PDF", 0, config.count, cursor[0], force=True)
         trial = _measure(directory, config, "singles", target, tag=f"singles-{repeat}", frames=str(frames_path), notify=notify, cancel=cancel)
         if tracker:
             cursor[0] += config.count
@@ -171,7 +175,9 @@ def _prepare(directory, config, progress, cancel, stages, tracker=None, cursor=N
             raise RuntimeError("Wrong single-file count")
         trial["output_bytes"] = sum(p.stat().st_size for p in paths)
         qa_start = time.perf_counter()
-        notify = (lambda d, t: tracker.step("Тест: QA исходных PDF", d, t, cursor[0])) if tracker else None
+        notify = (lambda d, t: tracker.step("Тест: QA исходных PDF", d, t, cursor[0], unit="проверок")) if tracker else None
+        if tracker:
+            tracker.step("Тест: QA исходных PDF", 0, config.count, cursor[0], force=True, unit="проверок")
         trial["qa"] = _single_qa(paths, frames, config, progress, cancel, notify)
         if tracker:
             cursor[0] += config.count
@@ -276,7 +282,9 @@ def run_experiment(output_root, config=Experiment(), progress=None, cancel=None,
                     _artifact(trial, output)
                     progress(f"{name}: QA повтора {repeat}/3")
                     qa_start = time.perf_counter()
-                    notify = (lambda d, t: tracker.step(f"{name}: QA", d, t, cursor[0])) if tracker else None
+                    notify = (lambda d, t: tracker.step(f"{name}: QA", d, t, cursor[0], unit="проверок")) if tracker else None
+                    if tracker:
+                        tracker.step(f"{name}: QA", 0, config.count + 3, cursor[0], force=True, unit="проверок")
                     trial["qa"] = check_pdf(output, frames, config, on_progress=notify, cancel=cancel)
                     if tracker:
                         cursor[0] += config.count + len({0, config.count // 2, config.count - 1})
