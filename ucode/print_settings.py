@@ -8,8 +8,11 @@ class PrintSettings:
     """All lengths millimetres, with the full white margin included in the PDF page."""
     module_mm: float = 0.5
     quiet_modules: int = 4
+    ink: tuple = (0, 0, 0, 100)
 
     def __post_init__(self):
+        if isinstance(self.module_mm, bool):
+            raise ValueError("Размер модуля должен быть числом в миллиметрах")
         if isinstance(self.quiet_modules, bool) or not isinstance(self.quiet_modules, int) or not 4 <= self.quiet_modules <= 20:
             raise ValueError("Белое поле: от 4 до 20 модулей. Меньше 4 не соответствует QR Code.")
         try:
@@ -18,9 +21,19 @@ class PrintSettings:
             raise ValueError("Неверный физический размер модуля QR") from exc
         if not math.isfinite(module) or not 0.25 <= module <= 2.0:
             raise ValueError("Размер одного модуля должен быть от 0,25 до 2,0 мм.")
+        object.__setattr__(self, "module_mm", module)
+        if not isinstance(self.ink, (tuple, list)) or len(self.ink) != 4 or any(
+            isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v) or not 0 <= v <= 100 for v in self.ink
+        ) or not any(self.ink):
+            raise ValueError("CMYK: четыре числа 0–100%; цвет не может быть полностью белым.")
+        object.__setattr__(self, "ink", tuple(float(v) for v in self.ink))
+
+    @property
+    def is_k100(self):
+        return self.ink == (0, 0, 0, 100)
 
     @classmethod
-    def from_total_side(cls, total_mm: float, quiet_modules: int = 4):
+    def from_total_side(cls, total_mm: float, quiet_modules: int = 4, ink=(0, 0, 0, 100)):
         if isinstance(quiet_modules, bool) or not isinstance(quiet_modules, int) or not 4 <= quiet_modules <= 20:
             raise ValueError("Белое поле: целое число от 4 до 20 модулей")
         try:
@@ -29,7 +42,7 @@ class PrintSettings:
             raise ValueError("Общий размер должен быть числом в миллиметрах") from exc
         if not math.isfinite(total) or total <= 0:
             raise ValueError("Общий размер должен быть положительным числом")
-        return cls(module_mm=total / (21 + 2 * quiet_modules), quiet_modules=quiet_modules)
+        return cls(module_mm=total / (21 + 2 * quiet_modules), quiet_modules=quiet_modules, ink=ink)
 
     @property
     def side_mm(self) -> float:
@@ -50,6 +63,7 @@ class PrintSettings:
             "page_mm": [self.side_mm, self.side_mm],
             "dark_matrix_mm": self.dark_matrix_mm,
             "white_margin_mm": self.white_margin_mm,
+            "ink": list(self.ink), "k100": self.is_k100,
         }
 
 
@@ -82,11 +96,15 @@ def human_report(report: dict) -> str:
         "=" * 42,
         f"Статус: {report.get('status', 'неизвестно')}",
         f"Количество кодов: {report.get('count', 0):,}".replace(",", " "),
+        f"Количество PDF: {report.get('files', {}).get('singles', {}).get('count', 0) + bool(report.get('files', {}).get('multipage'))}",
+        f"Объём PDF: {(report.get('files', {}).get('singles', {}).get('bytes', 0) + report.get('files', {}).get('multipage', {}).get('bytes', 0)) / 1024**2:.2f} МиБ",
         f"Входной файл: {report.get('input_filename', '')}",
         f"Режим: {report.get('mode', '')}",
         f"Размер PDF: {cfg.get('page_mm', ['?', '?'])[0]:.3f} × {cfg.get('page_mm', ['?', '?'])[1]:.3f} мм" if isinstance(cfg.get("page_mm"), list) else "Размер PDF: нет данных",
         f"Белое поле: {cfg.get('quiet_modules', '?')} модуля(ей)",
-        "Цвет: C0 M0 Y0 K100; векторный QR V1-M; PDF/X не сертифицирован",
+        "Цвет CMYK (%): " + " / ".join(str(v) for v in cfg.get("ink", [0, 0, 0, 100])) +
+        ("; K100, одна чёрная краска" if cfg.get("k100", True) else "; цветной режим CMYK") +
+        "; векторный QR V1-M; PDF/X не сертифицирован",
         "",
         "ФАКТИЧЕСКОЕ ВРЕМЯ",
         f"Вся операция с QA: {format_duration(values.get('total_including_qa'))}",
@@ -103,9 +121,14 @@ def human_report(report: dict) -> str:
                  f"Отдельные PDF: {qa.get('singles', {}).get('status', 'не выбраны')}",
                  "COMPLETE = проверены структуры и растровые образцы.",
                  "LIMITED = структурная проверка пройдена, растровая недоступна.",
-                 "INVALID/ERROR = требуется изучить manifest.json.",
+                 "INVALID/ERROR = есть ошибки; причины перечислены ниже.",
                  "",
                  "Времена измерены на машине, где выполнялась эта задача.",
                  "Скорость зависит от размера, носителя, нагрузки и режима.",
                  ""])
+    details = list(report.get("errors", [])) + qa.get("multipage", {}).get("errors", [])[:5]
+    for item in qa.get("singles", {}).get("first_failures", [])[:3]:
+        details.append(f"Файл {item.get('file')}: {item.get('errors')}")
+    if details:
+        rows.extend(["ПРИЧИНЫ ОСТАНОВКИ / ОШИБОК", *map(str, details), ""])
     return "\n".join(rows)

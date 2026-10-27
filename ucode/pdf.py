@@ -3,9 +3,10 @@ from pathlib import Path
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.lib.units import mm
 from .config import Experiment, QRFrame
+from . import __version__
 
 
-def write_pdf(frames: list[QRFrame], path: Path, config: Experiment) -> None:
+def write_pdf(frames: list[QRFrame], path: Path, config: Experiment, *, on_progress=None, cancel=None) -> None:
     path = Path(path)
     if path.exists():
         raise FileExistsError(path)
@@ -15,12 +16,14 @@ def write_pdf(frames: list[QRFrame], path: Path, config: Experiment) -> None:
     side = (21 + 2 * config.quiet_modules) * module
     canvas = Canvas(str(path), pagesize=(side, side), pageCompression=1, invariant=1,
                     enforceColorSpace="CMYK")
-    canvas.setTitle("uCode QR benchmark")
-    canvas.setCreator("uCode 0.1.0")
-    for frame in frames:
+    canvas.setTitle(f"uCode: {len(frames)} QR Code")
+    canvas.setCreator(f"uCode {__version__}")
+    for index, frame in enumerate(frames, 1):
+        if cancel is not None and cancel.is_set():
+            raise InterruptedError("Запись PDF остановлена; прежние файлы сохранены")
         if frame.size != 21 or any(len(row) != 21 for row in frame.matrix) or frame.version != 1 or frame.error != "M":
             raise ValueError("Only ordinary QR V1-M frames are supported")
-        canvas.setFillColorCMYK(0, 0, 0, 1)
+        canvas.setFillColorCMYK(*(v / 100 for v in getattr(config, "ink", (0, 0, 0, 100))))
         for row_index, row in enumerate(frame.matrix):
             column = 0
             while column < 21:
@@ -34,14 +37,21 @@ def write_pdf(frames: list[QRFrame], path: Path, config: Experiment) -> None:
                             (config.quiet_modules + 20 - row_index) * module,
                             (column - start) * module, module, stroke=0, fill=1)
         canvas.showPage()
+        if on_progress:
+            on_progress(index, len(frames))
     canvas.save()
 
 
-def write_single_files(frames: list[QRFrame], directory: Path, config: Experiment) -> list[Path]:
+def write_single_files(frames: list[QRFrame], directory: Path, config: Experiment, *, on_progress=None, cancel=None) -> list[Path]:
     directory.mkdir(parents=True, exist_ok=False)
     paths = []
+    digits = max(4, len(str(len(frames))))
     for index, frame in enumerate(frames):
-        path = directory / f"{index + 1:04d}_{frame.payload}.pdf"
+        if cancel is not None and cancel.is_set():
+            raise InterruptedError("Создание отдельных PDF остановлено")
+        path = directory / f"{index + 1:0{digits}d}_{frame.payload}.pdf"
         write_pdf([frame], path, config)
         paths.append(path)
+        if on_progress:
+            on_progress(index + 1, len(frames))
     return paths

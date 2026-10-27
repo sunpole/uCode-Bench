@@ -1,6 +1,6 @@
-"""Operator-friendly uCode PDF batch window. All long-running operations use a worker."""
+"""One operator window for TXT/PDF and separately measured scientific tests."""
 from __future__ import annotations
-
+import dataclasses
 import json
 import os
 from pathlib import Path
@@ -9,223 +9,223 @@ import threading
 import time
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
+import webbrowser
 
 from .batch import load_codes, make_template, run_batch
-from .print_settings import PrintSettings, format_duration, human_report
+from .print_settings import PrintSettings, format_duration
+from .app_settings import load_preferences, save_preferences
+from .generators import generators
 
 PROJECT = Path(__file__).resolve().parents[1]
-HELP_TEXT = """uCode — КРАТКАЯ ИНСТРУКЦИЯ
+HELP_TEXT = """1. База TXT → Открыть: UTF-8, одна строка — ровно 12 цифр.
+2. Либо «Создать номера»: 200, 1 000 или 10 000 кодов.
+3. «Настройки»: размер PDF, модуль, белое поле, CMYK и формат файлов.
+4. СОЗДАТЬ PDF. Дождитесь кодирования, записи и проверки.
+5. Откройте PDF, папку или понятный ОТЧЁТ.txt.
 
-1. Подготовьте UTF-8 TXT. Каждая строка — ровно 12 цифр, без пробелов.
-   Пустые строки не допускаются. Сейчас: от 1 до 10 000 кодов.
-2. Выберите свой TXT кнопкой «Открыть TXT».
-   Кнопки 200 / 1 000 / 10 000 создают примеры, не заменяют ваш файл.
-3. Выберите результат: отдельные PDF, один общий PDF либо оба вида.
-4. Укажите общий физический размер квадратной страницы PDF.
-   В него входят сам QR и белое поле.
-5. Белое поле: от 4 до 20 модулей. Меньше 4 нарушает стандарт QR.
-   При изменении поля и неизменном общем размере сам QR уменьшается.
-6. Нажмите «Создать PDF», затем «Показать файлы».
+Процент учитывает фактически обработанные коды, страницы и QA.
+100% означает завершённую операцию и полную проверку.
+Остановка сохраняет уже созданные файлы. Старые результаты не удаляются.
 
-РЕЗУЛЬТАТ
-output/jobs/pdf-.../singles/             — отдельные PDF
-output/jobs/pdf-.../all-N-pages.pdf      — общий PDF
-output/jobs/pdf-.../ОТЧЁТ.txt            — понятное время и качество
-output/jobs/pdf-.../manifest.json        — подробная диагностика
+Сейчас работает QR Code V1-M: 12 цифр, до 10 000 строк.
+Белое поле минимум 4 модуля. По умолчанию — одна чёрная краска K100.
+Цветной CMYK проверяется по выбранным компонентам; бледные коды могут
+не пройти декодирование. Реальная пробная печать и сканер обязательны
+для проверки вашего носителя. PDF/X пока не сертифицирован.
 
-КАК ОЦЕНИВАТЬ ВРЕМЯ
-В «ОТЧЁТ.txt» есть общее фактическое время в ч/мин/сек,
-время кодирования, создания PDF и проверки. QA считается отдельно.
-
-ПЕЧАТЬ
-QR версии 1/M, векторный C0 M0 Y0 K100, без RGB-чёрного.
-Минимальное поле — 4 модуля. PDF/X-профиль пока не заявлен.
-Очень мелкие модули могут плохо читаться: выполните реальную
-пробную печать и проверьте сканером.
-
-СЛОЖНЫЕ ТИРАЖИ
-Сейчас предел 10 000 кодов за запуск. Для миллионов потребуется
-другой движок с порционной обработкой и защитой памяти/диска.
-Программа сейчас не выбирает количество ядер и метод по скорости:
-быстрейший метод должен быть подтверждён отдельным тестом на ПК.
+«Тесты» — отдельная научная методика: 3 повтора, раздельные времена
+создания и объединения, QA. Перед 1000/10000 проверяется допуск.
+Производственные результаты и результаты тестов не смешиваются.
 """
 
 
+def clock_text(seconds):
+    whole = max(0, int(seconds))
+    return f"{whole // 3600:02d}:{whole // 60 % 60:02d}:{whole % 60:02d}"
+
+
 class BatchWindow:
-    def __init__(self, root):
+    def __init__(self, root, output_root=None):
         self.root = root
+        self.output_root = Path(output_root or PROJECT / "output")
+        self.preferences_path = self.output_root.parent / ".local-state" / "user-settings.json"
+        self.print_settings, mode, warning = load_preferences(self.preferences_path)
         self.events = queue.Queue()
         self.cancel = threading.Event()
         self.worker = None
         self.last_output = None
-        self.busy = False
-        self.closing = False
+        self.last_pdf = None
+        self.last_report = None
+        self.busy = self.closing = False
         self.started = None
-
-        root.title("uCode — Создание печатных QR из TXT")
-        root.geometry("900x735")
-        root.minsize(750, 630)
-        root.protocol("WM_DELETE_WINDOW", self.close)
-
-        main = ttk.Frame(root, padding=18)
-        main.pack(fill="both", expand=True)
-        main.columnconfigure(0, weight=1)
-
-        head = ttk.Frame(main)
-        head.grid(row=0, column=0, sticky="ew", pady=(0, 12))
-        head.columnconfigure(0, weight=1)
-        ttk.Label(head, text="Создание QR-кодов в PDF", font=("Segoe UI", 19, "bold")).grid(row=0, column=0, sticky="w")
-        ttk.Label(head, text="Печатные PDF из обычного TXT · 1 строка = 1 QR", foreground="#555555").grid(row=1, column=0, sticky="w", pady=3)
-        ttk.Button(head, text="Инструкция и помощь", command=self.show_help).grid(row=0, column=1, rowspan=2, padx=(15, 0))
-
-        source = ttk.LabelFrame(main, text="1. Выберите номера", padding=11)
-        source.grid(row=1, column=0, sticky="ew", pady=(0, 10))
-        source.columnconfigure(0, weight=1)
-        line = ttk.Frame(source)
-        line.grid(row=0, column=0, sticky="ew")
-        line.columnconfigure(0, weight=1)
+        self.current_event = None
+        self.input_valid = False
+        self.selected_engines = None
         self.input_var = tk.StringVar()
-        self.entry = ttk.Entry(line, textvariable=self.input_var)
-        self.entry.grid(row=0, column=0, sticky="ew", padx=(0, 8))
-        self.browse = ttk.Button(line, text="Открыть TXT…", command=self.choose)
-        self.browse.grid(row=0, column=1)
-        example = ttk.Frame(source)
-        example.grid(row=1, column=0, sticky="w", pady=(9, 0))
-        ttk.Label(example, text="Создать пример:").pack(side="left", padx=(0, 8))
-        self.templates = []
-        for n in (200, 1000, 10000):
-            button = ttk.Button(example, text=f"{n:,}".replace(",", " "), command=lambda value=n: self.template(value))
-            button.pack(side="left", padx=(0, 7))
-            self.templates.append(button)
-        self.file_count = tk.StringVar(value="Допускается максимум 10 000 кодов. Только 12 цифр в строке.")
-        ttk.Label(source, textvariable=self.file_count, foreground="#555555").grid(row=2, column=0, sticky="w", pady=(8, 0))
-
-        output = ttk.LabelFrame(main, text="2. Какие PDF нужны?", padding=11)
-        output.grid(row=2, column=0, sticky="ew", pady=(0, 10))
-        self.mode_var = tk.StringVar(value="multipage")
-        self.mode_buttons = []
-        for text, value in (
-            ("Оба варианта: отдельные + общий", "both"),
-            ("Только общий многостраничный PDF", "multipage"),
-            ("Только отдельные PDF", "singles"),
-        ):
-            radio = ttk.Radiobutton(output, text=text, variable=self.mode_var, value=value)
-            radio.pack(anchor="w", pady=2)
-            self.mode_buttons.append(radio)
-        ttk.Label(output, text="По умолчанию выбран один PDF: меньше файлов, меньше операций записи. Режим не означает автоматический подбор движка.", foreground="#555555", wraplength=820).pack(anchor="w", pady=(5, 0))
-
-        geometry = ttk.LabelFrame(main, text="3. Размер и белое поле", padding=11)
-        geometry.grid(row=3, column=0, sticky="ew", pady=(0, 10))
-        self.total_mm = tk.StringVar(value="14,5")
-        self.margin = tk.StringVar(value="4")
-        row = ttk.Frame(geometry)
-        row.pack(fill="x")
-        ttk.Label(row, text="Весь QR с белым полем, мм:").pack(side="left")
-        self.size_box = ttk.Entry(row, textvariable=self.total_mm, width=10)
-        self.size_box.pack(side="left", padx=(8, 24))
-        ttk.Label(row, text="Белое поле, модулей:").pack(side="left")
-        self.margin_box = ttk.Combobox(row, textvariable=self.margin, values=[str(i) for i in range(4, 21)], state="readonly", width=6)
-        self.margin_box.pack(side="left", padx=(8, 0))
+        self.mode_var = tk.StringVar(value=mode)
+        self.filename = tk.StringVar(value="База не выбрана")
+        self.file_count = tk.StringVar(value="Откройте TXT или создайте номера в меню")
         self.geometry_summary = tk.StringVar()
-        ttk.Label(geometry, textvariable=self.geometry_summary, foreground="#205b38", wraplength=820).pack(anchor="w", pady=(10, 2))
-        ttk.Label(geometry, text="Ограничения: поле не меньше 4 модулей; модуль 0,25–2,0 мм. Малые размеры требуют пробной печати.", wraplength=820, foreground="#555555").pack(anchor="w")
-        self.total_mm.trace_add("write", lambda *_: self.update_geometry())
-        self.margin.trace_add("write", lambda *_: self.update_geometry())
-        self.update_geometry()
-
-        controls = ttk.Frame(main)
-        controls.grid(row=4, column=0, sticky="ew", pady=(2, 7))
-        self.generate = ttk.Button(controls, text="Создать PDF", command=self.start)
-        self.generate.pack(side="left", ipady=7)
+        self.status_var = tk.StringVar(value=warning or "Готово к работе")
+        self.elapsed_var = tk.StringVar(value="Прошло: 00:00:00")
+        self.speed_var = tk.StringVar(value="Скорость: — кодов/сек")
+        self.result_var = tk.StringVar(value="Здесь появится результат создания PDF")
+        self.result_details = tk.StringVar(value="Данные и прежние результаты сохраняются локально")
+        root.title("uCode v0.2 — TXT → PDF")
+        width = min(980, max(760, root.winfo_screenwidth() - 60))
+        height = min(540, max(440, root.winfo_screenheight() - 130))
+        root.geometry(f"{width}x{height}")
+        root.minsize(min(760, width), min(440, height))
+        root.protocol("WM_DELETE_WINDOW", self.close)
+        style = ttk.Style(root)
+        if "clam" in style.theme_names():
+            style.theme_use("clam")
+        style.configure("Primary.TButton", font=("Segoe UI", 13, "bold"), padding=(18, 9))
+        style.configure("Title.TLabel", font=("Segoe UI", 21, "bold"))
+        style.configure("Result.TLabel", font=("Segoe UI", 15, "bold"))
+        body = ttk.Frame(root, padding=(18, 12))
+        body.pack(fill="both", expand=True)
+        body.columnconfigure(0, weight=1)
+        ttk.Label(body, text="uCode", style="Title.TLabel").grid(row=0, column=0, sticky="w")
+        ttk.Label(body, text="Коды из TXT → готовые печатные PDF", foreground="#4c5868").grid(row=1, column=0, sticky="w", pady=(0, 10))
+        toolbar = ttk.Frame(body)
+        toolbar.grid(row=2, column=0, sticky="ew", pady=(0, 10))
+        self.menus = []
+        base = self.menu(toolbar, "База TXT")
+        base.add_command(label="Открыть TXT…", command=self.choose)
+        base.add_command(label="Проверить выбранный файл", command=self.inspect_input)
+        create = self.menu(toolbar, "Создать номера")
+        for count in (200, 1000, 10000):
+            create.add_command(label=f"{count:,}".replace(",", " "), command=lambda n=count: self.template(n))
+        types = self.menu(toolbar, "Тип кода")
+        for generator in generators():
+            types.add_command(label=generator.name + (" ✓" if generator.available else " — В разработке"),
+                              state="normal" if generator.available else "disabled",
+                              command=lambda: self.status_var.set("Выбран QR Code V1-M"))
+        settings = self.menu(toolbar, "Настройки")
+        settings.add_command(label="Размер PDF и белое поле…", command=lambda: self.geometry_dialog(False))
+        settings.add_command(label="Размер модуля…", command=lambda: self.geometry_dialog(True))
+        settings.add_command(label="Цвет CMYK…", command=self.color_dialog)
+        settings.add_command(label="Печать K100 — одна чёрная краска", command=self.use_k100)
+        formats = tk.Menu(settings, tearoff=False)
+        for label, value in (("Один многостраничный PDF", "multipage"), ("Отдельные PDF", "singles"), ("Оба варианта", "both")):
+            formats.add_radiobutton(label=label, variable=self.mode_var, value=value, command=self.remember)
+        settings.add_cascade(label="Формат результата", menu=formats)
+        tests = self.menu(toolbar, "Тесты")
+        for label, count in (("Быстрый тест — 200", 200), ("Средний тест — 1 000", 1000), ("Большой тест — 10 000", 10000), ("Полный тест — 200 → 1 000 → 10 000", "all")):
+            tests.add_command(label=label, command=lambda n=count: self.start_test(n))
+        tests.add_separator()
+        tests.add_command(label="Результаты предыдущих тестов", command=lambda: self.open_path(self.output_root / "benchmarks"))
+        tests.add_command(label="Настройки производительности…", command=self.performance_dialog)
+        ttk.Button(toolbar, text="Справка", command=self.show_help).pack(side="right", padx=(6, 0))
+        source = ttk.LabelFrame(body, text="База TXT", padding=10)
+        source.grid(row=3, column=0, sticky="ew", pady=(0, 8))
+        ttk.Label(source, textvariable=self.filename, font=("Segoe UI", 11, "bold"), wraplength=880).pack(anchor="w")
+        ttk.Label(source, textvariable=self.file_count, wraplength=880).pack(anchor="w", pady=(3, 0))
+        ttk.Label(body, textvariable=self.geometry_summary, wraplength=900, foreground="#325b44").grid(row=4, column=0, sticky="w", pady=(0, 9))
+        controls = ttk.Frame(body)
+        controls.grid(row=5, column=0, sticky="ew", pady=(0, 8))
+        self.generate = ttk.Button(controls, text="СОЗДАТЬ PDF", style="Primary.TButton", command=self.start)
+        self.generate.pack(side="left")
         self.stop = ttk.Button(controls, text="Остановить", command=self.request_cancel)
-        self.stop.pack(side="left", padx=(9, 0), ipady=7)
-        self.open = ttk.Button(controls, text="Показать файлы", command=self.open_result)
-        self.open.pack(side="left", padx=(9, 0), ipady=7)
-        self.elapsed_var = tk.StringVar(value="")
-        ttk.Label(controls, textvariable=self.elapsed_var, font=("Segoe UI", 10, "bold")).pack(side="right")
-
-        self.status_var = tk.StringVar(value=f"Готово. Движок ReportLab · один процесс · доступно логических CPU: {os.cpu_count() or 'неизвестно'}. Начните с TXT.")
-        ttk.Label(main, textvariable=self.status_var, wraplength=830).grid(row=5, column=0, sticky="w", pady=(2, 8))
-        self.progress = ttk.Progressbar(main, mode="indeterminate")
-        self.progress.grid(row=6, column=0, sticky="ew", pady=(0, 8))
-
-        result = ttk.LabelFrame(main, text="Результат и фактическое время", padding=9)
-        result.grid(row=7, column=0, sticky="nsew")
-        result.columnconfigure(0, weight=1)
-        result.rowconfigure(0, weight=1)
-        main.rowconfigure(7, weight=1)
-        self.log = tk.Text(result, height=9, wrap="word", state="disabled", font=("Consolas", 10), bg="#f8f8f8")
-        self.log.grid(row=0, column=0, sticky="nsew")
-        scroll = ttk.Scrollbar(result, orient="vertical", command=self.log.yview)
-        scroll.grid(row=0, column=1, sticky="ns")
-        self.log.configure(yscrollcommand=scroll.set)
-        self.append("После генерации здесь появится понятный отчёт со временем в ч/мин/сек.")
+        self.stop.pack(side="left", padx=10)
+        self.phase_label = ttk.Label(body, textvariable=self.status_var, wraplength=900)
+        self.phase_label.grid(row=6, column=0, sticky="w")
+        self.progress = ttk.Progressbar(body, mode="determinate", maximum=100)
+        self.progress.grid(row=7, column=0, sticky="ew", pady=(7, 5))
+        metrics = ttk.Frame(body)
+        metrics.grid(row=8, column=0, sticky="ew")
+        ttk.Label(metrics, textvariable=self.elapsed_var).pack(side="left")
+        ttk.Label(metrics, textvariable=self.speed_var).pack(side="right")
+        result = ttk.Frame(body, padding=(0, 12, 0, 0))
+        result.grid(row=9, column=0, sticky="nsew")
+        body.rowconfigure(9, weight=1)
+        ttk.Label(result, textvariable=self.result_var, style="Result.TLabel", wraplength=900).pack(anchor="w")
+        ttk.Label(result, textvariable=self.result_details, wraplength=900).pack(anchor="w", pady=(4, 8))
+        actions = ttk.Frame(result)
+        actions.pack(anchor="w")
+        self.open = ttk.Button(actions, text="Открыть PDF", command=self.open_pdf)
+        self.open.pack(side="left")
+        self.folder_button = ttk.Button(actions, text="Открыть папку", command=self.open_result)
+        self.folder_button.pack(side="left", padx=8)
+        self.report_button = ttk.Button(actions, text="Посмотреть отчёт", command=self.open_report)
+        self.report_button.pack(side="left")
+        self.update_geometry()
         self.update_buttons()
-        root.after(150, self.poll)
+        root.update_idletasks()
+        needed_width = min(root.winfo_screenwidth() - 40, max(760, root.winfo_reqwidth() + 24))
+        needed_height = min(root.winfo_screenheight() - 90, root.winfo_reqheight() + 24)
+        root.minsize(needed_width, needed_height)
+        root.geometry(f"{max(needed_width, width)}x{needed_height}")
+        root.after(100, self.poll)
 
-    def settings(self):
-        try:
-            total = float(self.total_mm.get().strip().replace(",", "."))
-            q = int(self.margin.get())
-            return PrintSettings.from_total_side(total, q)
-        except (ValueError, TypeError, OverflowError) as exc:
-            raise ValueError(f"Проверьте размер и белое поле: {exc}") from exc
+    def menu(self, frame, text):
+        button = ttk.Menubutton(frame, text=text + " ▾")
+        menu = tk.Menu(button, tearoff=False)
+        button.configure(menu=menu)
+        button.pack(side="left", padx=(0, 6))
+        self.menus.append(button)
+        return menu
 
     def update_geometry(self):
-        try:
-            p = self.settings()
-            info = (f"Размер готового PDF: {p.side_mm:.2f} × {p.side_mm:.2f} мм. "
-                    f"Чёрный QR: {p.dark_matrix_mm:.2f} мм; "
-                    f"белое поле с каждой стороны: {p.white_margin_mm:.2f} мм. "
-                    f"Модуль: {p.module_mm:.3f} мм.")
-            self.geometry_summary.set(info.replace(".", ","))
-        except ValueError as exc:
-            self.geometry_summary.set(str(exc))
+        p = self.print_settings
+        mode = {"multipage": "Один PDF", "singles": "Отдельные PDF", "both": "Оба варианта"}[self.mode_var.get()]
+        color = "K100" if p.is_k100 else "CMYK " + "/".join(f"{v:g}" for v in p.ink)
+        self.geometry_summary.set(f"QR Code · {p.side_mm:.2f} × {p.side_mm:.2f} мм · модуль {p.module_mm:.3f} мм · поле {p.white_margin_mm:.2f} мм · {color} · {mode}")
 
-    def append(self, message, replace=False):
-        self.log.configure(state="normal")
-        if replace:
-            self.log.delete("1.0", "end")
-        self.log.insert("end", str(message) + "\n")
-        self.log.see("end")
-        self.log.configure(state="disabled")
+    def remember(self):
+        try:
+            save_preferences(self.preferences_path, self.print_settings, self.mode_var.get())
+        except OSError as exc:
+            self.status_var.set(f"Не удалось сохранить настройки: {exc}")
+        self.update_geometry()
 
     def update_buttons(self):
-        state = "disabled" if self.busy else "normal"
-        for b in self.templates + [self.browse, self.generate]:
-            b.configure(state=state)
-        for b in self.mode_buttons:
-            b.configure(state=state)
-        self.entry.configure(state=state)
-        self.size_box.configure(state=state)
-        self.margin_box.configure(state="disabled" if self.busy else "readonly")
+        for item in self.menus:
+            item.configure(state="disabled" if self.busy else "normal")
+        self.generate.configure(state="normal" if self.input_valid and not self.busy else "disabled")
         self.stop.configure(state="normal" if self.busy and not self.cancel.is_set() else "disabled")
-        self.open.configure(state="normal" if self.last_output else "disabled")
+        self.open.configure(state="normal" if self.last_pdf and not self.busy else "disabled")
+        self.folder_button.configure(state="normal" if self.last_output and not self.busy else "disabled")
+        self.report_button.configure(state="normal" if self.last_report and not self.busy else "disabled")
 
     def choose(self):
-        path = filedialog.askopenfilename(parent=self.root, title="Выберите TXT с QR-номерами",
-                                          filetypes=[("Текстовые файлы", "*.txt"), ("Все файлы", "*.*")])
+        path = filedialog.askopenfilename(parent=self.root, title="База TXT — 12 цифр в строке", filetypes=[("TXT UTF-8", "*.txt"), ("Все файлы", "*.*")])
         if path:
             self.input_var.set(path)
             self.inspect_input()
 
     def inspect_input(self):
+        name = Path(self.input_var.get()).name or "База не выбрана"
+        self.filename.set(name if len(name) <= 65 else name[:30] + "…" + name[-30:])
         try:
             values = load_codes(Path(self.input_var.get()))
-            self.file_count.set(f"Проверено: {len(values):,} кодов. Первый: {values[0]}; последний: {values[-1]}.".replace(",", " "))
+            self.input_valid = True
+            self.file_count.set(f"Проверка пройдена · {len(values):,} кодов · Первый: {values[0]} · Последний: {values[-1]}".replace(",", " "))
+            self.update_buttons()
             return values
         except (ValueError, OSError) as exc:
+            self.input_valid = False
             self.file_count.set(f"Ошибка TXT: {exc}")
+            self.generate.configure(state="disabled")
             return None
 
     def template(self, count):
         try:
-            path = make_template(PROJECT / "output" / "templates", count)
-            self.input_var.set(str(path))
+            self.input_var.set(str(make_template(self.output_root / "templates", count)))
             self.inspect_input()
-            self.status_var.set(f"Создан пример на {count:,} кодов. Можно запускать.".replace(",", " "))
         except (ValueError, OSError) as exc:
-            messagebox.showerror("Не удалось создать TXT", str(exc), parent=self.root)
+            messagebox.showerror("Не удалось создать номера", str(exc), parent=self.root)
+
+    def begin(self):
+        self.cancel = threading.Event()
+        self.busy = True
+        self.started = time.perf_counter()
+        self.current_event = None
+        self.last_output = self.last_pdf = self.last_report = None
+        self.progress["value"] = 0
+        self.result_var.set("Выполняется…")
+        self.update_buttons()
 
     def start(self):
         if self.busy:
@@ -234,90 +234,205 @@ class BatchWindow:
         if numbers is None:
             messagebox.showerror("Проверьте TXT", self.file_count.get(), parent=self.root)
             return
-        try:
-            settings = self.settings()
-        except ValueError as exc:
-            messagebox.showerror("Проверьте размеры", str(exc), parent=self.root)
+        self.remember()
+        self.begin()
+        path, mode, settings = Path(self.input_var.get()), self.mode_var.get(), self.print_settings
+        self.launch(lambda: run_batch(path, self.output_root / "jobs", mode=mode, settings=settings, cancel=self.cancel,
+                    progress=lambda s: self.events.put(("status", s)), events=lambda e: self.events.put(("progress", e))))
+
+    def start_test(self, count):
+        if self.busy:
             return
+        self.begin()
+        self.status_var.set("Проверка ресурсов и допуска к тесту…")
+        def task():
+            from .scientific import run_scientific
+            return run_scientific(self.output_root / "benchmarks", count, cancel=self.cancel,
+                    events=lambda e: self.events.put(("progress", e)),
+                    progress=lambda s: self.events.put(("status", s)), methods=self.selected_engines)
+        self.launch(task)
 
-        self.cancel = threading.Event()
-        self.busy = True
-        self.started = time.perf_counter()
-        self.update_buttons()
-        self.progress.start(15)
-        self.append(f"Запуск: {len(numbers)} кодов, PDF {settings.side_mm:.2f} мм, поле {settings.quiet_modules}.", replace=True)
-        mode = self.mode_var.get()
-        path = Path(self.input_var.get())
-
+    def launch(self, action):
         def work():
             try:
-                folder = run_batch(path, PROJECT / "output" / "jobs", mode=mode, settings=settings,
-                                   cancel=self.cancel, progress=lambda msg: self.events.put(("progress", msg)))
-                self.events.put(("done", folder))
+                self.events.put(("done", Path(action())))
             except Exception as exc:
                 self.events.put(("error", f"{type(exc).__name__}: {exc}"))
-
-        self.worker = threading.Thread(target=work, name="ucode-print-worker", daemon=False)
+        self.worker = threading.Thread(target=work, name="ucode-operator", daemon=False)
         self.worker.start()
 
     def poll(self):
         try:
             while True:
                 kind, value = self.events.get_nowait()
-                if kind == "progress":
+                if kind == "status":
                     self.status_var.set(str(value))
+                elif kind == "progress":
+                    self.current_event = value
+                    self.progress["value"] = value["percent"]
+                    counts = f"{value['done']:,} / {value['total']:,}".replace(",", " ")
+                    percent = f"{value['percent']:.1f}".replace(".", ",")
+                    self.status_var.set(f"{value['stage']} · {counts} · всего {percent}%")
+                    self.speed_var.set(f"Скорость: {value['speed']:.1f} {value.get('unit', 'кодов')}/сек")
                 else:
                     self.busy = False
-                    self.progress.stop()
                     if kind == "done":
-                        self.last_output = Path(value)
-                        report = json.loads((self.last_output / "manifest.json").read_text(encoding="utf-8"))
-                        self.status_var.set(f"{report['status']}: {report['count']} кодов. Нажмите «Показать файлы».")
-                        self.append(human_report(report), replace=True)
-                        self.append(f"\nПапка результата:\n{self.last_output}")
-                        self.elapsed_var.set("Итого: " + format_duration(report.get("seconds", {}).get("total_including_qa")))
-                        if report["status"] not in ("COMPLETE", "LIMITED") and not self.closing:
-                            messagebox.showwarning("Ошибки PDF", "Проверьте ОТЧЁТ.txt и manifest.json", parent=self.root)
+                        self.complete(Path(value))
                     else:
+                        self.result_var.set("Операция остановлена" if "InterruptedError" in str(value) else "ОШИБКА")
                         self.status_var.set(str(value))
-                        self.append(str(value))
-                        if not self.closing:
-                            messagebox.showerror("Ошибка", str(value), parent=self.root)
+                        self.result_details.set("Уже созданные файлы сохранены")
                     self.update_buttons()
         except queue.Empty:
             pass
         if self.busy and self.started is not None:
-            self.elapsed_var.set("Идёт: " + format_duration(time.perf_counter() - self.started))
+            self.elapsed_var.set("Прошло: " + clock_text(time.perf_counter() - self.started))
         if self.closing and not self.busy and (self.worker is None or not self.worker.is_alive()):
             self.root.destroy()
         else:
-            self.root.after(150, self.poll)
+            self.root.after(100, self.poll)
+
+    def complete(self, folder):
+        self.last_output = folder
+        manifest = folder / "manifest.json"
+        if not manifest.exists():
+            self.last_report = folder / "ОТЧЁТ.txt"
+            self.last_pdf = None
+            result = json.loads((folder / "scientific.json").read_text(encoding="utf-8"))
+            self.result_var.set("ТЕСТЫ ЗАВЕРШЕНЫ" if result["status"] == "COMPLETE" else "ТЕСТЫ: " + result["status"])
+            self.result_details.set("Три повтора; генерация и объединение измерены отдельно. Откройте отчёт.")
+            if result["status"] == "COMPLETE":
+                self.progress["value"] = 100
+            return
+        report = json.loads(manifest.read_text(encoding="utf-8"))
+        status, count = report["status"], report["count"]
+        seconds = report.get("seconds", {}).get("total_including_qa", 0)
+        self.elapsed_var.set("Прошло: " + clock_text(seconds))
+        self.last_report = folder / "ОТЧЁТ.txt"
+        output = report.get("files", {}).get("multipage", {}).get("name")
+        self.last_pdf = folder / output if output and status in ("COMPLETE", "LIMITED") else None
+        if self.last_pdf is None and status in ("COMPLETE", "LIMITED"):
+            self.last_pdf = next((folder / "singles").glob("*.pdf"), None)
+        label = {"COMPLETE": "ГОТОВО", "LIMITED": "ПРОВЕРЕНО ЧАСТИЧНО", "CANCELLED": "ОСТАНОВЛЕНО", "INVALID": "ОШИБКА КАЧЕСТВА", "ERROR": "ОШИБКА"}.get(status, status)
+        self.result_var.set(f"{label} · {count:,} кодов · {format_duration(seconds)}".replace(",", " "))
+        files = list(folder.glob("*.pdf")) + list((folder / "singles").glob("*.pdf"))
+        size = sum(p.stat().st_size for p in files)
+        quality = {"COMPLETE": "проверка пройдена", "LIMITED": "без растрового контроля", "INVALID": "ошибка качества",
+                   "CANCELLED": "проверка не завершена", "ERROR": "ошибка"}.get(status, status)
+        self.result_details.set(f"PDF: {len(files):,} · {size / 1024**2:.2f} МиБ · {count / max(seconds, .001):.1f} кодов/сек · {quality}".replace(",", " "))
+        if status == "COMPLETE":
+            self.progress["value"] = 100
+        self.status_var.set("PDF и отчёт сохранены" if status == "COMPLETE" else "Подробности проверки — в отчёте")
 
     def request_cancel(self):
         self.cancel.set()
-        self.status_var.set("Отмена запрошена. Созданные PDF останутся на диске.")
+        self.status_var.set("Остановка запрошена. Созданные файлы сохраняются.")
         self.update_buttons()
 
+    def use_k100(self):
+        self.print_settings = dataclasses.replace(self.print_settings, ink=(0, 0, 0, 100))
+        self.remember()
+
+    def geometry_dialog(self, by_module=False):
+        window = tk.Toplevel(self.root)
+        window.title("Размер модуля" if by_module else "Размер PDF и белое поле")
+        window.transient(self.root)
+        frame = ttk.Frame(window, padding=18)
+        frame.pack(fill="both", expand=True)
+        value = tk.StringVar(value=f"{self.print_settings.module_mm if by_module else self.print_settings.side_mm:g}")
+        quiet = tk.StringVar(value=str(self.print_settings.quiet_modules))
+        ttk.Label(frame, text="Модуль, мм:" if by_module else "Сторона PDF с полями, мм:").grid(row=0, column=0, sticky="w", pady=6)
+        ttk.Entry(frame, textvariable=value, width=14).grid(row=0, column=1, padx=10)
+        ttk.Label(frame, text="Белое поле, модулей (4–20):").grid(row=1, column=0, sticky="w", pady=6)
+        ttk.Entry(frame, textvariable=quiet, width=14).grid(row=1, column=1, padx=10)
+        preview = tk.StringVar()
+        def calculate(*_):
+            try:
+                number, q = float(value.get().replace(",", ".")), int(quiet.get())
+                cfg = PrintSettings(number, q, self.print_settings.ink) if by_module else PrintSettings.from_total_side(number, q, self.print_settings.ink)
+                preview.set(f"PDF {cfg.side_mm:.2f} мм · модуль {cfg.module_mm:.3f} мм · поле {cfg.white_margin_mm:.2f} мм")
+                return cfg
+            except ValueError as exc:
+                preview.set(str(exc))
+                return None
+        value.trace_add("write", calculate)
+        quiet.trace_add("write", calculate)
+        ttk.Label(frame, textvariable=preview, wraplength=460).grid(row=2, column=0, columnspan=2, pady=12)
+        def apply():
+            cfg = calculate()
+            if cfg is not None:
+                self.print_settings = cfg
+                self.remember()
+                window.destroy()
+        calculate()
+        ttk.Button(frame, text="Применить", command=apply).grid(row=3, column=0, columnspan=2)
+
+    def color_dialog(self):
+        window = tk.Toplevel(self.root)
+        window.title("Цвет CMYK, проценты")
+        window.transient(self.root)
+        frame = ttk.Frame(window, padding=18)
+        frame.pack()
+        variables = []
+        for index, (name, component) in enumerate(zip("CMYK", self.print_settings.ink)):
+            ttk.Label(frame, text=name + " (0–100%)").grid(row=index, column=0, pady=4)
+            var = tk.StringVar(value=f"{component:g}")
+            variables.append(var)
+            ttk.Entry(frame, textvariable=var, width=12).grid(row=index, column=1, padx=12)
+        warning = tk.StringVar(value="K100: 0 / 0 / 0 / 100. Цветной PDF не считается однокрасочным.")
+        ttk.Label(frame, textvariable=warning, wraplength=370).grid(row=4, column=0, columnspan=2, pady=10)
+        def apply():
+            try:
+                ink = tuple(float(v.get().replace(",", ".")) for v in variables)
+                self.print_settings = dataclasses.replace(self.print_settings, ink=ink)
+                self.remember()
+                window.destroy()
+            except ValueError as exc:
+                warning.set(str(exc))
+        ttk.Button(frame, text="Применить", command=apply).grid(row=5, column=0, columnspan=2)
+
+    def performance_dialog(self):
+        from .mergers import available_adapters
+        window = tk.Toplevel(self.root)
+        window.title("Реальные параметры тестов")
+        frame = ttk.Frame(window, padding=16)
+        frame.pack()
+        ttk.Label(frame, text=f"Один рабочий процесс · логических CPU: {os.cpu_count()}\nДоступность движков определяется перед запуском.\nНедоступные получают SKIPPED; установки нет.").pack(anchor="w", pady=(0, 10))
+        options = []
+        for adapter in available_adapters():
+            available = adapter.probe()["available"]
+            var = tk.BooleanVar(value=available and (self.selected_engines is None or adapter.name in self.selected_engines))
+            options.append((adapter.name, var))
+            ttk.Checkbutton(frame, text=adapter.name + ("" if available else " — недоступен"), variable=var,
+                            state="normal" if available else "disabled").pack(anchor="w")
+        def apply():
+            self.selected_engines = [name for name, var in options if var.get()]
+            window.destroy()
+        ttk.Button(frame, text="Применить", command=apply).pack(pady=8)
+
+    def open_path(self, path):
+        path = Path(path)
+        if not path.exists():
+            messagebox.showinfo("uCode", "Файлы ещё не созданы", parent=self.root)
+        elif hasattr(os, "startfile"):
+            os.startfile(str(path.resolve()))
+        else:
+            webbrowser.open(path.resolve().as_uri())
+
+    def open_pdf(self):
+        if self.last_pdf:
+            self.open_path(self.last_pdf)
+
     def open_result(self):
-        if self.last_output and hasattr(os, "startfile"):
-            os.startfile(str(self.last_output))
-        elif self.last_output:
-            messagebox.showinfo("Каталог результата", str(self.last_output), parent=self.root)
+        if self.last_output:
+            self.open_path(self.last_output)
+
+    def open_report(self):
+        if self.last_report:
+            self.open_path(self.last_report)
 
     def show_help(self):
-        window = tk.Toplevel(self.root)
-        window.title("uCode — Инструкция и требования к печати")
-        window.geometry("760x620")
-        window.transient(self.root)
-        body = ttk.Frame(window, padding=14)
-        body.pack(fill="both", expand=True)
-        content = tk.Text(body, wrap="word", padx=12, pady=12, font=("Segoe UI", 10))
-        content.pack(side="left", fill="both", expand=True)
-        scrollbar = ttk.Scrollbar(body, command=content.yview)
-        scrollbar.pack(side="right", fill="y")
-        content.configure(yscrollcommand=scrollbar.set)
-        content.insert("1.0", HELP_TEXT)
-        content.configure(state="disabled")
+        messagebox.showinfo("uCode — Справка", HELP_TEXT, parent=self.root)
 
     def close(self):
         if self.busy or (self.worker is not None and self.worker.is_alive()):
@@ -328,13 +443,14 @@ class BatchWindow:
 
 
 def open_window(parent):
-    window = tk.Toplevel(parent)
-    return BatchWindow(window)
+    return BatchWindow(tk.Toplevel(parent))
 
 
 def main():
     root = tk.Tk()
+    root.withdraw()
     controller = BatchWindow(root)
+    root.deiconify()
     root.mainloop()
     del controller
 

@@ -17,7 +17,7 @@ class ExternalExtraTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory(prefix="ucode external ")
         self.addCleanup(self.temp.cleanup)
-        self.root = Path(self.temp.name)
+        self.root = Path(self.temp.name).resolve()
         self.first, self.second = self.root / "02.pdf", self.root / "01.pdf"
         self.first.write_bytes(b"input two")
         self.second.write_bytes(b"input one")

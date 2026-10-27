@@ -75,8 +75,9 @@ def _page_matrix(page, reader, frame: QRFrame, config: Experiment):
                 raise ValueError("Invalid rectangle")
             rectangles.append(tuple(float(v) for v in operands))
         elif operator in (b"f", b"f*"):
-            if fill != (0.0, 0.0, 0.0, 1.0):
-                raise ValueError("Painted fill must be DeviceCMYK C0 M0 Y0 K100")
+            expected_ink = tuple(v / 100 for v in getattr(config, "ink", (0, 0, 0, 100)))
+            if fill is None or any(abs(a - b) > 0.000001 for a, b in zip(fill, expected_ink)):
+                raise ValueError(f"Painted fill must be the configured DeviceCMYK {expected_ink}")
             if not rectangles:
                 raise ValueError("Empty/unsupported painted path")
             if in_text:
@@ -143,7 +144,8 @@ def _decode_image(image_path: Path, config: Experiment, size=21):
                     round((row + 0.75) * image.height / cells),
                 )
                 low, high = image.crop(box).getextrema()
-                if high < 90:
+                dark_limit = 90 if getattr(config, "ink", (0, 0, 0, 100)) == (0, 0, 0, 100) else 230
+                if high < dark_limit:
                     values.append(True)
                 elif low > 230:
                     values.append(False)
@@ -159,7 +161,8 @@ def _decode_image(image_path: Path, config: Experiment, size=21):
         return decode_numeric_v1_m(matrix)
 
 
-def check_pdf(path: Path, frames: list[QRFrame], config: Experiment, *, render_samples=True) -> dict:
+def check_pdf(path: Path, frames: list[QRFrame], config: Experiment, *, render_samples=True,
+              on_progress=None, cancel=None) -> dict:
     """Check every vector page and independently decode rendered control pages.
 
     Raster decoding is required for PASS by default. `render_samples=False` is
@@ -182,7 +185,11 @@ def check_pdf(path: Path, frames: list[QRFrame], config: Experiment, *, render_s
         if len(reader.pages) != len(frames):
             raise ValueError(f"Page count {len(reader.pages)} != expected {len(frames)}")
         digest = hashlib.sha256()
+        control_indices = sorted({0, len(frames) // 2, len(frames) - 1})
+        work_total = len(frames) + (len(control_indices) if render_samples else 0)
         for index, (page, frame) in enumerate(zip(reader.pages, frames), 1):
+            if cancel is not None and cancel.is_set():
+                raise InterruptedError("Проверка PDF остановлена")
             try:
                 if frame.version != 1 or frame.error != "M" or frame.size != 21:
                     raise ValueError("Expected frame is outside QR V1/M contract")
@@ -191,6 +198,8 @@ def check_pdf(path: Path, frames: list[QRFrame], config: Experiment, *, render_s
             except Exception as exc:
                 result["errors"].append(f"Page {index}: {type(exc).__name__}: {exc}")
             result["pages_checked"] += 1
+            if on_progress:
+                on_progress(index, work_total)
         result["decoded_payload_sha256"] = digest.hexdigest()
         if render_samples and not result["errors"]:
             renderer = shutil.which("pdftoppm")
@@ -198,7 +207,9 @@ def check_pdf(path: Path, frames: list[QRFrame], config: Experiment, *, render_s
                 raise ValueError("pdftoppm unavailable: rendered control decoding cannot be verified")
             render_dir = path.parent / f"qa_{path.stem}_{uuid.uuid4().hex[:10]}"
             render_dir.mkdir(exist_ok=False)
-            for index in sorted({0, len(frames) // 2, len(frames) - 1}):
+            for sample_index, index in enumerate(control_indices, 1):
+                if cancel is not None and cancel.is_set():
+                    raise InterruptedError("Проверка образцов остановлена")
                 prefix = render_dir / f"page_{index + 1:04d}"
                 completed = subprocess.run(
                     [renderer, "-f", str(index + 1), "-l", str(index + 1), "-singlefile",
@@ -213,7 +224,11 @@ def check_pdf(path: Path, frames: list[QRFrame], config: Experiment, *, render_s
                 if payload != frames[index].payload:
                     raise ValueError(f"Rendered page {index + 1}: decoded payload does not match TXT")
                 result["decoded_samples"].append({"page": index + 1, "payload": payload, "png": str(png.resolve())})
+                if on_progress:
+                    on_progress(len(frames) + sample_index, work_total)
         result["status"] = "PASS" if not result["errors"] else "FAIL"
+    except InterruptedError:
+        raise
     except Exception as exc:
         result["errors"].append(f"{type(exc).__name__}: {exc}")
     return result
