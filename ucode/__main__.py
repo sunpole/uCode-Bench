@@ -22,16 +22,22 @@ def main(argv=None):
             print(json.dumps(result, ensure_ascii=False, indent=2))
             return 0 if result["core_ready"] else 2
         if args.command == "gui":
-            from .gui import main as gui_main
-            gui_main()
+            try:
+                from .batch_gui import main as gui_main
+                gui_main()
+            except Exception as exc:
+                if sys.platform == "win32":
+                    import ctypes
+                    ctypes.windll.user32.MessageBoxW(None, f"Не удалось открыть uCode: {exc}\nПроверьте Python/Tk или запустите Setup-PDF.cmd.", "uCode", 0x10)
+                else:
+                    print(f"uCode GUI: {exc}", file=sys.stderr)
+                return 1
             return 0
         if args.command == "suite":
             from .suite import main as suite_main
             return suite_main(["--output", str(args.output.parent / "comparisons")])
         if args.command == "batch":
-            from .batch_gui import main as batch_main
-            batch_main()
-            return 0
+            return main(["gui"])
         if args.command == "template":
             from .batch import make_template
             root = args.output if args.output != Path(__file__).resolve().parent.parent / "output" / "runs" else Path(__file__).resolve().parent.parent / "output" / "templates"
@@ -53,10 +59,10 @@ def main(argv=None):
             print(directory)
             return 0
         methods = None
-        if config.count == 1000:
+        if config.count in (1000, 10000):
             if not args.qualifying_report:
-                parser.error("--count 1000 требует --qualifying-report от завершённого этапа 200")
-            methods = load_qualifying_methods(args.qualifying_report)
+                parser.error(f"--count {config.count} требует --qualifying-report от предыдущего проверенного этапа")
+            methods = load_qualifying_methods(args.qualifying_report, target_count=config.count)
         directory = run_experiment(args.output, config, progress=lambda message: print(message, flush=True), allowed_methods=methods)
         result = json.loads((directory / "report.json").read_text(encoding="utf-8"))
         print(directory / "report.html")

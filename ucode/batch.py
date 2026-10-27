@@ -17,6 +17,9 @@ from .print_settings import PrintSettings, human_report
 from .data import write_numbers
 from .pdf import write_pdf
 from .qr import encode_numbers
+from .progress import ProgressTracker
+from .resources import check_resources
+from . import __version__
 
 SIZES = (200, 1000, 10000)
 MAX_LINES = 10000
@@ -57,8 +60,12 @@ def make_template(output_root: Path, count: int, *, start: int = FIRST_NUMBER) -
 def load_codes(path: Path, *, max_lines: int = MAX_LINES) -> list[str]:
     """Accept UTF-8/UTF-8 BOM, LF/CRLF; reject blanks and non-numeric lines."""
     path = Path(path)
+    with path.open("rb") as stream:
+        raw_bytes = stream.read(2 * 1024 * 1024 + 1)
+    if len(raw_bytes) > 2 * 1024 * 1024:
+        raise ValueError("TXT больше 2 МиБ; максимум 10 000 строк")
     try:
-        raw = path.read_text(encoding="utf-8-sig")
+        raw = raw_bytes.decode("utf-8-sig")
     except UnicodeError as exc:
         raise ValueError("TXT должен быть сохранён в UTF-8") from exc
     codes = raw.splitlines()
@@ -82,7 +89,7 @@ def _sha256(path: Path) -> str:
 
 def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
               settings: PrintSettings | None = None,
-              progress: Callable[[str], None] | None = None, cancel=None) -> Path:
+              progress: Callable[[str], None] | None = None, cancel=None, events=None) -> Path:
     """Create actual PDF files and QA evidence, without overwriting old runs.
 
     Encoding and PDF writing are measured separately from quality checks.
@@ -97,20 +104,32 @@ def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
     if not isinstance(config, PrintSettings):
         raise ValueError("Ожидаются безопасные настройки PrintSettings")
     _check_cancel(cancel)
+    resource_info = check_resources(output_root, len(numbers))
     directory = _make_directory(output_root, f"pdf-{len(numbers)}")
+    raster = shutil.which("pdftoppm") is not None
+    copies = 2 if mode == "both" else 1
+    samples = len({0, len(numbers) // 2, len(numbers) - 1}) if raster else 0
+    tracker = ProgressTracker(len(numbers) * (1 + 2 * copies) + samples * copies + 1, events)
+    base = 0
     report = {
         "schema_version": 1, "kind": "txt-batch-pdf", "status": "RUNNING",
+        "software_version": __version__,
         "mode": mode, "count": len(numbers), "input_filename": Path(input_txt).name,
         "first_code": numbers[0], "last_code": numbers[-1],
         "print": {"symbology": "QR Code", "version": 1, "ecc": "M", "numeric_digits": 12,
                   **config.to_dict(),
-                  "colorspace": "DeviceCMYK", "ink": [0, 0, 0, 100],
+                  "colorspace": "DeviceCMYK",
                   "vector": True, "pdf_x_certified": False},
+        "resources": resource_info,
         "files": {}, "seconds": {}, "qa": {}, "errors": [],
     }
     started = time.perf_counter()
 
     def save_report():
+        actual_singles = list((directory / "singles").glob("*.pdf"))
+        if actual_singles:
+            report["files"]["singles"] = {"directory": "singles", "count": len(actual_singles),
+                                             "bytes": sum(p.stat().st_size for p in actual_singles)}
         report["seconds"]["total_including_qa"] = round(time.perf_counter() - started, 6)
         (directory / "manifest.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         (directory / "ОТЧЁТ.txt").write_text(human_report(report), encoding="utf-8")
@@ -122,8 +141,10 @@ def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
         report["files"]["txt"] = {"name": txt_path.name, "sha256": _sha256(txt_path)}
         progress(f"Читаем {len(numbers)} строк TXT и создаём матрицы QR")
         t = time.perf_counter()
-        frames = encode_numbers(numbers)
+        frames = encode_numbers(numbers, cancel=cancel,
+                                on_progress=lambda done, total: tracker.step("Кодирование QR", done, total, base))
         report["seconds"]["qr_encoding"] = round(time.perf_counter() - t, 6)
+        base += len(numbers)
         _check_cancel(cancel)
 
         singles = []
@@ -138,10 +159,12 @@ def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
                 path = folder / f"{i:0{digits}d}_{frame.payload}.pdf"
                 write_pdf([frame], path, config)
                 singles.append(path)
+                tracker.step("Отдельные PDF", i, len(frames), base)
                 if i == 1 or i % 100 == 0 or i == len(frames):
                     progress(f"Отдельные PDF: {i}/{len(frames)}")
             report["seconds"]["write_singles"] = round(time.perf_counter() - t, 6)
             report["files"]["singles"] = {"directory": "singles", "count": len(singles)}
+            base += len(frames)
 
         combined = None
         if mode in ("both", "multipage"):
@@ -149,18 +172,21 @@ def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
             progress(f"Запись одного PDF на {len(frames)} страниц")
             t = time.perf_counter()
             combined = directory / f"all-{len(frames)}-pages.pdf"
-            write_pdf(frames, combined, config)
+            write_pdf(frames, combined, config, cancel=cancel,
+                      on_progress=lambda done, total: tracker.step("Создание PDF", done, total, base))
             report["seconds"]["write_multipage"] = round(time.perf_counter() - t, 6)
             report["files"]["multipage"] = {"name": combined.name, "bytes": combined.stat().st_size,
                                                "sha256": _sha256(combined), "pages": len(frames)}
+            base += len(frames)
 
         from .quality import check_pdf
-        raster = shutil.which("pdftoppm") is not None
         progress("Независимая проверка всех страниц: матрицы, размеры и CMYK")
         qa_start = time.perf_counter()
         if combined is not None:
             _check_cancel(cancel)
-            report["qa"]["multipage"] = check_pdf(combined, frames, config, render_samples=raster)
+            report["qa"]["multipage"] = check_pdf(combined, frames, config, render_samples=raster, cancel=cancel,
+                on_progress=lambda done, total: tracker.step("Проверка PDF", done, total, base))
+            base += len(frames) + samples
         if singles:
             sample_indices = sorted({0, len(frames) // 2, len(frames) - 1})
             failures = []
@@ -168,7 +194,8 @@ def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
             for i, (path, frame) in enumerate(zip(singles, frames), 1):
                 _check_cancel(cancel)
                 # All files structural; only 3 independently rendered samples.
-                result = check_pdf(path, [frame], config, render_samples=raster and (i - 1 in sample_indices))
+                result = check_pdf(path, [frame], config, render_samples=raster and (i - 1 in sample_indices), cancel=cancel)
+                tracker.step("Проверка отдельных PDF", i, len(singles), base)
                 if result["status"] != "PASS":
                     failed_count += 1
                     if len(failures) < 20:
@@ -192,4 +219,6 @@ def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
         progress(f"{report['status']}: {exc}; файлы сохранены: {directory}")
     finally:
         save_report()
+    if report["status"] == "COMPLETE":
+        tracker.finish(len(numbers))
     return directory
