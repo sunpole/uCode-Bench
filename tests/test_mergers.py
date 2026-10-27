@@ -58,7 +58,7 @@ class MergerContractTests(unittest.TestCase):
 
     def test_qpdf_uses_utf8_argument_stream_in_requested_order(self):
         with tempfile.TemporaryDirectory(prefix="ucode merge ") as tmp:
-            directory = Path(tmp)
+            directory = Path(tmp).resolve()
             first, second, target = (directory / name for name in ("02.pdf", "01.pdf", "output.pdf"))
             first.write_bytes(b"a")
             second.write_bytes(b"b")
@@ -76,7 +76,7 @@ class MergerContractTests(unittest.TestCase):
 
     def test_mutool_uses_no_shell_and_explicit_output(self):
         with tempfile.TemporaryDirectory(prefix="ucode merge ") as tmp:
-            directory = Path(tmp)
+            directory = Path(tmp).resolve()
             source, target = directory / "input file.pdf", directory / "output.pdf"
             source.write_bytes(b"input")
 
