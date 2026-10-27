@@ -13,6 +13,18 @@ from ucode.batch import run_batch
 
 
 class V02Tests(unittest.TestCase):
+    def test_malformed_preferences_fall_back_without_overwriting_file(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "settings.json"
+            for raw in ('[]', 'null', '{', '{"schema_version": 1, "mode": "both", "settings": []}'):
+                with self.subTest(raw=raw):
+                    path.write_text(raw, encoding="utf-8")
+                    settings, mode, warning = load_preferences(path)
+                    self.assertEqual(settings, PrintSettings())
+                    self.assertEqual(mode, "multipage")
+                    self.assertTrue(warning)
+                    self.assertEqual(path.read_text(encoding="utf-8"), raw)
+
     def test_only_qr_is_available_and_future_modules_fail_explicitly(self):
         self.assertEqual([g.key for g in generators() if g.available], ["qr"])
         with self.assertRaises(ValueError):

@@ -12,7 +12,7 @@
 
 ## Локальные свежие проверки
 
-База до изменений: 83 теста, из них 1 SKIPPED (нет собранного стороннего helper). После реализации: 98 тестов: 97 PASS, 1 SKIPPED. Лог `output/v02-tests-final-2.log`. Отдельно проверены PowerShell AST и детектор missing / bad import / valid import при ErrorActionPreference=Stop.
+База до изменений: 83 теста, из них 1 SKIPPED (нет собранного стороннего helper). После реализации: 99 тестов: 98 PASS, 1 SKIPPED. Лог `output/v02-tests-final-3.log`. Отдельно проверены PowerShell AST и детектор missing / bad import / valid import при ErrorActionPreference=Stop.
 
 Реальные PDF с полной независимой QA и растровым декодированием 3 образцов, одна производственная генерация на размер:
 
