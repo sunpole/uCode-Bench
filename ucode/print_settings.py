@@ -116,6 +116,15 @@ def human_report(report: dict) -> str:
         f"Проверка качества: {format_duration(values.get('quality_checks'))}",
     ]
     elapsed = values.get("total_including_qa")
+    generation = report.get("generation")
+    if generation:
+        rows.extend(["", "РАСЧЁТ ТИРАЖА",
+                     f"Строк в TXT: {generation['input_records']}; уникальных значений: {generation['unique_values']}",
+                     "Повторы TXT: " + ("только уникальные" if generation['duplicate_policy'] == "unique" else "сохранены все строки"),
+                     f"{generation['selected_records']} × {generation['copies_per_value']} экземпляров = {generation['total_codes']} кодов",
+                     f"Подготовлено уникальных матриц: {generation.get('encoded_values', 0)}",
+                     f"Страниц во всех записанных PDF: {generation.get('pdf_pages_written', 0)}",
+                     "Режим «оба» сохраняет один тираж в двух видах PDF; число кодов не удваивается.", ""])
     if elapsed and elapsed > 0:
         rows.append(f"Средняя скорость всей операции: {report.get('count', 0)/elapsed:.2f} кодов/сек".replace(".", ","))
     rows.extend(["", "ПРОВЕРКА",

@@ -82,7 +82,7 @@ jobs:
       - name: Full regression with actual Tk (Linux)
         if: runner.os == 'Linux'
         run: xvfb-run -a python -c "import faulthandler,unittest; faulthandler.dump_traceback_later(120, exit=True); suite=unittest.defaultTestLoader.discover('tests'); result=unittest.TextTestRunner(verbosity=2).run(suite); raise SystemExit(not result.wasSuccessful())"
-      - name: Small real PDF smoke (2 and 7 values only)
+      - name: Small real PDF smoke (up to 7 pages, including copies)
         run: python scripts/verify_smoke.py
       - name: Preserve measured PDF verification
         if: always()

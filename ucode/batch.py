@@ -17,6 +17,7 @@ from .print_settings import human_report
 from .data import write_numbers
 from .engines import get_engine
 from .generators import get_generator
+from .generation_plan import build_plan
 from .progress import ProgressTracker
 from .resources import check_resources
 from . import __version__
@@ -48,8 +49,8 @@ def _check_cancel(cancel) -> None:
 
 def make_template(output_root: Path, count: int, *, start: int = FIRST_NUMBER) -> Path:
     """Create a non-overwriting TXT with ordered 12-digit identifiers."""
-    if count not in SIZES:
-        raise ValueError("Поддерживаемые шаблоны: 200, 1000 и 10000 строк")
+    if isinstance(count, bool) or not isinstance(count, int) or not 1 <= count <= MAX_LINES:
+        raise ValueError("Количество номеров: целое число от 1 до 10 000")
     if isinstance(start, bool) or not isinstance(start, int) or start < 0 or len(str(start)) != 12 or len(str(start + count - 1)) != 12:
         raise ValueError("Начальное значение и последний номер должны содержать 12 цифр")
     target = _make_directory(output_root, f"txt-{count}") / f"codes-{count}.txt"
@@ -57,27 +58,44 @@ def make_template(output_root: Path, count: int, *, start: int = FIRST_NUMBER) -
     return target
 
 
-def load_codes(path: Path, *, max_lines: int = MAX_LINES, generator="qr") -> list[str]:
-    """Accept UTF-8/UTF-8 BOM, LF/CRLF; reject blanks and non-numeric lines."""
-    path = Path(path)
+def iter_codes(path: Path, *, max_lines=MAX_LINES, max_bytes=2 * 1024 * 1024, generator="qr", cancel=None):
+    """Bounded line reader. None limits enable a caller-owned streaming scan.
+
+    Production still enforces 10000 total pages. No whole-file read is needed
+    for validation; a single source line cannot exceed 4096 bytes.
+    """
     code_module = get_generator(generator)
-    with path.open("rb") as stream:
-        raw_bytes = stream.read(2 * 1024 * 1024 + 1)
-    if len(raw_bytes) > 2 * 1024 * 1024:
-        raise ValueError("TXT больше 2 МиБ; максимум 10 000 строк")
-    try:
-        raw = raw_bytes.decode("utf-8-sig")
-    except UnicodeError as exc:
-        raise ValueError("TXT должен быть сохранён в UTF-8") from exc
-    codes = raw.splitlines()
-    if not codes:
+    if max_bytes is not None and Path(path).stat().st_size > max_bytes:
+        raise ValueError("TXT превышает допустимый размер; для большой базы нужен потоковый запуск")
+    seen_bytes = index = 0
+    with Path(path).open("rb") as stream:
+        while True:
+            _check_cancel(cancel)
+            raw = stream.readline(4097)
+            if not raw:
+                break
+            index += 1
+            seen_bytes += len(raw)
+            if max_bytes is not None and seen_bytes > max_bytes:
+                raise ValueError("TXT превышает допустимый размер")
+            if len(raw) > 4096:
+                raise ValueError(f"Строка {index}: превышена допустимая длина")
+            if max_lines is not None and index > max_lines:
+                raise ValueError(f"Слишком много строк: максимум {max_lines}")
+            try:
+                code = raw.removesuffix(b"\n").removesuffix(b"\r").decode("utf-8-sig" if index == 1 else "utf-8")
+            except UnicodeError as exc:
+                raise ValueError("TXT должен быть сохранён в UTF-8") from exc
+            if not code_module.validate(code):
+                raise ValueError(f"Строка {index}: {code_module.input_description}")
+            yield code
+    if index == 0:
         raise ValueError("TXT пустой: ожидается один код в каждой строке")
-    if len(codes) > max_lines:
-        raise ValueError(f"Слишком много строк: {len(codes)}; максимум {max_lines}")
-    for index, code in enumerate(codes, 1):
-        if not code_module.validate(code):
-            raise ValueError(f"Строка {index}: {code_module.input_description}")
-    return codes
+
+
+def load_codes(path: Path, *, max_lines: int = MAX_LINES, generator="qr", cancel=None) -> list[str]:
+    """Compatible bounded list API; iter_codes supports incremental validation."""
+    return list(iter_codes(path, max_lines=max_lines, generator=generator, cancel=cancel))
 
 
 def _sha256(path: Path) -> str:
@@ -91,7 +109,7 @@ def _sha256(path: Path) -> str:
 def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
               settings=None,
               progress: Callable[[str], None] | None = None, cancel=None, events=None,
-              generator="qr", engine="reportlab") -> Path:
+              generator="qr", engine="reportlab", copies_per_value=1, duplicate_policy="preserve") -> Path:
     """Create actual PDF files and QA evidence, without overwriting old runs.
 
     Encoding and PDF writing are measured separately from quality checks.
@@ -106,22 +124,27 @@ def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
     print_metadata = code_module.describe_settings(config)
     selected_engine = get_engine(engine, generator=generator, mode=mode, colorspace=print_metadata["colorspace"])
     engine_metadata = selected_engine.info().to_dict()
-    numbers = load_codes(input_txt, generator=generator)
+    source_numbers = load_codes(input_txt, generator=generator, cancel=cancel)
+    plan = build_plan(source_numbers, copies_per_value=copies_per_value, duplicate_policy=duplicate_policy,
+                      types=(generator,))
     progress = progress or (lambda message: None)
     _check_cancel(cancel)
-    resource_info = check_resources(output_root, len(numbers))
+    resource_info = check_resources(output_root, plan.total_codes)
+    numbers = list(plan.iter_values())
+    encoding_numbers = list(dict.fromkeys(plan.selected_values))
     selected_engine.prepare()
     directory = _make_directory(output_root, f"pdf-{len(numbers)}")
     raster = shutil.which("pdftoppm") is not None
     copies = 2 if mode == "both" else 1
     samples = len({0, len(numbers) // 2, len(numbers) - 1}) if raster else 0
-    tracker = ProgressTracker(len(numbers) * (1 + 2 * copies) + samples * copies + 1, events)
+    tracker = ProgressTracker(len(encoding_numbers) + len(numbers) * 2 * copies + samples * copies + 1, events)
     base = 0
     report = {
         "schema_version": 1, "kind": "txt-batch-pdf", "status": "RUNNING",
         "software_version": __version__,
         "generator": generator, "engine": engine_metadata, "pipeline_contract": 1,
         "mode": mode, "count": len(numbers), "input_filename": Path(input_txt).name,
+        "generation": {**plan.to_dict(), "encoding_values_planned": len(encoding_numbers), "encoded_values": 0},
         "first_code": numbers[0], "last_code": numbers[-1],
         "print": print_metadata,
         "resources": resource_info,
@@ -134,6 +157,7 @@ def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
         if actual_singles:
             report["files"]["singles"] = {"directory": "singles", "count": len(actual_singles),
                                              "bytes": sum(p.stat().st_size for p in actual_singles)}
+        report["generation"]["pdf_pages_written"] = len(actual_singles) + report["files"].get("multipage", {}).get("pages", 0)
         report["seconds"]["total_including_qa"] = round(time.perf_counter() - started, 6)
         (directory / "manifest.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         (directory / "ОТЧЁТ.txt").write_text(human_report(report), encoding="utf-8")
@@ -141,20 +165,26 @@ def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
     try:
         _check_cancel(cancel)
         txt_path = directory / "codes.txt"
+        original = directory / "source-codes.txt"
+        write_numbers(source_numbers, original)
+        report["files"]["source_txt"] = {"name": original.name, "sha256": _sha256(original)}
         write_numbers(numbers, txt_path)
         report["files"]["txt"] = {"name": txt_path.name, "sha256": _sha256(txt_path)}
         progress(f"Читаем {len(numbers)} строк TXT и создаём {code_module.name}")
-        tracker.step(f"Кодирование {code_module.progress_name}", 0, len(numbers), base, force=True)
+        tracker.step(f"Кодирование {code_module.progress_name}", 0, len(encoding_numbers), base, force=True)
         t = time.perf_counter()
-        frames = selected_engine.encode(numbers, cancel=cancel,
+        encoded = selected_engine.encode(encoding_numbers, cancel=cancel,
             on_progress=lambda done, total: tracker.step(f"Кодирование {code_module.progress_name}", done, total, base))
-        if len(frames) != len(numbers) or any(frame.payload != number for frame, number in zip(frames, numbers)):
+        if len(encoded) != len(encoding_numbers) or any(frame.payload != number for frame, number in zip(encoded, encoding_numbers)):
             raise ValueError("Движок изменил количество или порядок значений относительно TXT")
+        cache = {frame.payload: frame for frame in encoded}
+        report["generation"]["encoded_values"] = len(encoded)
+        frames = [cache[number] for number in numbers]
         report["seconds"]["code_encoding"] = round(time.perf_counter() - t, 6)
         legacy_key = getattr(code_module, "legacy_timing_key", None)
         if legacy_key:
             report["seconds"][legacy_key] = report["seconds"]["code_encoding"]
-        base += len(numbers)
+        base += len(encoding_numbers)
         _check_cancel(cancel)
 
         singles = []
