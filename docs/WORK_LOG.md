@@ -99,6 +99,16 @@ Direct PDF: 233 480 байт, peak Working Set 34 729 984 байт максим�
 
 Создан новый публичный `https://github.com/sunpole/uCode-Bench`, исходный commit отправлен в main. Старый `sunpole/uCode` не изменялся. Публикация Release и окончательная сверка следуют отдельным шагом; первичный `.local-state/.../final-status.json` сохраняет исходную ошибку pipeline, не подменяется успешным статусом.
 
+### Завершение и readback публикации
+
+Release опубликован и проверен: https://github.com/sunpole/uCode-Bench/releases/tag/results-200-1000-20261027-141751-154b079e . Тег создан на d943aa2c803c2d451019c42177d1d8fb35738a65; последующие изменения — документация доставки. Проверены GitHub visibility=PUBLIC и совпадение локального/remote main commit на момент readback.
+
+SHA-256 локального ZIP и digest GitHub asset совпали: `6940a2257333ee5fad250cf44603f53f2a05931687e84d4c89fefc8890c03c0e`. Размер с обеих сторон 34 621 964 байта. ZIP CRC testzip PASS: 4085 записей, **3669 PDF**, **216 PNG** контрольного QA. Все локальные исходные данные и сырые отчёты сохранены; публичный ZIP содержит очищенную переносимую копию. 200 и 1000 имеют COMPLETE, по 11 успешных методов с direct включительно, по три QA PASS на каждый успешный метод. Этапы вместе с подготовкой/QA: 84,0498 с и 298,0472 с; suite elapsed 382,41 с.
+
+HTML comparison визуально открыт в in-app browser: обе размерности, PASS/INVALID/SKIPPED, раздельная генерация, реальные ссылки на PDF и CPU/RAM отображаются. Последний QR из 1000 mutool визуально проверен. Временные tab/server закрыты. После правки передачи subprocess diagnostics выполнены 5 pipeline tests — PASS; базовые 74 теста уже прошли после установки без пропусков, измеряемый код с тех пор не менялся.
+
+Итоговый минимум median среди успешных merger adapters: mutool **0,182746 с / 0,814974 с** на 200/1000. Direct **1,119775 с / 5,516372 с** отдельно. Все численные значения — из сохранённого comparison.json; прежнее приблизительное обновление 0,811 с для mutool/1000 уточняется точным замером 0,814974 с.
+
 ## Expanded comparison 2026-10-27
 
 Local report: `output/comparisons/suite-200-1000-20261027-141751-154b079e/comparison.html`.
