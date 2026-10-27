@@ -9,6 +9,8 @@ on:
       - "ucode/gui.py"
       - "ucode/pdf.py"
       - "tests/test_batch.py"
+      - "tests/test_print_settings.py"
+      - "ucode/print_settings.py"
       - "pyproject.toml"
       - "scripts/setup_batch.ps1"
       - "Setup-PDF.cmd"
@@ -45,3 +47,5 @@ jobs:
           if ($parseErrors.Count -gt 0) { throw ($parseErrors | Out-String) }
       - name: TXT import / CMYK PDF regression tests
         run: python -m unittest discover -s tests -p test_batch.py -v
+      - name: Custom sizes, QA and user-readable timings
+        run: python -m unittest discover -s tests -p test_print_settings.py -v
