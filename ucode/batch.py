@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable
 
-from .config import Experiment
+from .print_settings import PrintSettings, human_report
 from .data import write_numbers
 from .pdf import write_pdf
 from .qr import encode_numbers
@@ -81,6 +81,7 @@ def _sha256(path: Path) -> str:
 
 
 def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
+              settings: PrintSettings | None = None,
               progress: Callable[[str], None] | None = None, cancel=None) -> Path:
     """Create actual PDF files and QA evidence, without overwriting old runs.
 
@@ -92,7 +93,9 @@ def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
         raise ValueError(f"Формат должен быть одним из: {', '.join(FORMATS)}")
     numbers = load_codes(input_txt)
     progress = progress or (lambda message: None)
-    config = Experiment()  # Fixed print geometry; benchmark sample count is separate.
+    config = settings if settings is not None else PrintSettings()
+    if not isinstance(config, PrintSettings):
+        raise ValueError("Ожидаются безопасные настройки PrintSettings")
     _check_cancel(cancel)
     directory = _make_directory(output_root, f"pdf-{len(numbers)}")
     report = {
@@ -100,7 +103,7 @@ def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
         "mode": mode, "count": len(numbers), "input_filename": Path(input_txt).name,
         "first_code": numbers[0], "last_code": numbers[-1],
         "print": {"symbology": "QR Code", "version": 1, "ecc": "M", "numeric_digits": 12,
-                  "module_mm": 0.5, "quiet_modules": 4, "page_mm": [14.5, 14.5],
+                  **config.to_dict(),
                   "colorspace": "DeviceCMYK", "ink": [0, 0, 0, 100],
                   "vector": True, "pdf_x_certified": False},
         "files": {}, "seconds": {}, "qa": {}, "errors": [],
@@ -110,6 +113,7 @@ def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
     def save_report():
         report["seconds"]["total_including_qa"] = round(time.perf_counter() - started, 6)
         (directory / "manifest.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        (directory / "ОТЧЁТ.txt").write_text(human_report(report), encoding="utf-8")
 
     try:
         _check_cancel(cancel)
