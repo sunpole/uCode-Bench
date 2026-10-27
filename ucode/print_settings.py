@@ -1,0 +1,111 @@
+"""User-facing QR print geometry (separate from immutable benchmark settings)."""
+from dataclasses import dataclass
+import math
+
+
+@dataclass(frozen=True)
+class PrintSettings:
+    """All lengths millimetres, with the full white margin included in the PDF page."""
+    module_mm: float = 0.5
+    quiet_modules: int = 4
+
+    def __post_init__(self):
+        if isinstance(self.quiet_modules, bool) or not isinstance(self.quiet_modules, int) or not 4 <= self.quiet_modules <= 20:
+            raise ValueError("Белое поле: от 4 до 20 модулей. Меньше 4 не соответствует QR Code.")
+        try:
+            module = float(self.module_mm)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("Неверный физический размер модуля QR") from exc
+        if not math.isfinite(module) or not 0.25 <= module <= 2.0:
+            raise ValueError("Размер одного модуля должен быть от 0,25 до 2,0 мм.")
+
+    @classmethod
+    def from_total_side(cls, total_mm: float, quiet_modules: int = 4):
+        if isinstance(quiet_modules, bool) or not isinstance(quiet_modules, int) or not 4 <= quiet_modules <= 20:
+            raise ValueError("Белое поле: целое число от 4 до 20 модулей")
+        try:
+            total = float(total_mm)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("Общий размер должен быть числом в миллиметрах") from exc
+        if not math.isfinite(total) or total <= 0:
+            raise ValueError("Общий размер должен быть положительным числом")
+        return cls(module_mm=total / (21 + 2 * quiet_modules), quiet_modules=quiet_modules)
+
+    @property
+    def side_mm(self) -> float:
+        return (21 + 2 * self.quiet_modules) * self.module_mm
+
+    @property
+    def dark_matrix_mm(self) -> float:
+        return 21 * self.module_mm
+
+    @property
+    def white_margin_mm(self) -> float:
+        return self.quiet_modules * self.module_mm
+
+    def to_dict(self) -> dict:
+        return {
+            "module_mm": self.module_mm,
+            "quiet_modules": self.quiet_modules,
+            "page_mm": [self.side_mm, self.side_mm],
+            "dark_matrix_mm": self.dark_matrix_mm,
+            "white_margin_mm": self.white_margin_mm,
+        }
+
+
+def format_duration(seconds) -> str:
+    """Human-readable duration, preserving fractions for sub-second tasks."""
+    if seconds is None:
+        return "нет данных"
+    seconds = float(seconds)
+    if not math.isfinite(seconds) or seconds < 0:
+        return "нет данных"
+    if seconds < 1:
+        return f"{seconds:.3f} сек".replace(".", ",")
+    whole = round(seconds)
+    hours, remainder = divmod(whole, 3600)
+    minutes, sec = divmod(remainder, 60)
+    if hours:
+        return f"{hours} ч {minutes} мин {sec} сек"
+    if minutes:
+        return f"{minutes} мин {sec} сек"
+    return f"{sec} сек"
+
+
+def human_report(report: dict) -> str:
+    """Plain Russian operational report for the printer/operator."""
+    values = report.get("seconds", {})
+    cfg = report.get("print", {})
+    qa = report.get("qa", {})
+    rows = [
+        "uCode — ОТЧЁТ О СОЗДАНИИ PDF",
+        "=" * 42,
+        f"Статус: {report.get('status', 'неизвестно')}",
+        f"Количество кодов: {report.get('count', 0):,}".replace(",", " "),
+        f"Входной файл: {report.get('input_filename', '')}",
+        f"Режим: {report.get('mode', '')}",
+        f"Размер PDF: {cfg.get('page_mm', ['?', '?'])[0]:.3f} × {cfg.get('page_mm', ['?', '?'])[1]:.3f} мм" if isinstance(cfg.get("page_mm"), list) else "Размер PDF: нет данных",
+        f"Белое поле: {cfg.get('quiet_modules', '?')} модуля(ей)",
+        "Цвет: C0 M0 Y0 K100; векторный QR V1-M; PDF/X не сертифицирован",
+        "",
+        "ФАКТИЧЕСКОЕ ВРЕМЯ",
+        f"Вся операция с QA: {format_duration(values.get('total_including_qa'))}",
+        f"Кодирование QR: {format_duration(values.get('qr_encoding'))}",
+        f"Запись отдельных PDF: {format_duration(values.get('write_singles'))}",
+        f"Запись общего PDF: {format_duration(values.get('write_multipage'))}",
+        f"Проверка качества: {format_duration(values.get('quality_checks'))}",
+    ]
+    elapsed = values.get("total_including_qa")
+    if elapsed and elapsed > 0:
+        rows.append(f"Средняя скорость всей операции: {report.get('count', 0)/elapsed:.2f} кодов/сек".replace(".", ","))
+    rows.extend(["", "ПРОВЕРКА",
+                 f"Многостраничный PDF: {qa.get('multipage', {}).get('status', 'не выбран')}",
+                 f"Отдельные PDF: {qa.get('singles', {}).get('status', 'не выбраны')}",
+                 "COMPLETE = проверены структуры и растровые образцы.",
+                 "LIMITED = структурная проверка пройдена, растровая недоступна.",
+                 "INVALID/ERROR = требуется изучить manifest.json.",
+                 "",
+                 "Времена измерены на машине, где выполнялась эта задача.",
+                 "Скорость зависит от размера, носителя, нагрузки и режима.",
+                 ""])
+    return "\n".join(rows)
