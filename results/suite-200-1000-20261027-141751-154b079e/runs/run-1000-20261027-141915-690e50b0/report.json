@@ -1,0 +1,1912 @@
+{
+  "schema_version": 1,
+  "status": "COMPLETE",
+  "config": {
+    "count": 1000,
+    "start": 200000000000,
+    "repeats": 3,
+    "module_mm": 0.5,
+    "quiet_modules": 4,
+    "threshold_seconds": 120.0
+  },
+  "run_directory": ".\\runs\\run-1000-20261027-141915-690e50b0",
+  "created_at": "2026-10-27T14:19:15.332957+03:00",
+  "environment": {
+    "python": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+    "executable": "<project>\\.venv\\Scripts\\python.exe",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "logical_processors": 28,
+    "cpu": "Intel(R) Xeon(R) CPU E5-2680 v4 @ 2.40GHz",
+    "dependencies": {
+      "reportlab": "4.4.9",
+      "pypdf": "6.21.2",
+      "Pillow": "12.3.0",
+      "segno": null,
+      "PyMuPDF": "2.0",
+      "pikepdf": "10.17.0",
+      "pdfrw": "0.4",
+      "pypdfium2": "5.14.0"
+    },
+    "pdftoppm": "<user-home>\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\poppler\\Library\\bin\\pdftoppm.EXE",
+    "tkinter": true,
+    "physical_memory_bytes": 17079623680,
+    "available_memory_bytes": 8360120320,
+    "adapters": [
+      {
+        "name": "qpdf",
+        "available": true,
+        "reason": "",
+        "version": "qpdf version 12.4.2",
+        "executable": "<project>\\tools\\qpdf\\qpdf-12.4.2-msvc64\\bin\\qpdf.exe"
+      },
+      {
+        "name": "MuPDF (mutool)",
+        "available": true,
+        "reason": "",
+        "version": "mutool version 1.28.5",
+        "executable": "<project>\\tools\\mutool\\mupdf-1.28.5-windows\\mutool.exe"
+      },
+      {
+        "name": "PyMuPDF",
+        "available": true,
+        "reason": "",
+        "version": "2.0"
+      },
+      {
+        "name": "pikepdf",
+        "available": true,
+        "reason": "",
+        "version": "10.17.0"
+      },
+      {
+        "name": "pypdf",
+        "available": true,
+        "reason": "",
+        "version": "6.21.2"
+      },
+      {
+        "name": "pdfrw",
+        "available": true,
+        "reason": "",
+        "version": "0.4"
+      },
+      {
+        "name": "PDFium (pypdfium2)",
+        "available": true,
+        "reason": "",
+        "version": "5.14.0"
+      },
+      {
+        "name": "pdfcpu",
+        "available": true,
+        "reason": "",
+        "version": "version: 0.16.3",
+        "executable": "<project>\\tools\\pdfcpu\\pdfcpu_0.16.3_Windows_x86_64\\pdfcpu.exe"
+      },
+      {
+        "name": "Apache PDFBox",
+        "available": true,
+        "reason": "",
+        "version": "3.0.8",
+        "executable": "C:\\Program Files (x86)\\Common Files\\Oracle\\Java\\java8path\\java.EXE",
+        "java_version": "java version \"1.8.0_511\"",
+        "jar": "<project>\\tools\\pdfbox\\pdfbox-app-3.0.8.jar",
+        "classes": "<project>\\tools\\pdfbox\\classes"
+      },
+      {
+        "name": "pdf-lib (Node.js)",
+        "available": true,
+        "reason": "",
+        "version": "1.17.1",
+        "executable": "C:\\Program Files\\nodejs\\node.EXE",
+        "node_version": "v22.13.0",
+        "helper": "<project>\\scripts\\merge-pdflib.mjs"
+      },
+      {
+        "name": "PDFsharp (.NET)",
+        "available": true,
+        "reason": "",
+        "version": "PDFsharp 6.2.4 / .NET 8 helper",
+        "executable": "C:\\Program Files\\dotnet\\dotnet.EXE",
+        "helper": "<project>\\tools\\pdfsharp\\PdfSharpMerge.dll"
+      }
+    ],
+    "core_ready": true
+  },
+  "methods": [
+    {
+      "name": "Direct PDF",
+      "category": "direct",
+      "status": "PASS",
+      "reason": "",
+      "trials": [
+        {
+          "seconds": 5.512571199997183,
+          "cpu_seconds": 5.515625,
+          "peak_rss_bytes": 49143808,
+          "ram_scope": "OS process peak working set including imports and input loading; QA excluded",
+          "cpu_scope": "method process CPU; excludes imports, input loading and QA",
+          "worker_wall_seconds": 5.903130499998952,
+          "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\direct-direct-pdf-1.pdf",
+          "output_bytes": 1168319,
+          "sha256": "acb11ca054d642fc5e3d5cc78a363fd753e0021f03a1b26662c4b15d51e58977",
+          "qa": {
+            "status": "PASS",
+            "errors": [],
+            "pages_checked": 1000,
+            "decoded_samples": [
+              {
+                "page": 1,
+                "payload": "200000000000",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-1_5608419627\\page_0001.png"
+              },
+              {
+                "page": 501,
+                "payload": "200000000500",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-1_5608419627\\page_0501.png"
+              },
+              {
+                "page": 1000,
+                "payload": "200000000999",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-1_5608419627\\page_1000.png"
+              }
+            ],
+            "render_samples": true,
+            "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+            "geometry_tolerance_points": 0.0003,
+            "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+          },
+          "qa_seconds": 5.275320000000647,
+          "total_seconds": 5.512571199997183
+        },
+        {
+          "seconds": 5.516497699998581,
+          "cpu_seconds": 5.515625,
+          "peak_rss_bytes": 49446912,
+          "ram_scope": "OS process peak working set including imports and input loading; QA excluded",
+          "cpu_scope": "method process CPU; excludes imports, input loading and QA",
+          "worker_wall_seconds": 5.908638500000961,
+          "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\direct-direct-pdf-2.pdf",
+          "output_bytes": 1168319,
+          "sha256": "acb11ca054d642fc5e3d5cc78a363fd753e0021f03a1b26662c4b15d51e58977",
+          "qa": {
+            "status": "PASS",
+            "errors": [],
+            "pages_checked": 1000,
+            "decoded_samples": [
+              {
+                "page": 1,
+                "payload": "200000000000",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-2_3a48ae373c\\page_0001.png"
+              },
+              {
+                "page": 501,
+                "payload": "200000000500",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-2_3a48ae373c\\page_0501.png"
+              },
+              {
+                "page": 1000,
+                "payload": "200000000999",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-2_3a48ae373c\\page_1000.png"
+              }
+            ],
+            "render_samples": true,
+            "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+            "geometry_tolerance_points": 0.0003,
+            "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+          },
+          "qa_seconds": 5.311272300001292,
+          "total_seconds": 5.516497699998581
+        },
+        {
+          "seconds": 5.516372100002627,
+          "cpu_seconds": 5.515625,
+          "peak_rss_bytes": 49324032,
+          "ram_scope": "OS process peak working set including imports and input loading; QA excluded",
+          "cpu_scope": "method process CPU; excludes imports, input loading and QA",
+          "worker_wall_seconds": 5.912696399998822,
+          "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\direct-direct-pdf-3.pdf",
+          "output_bytes": 1168319,
+          "sha256": "acb11ca054d642fc5e3d5cc78a363fd753e0021f03a1b26662c4b15d51e58977",
+          "qa": {
+            "status": "PASS",
+            "errors": [],
+            "pages_checked": 1000,
+            "decoded_samples": [
+              {
+                "page": 1,
+                "payload": "200000000000",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-3_10052dc731\\page_0001.png"
+              },
+              {
+                "page": 501,
+                "payload": "200000000500",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-3_10052dc731\\page_0501.png"
+              },
+              {
+                "page": 1000,
+                "payload": "200000000999",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-3_10052dc731\\page_1000.png"
+              }
+            ],
+            "render_samples": true,
+            "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+            "geometry_tolerance_points": 0.0003,
+            "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+          },
+          "qa_seconds": 5.295697899997322,
+          "total_seconds": 5.516372100002627
+        }
+      ],
+      "median_seconds": 5.516372100002627,
+      "spread_seconds": 0.003926500001398381,
+      "eligible_for_1000": false,
+      "output_bytes": 1168319
+    },
+    {
+      "name": "qpdf",
+      "category": "merge",
+      "status": "PASS",
+      "reason": "",
+      "trials": [
+        {
+          "seconds": 2.222498800001631,
+          "cpu_seconds": 2.203125,
+          "peak_rss_bytes": 53641216,
+          "ram_scope": "OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)",
+          "cpu_scope": "method process CPU; excludes imports, input loading and QA; includes external engine CPU",
+          "child_cpu_seconds": 1.8125,
+          "child_peak_rss_bytes": 31514624,
+          "worker_wall_seconds": 2.4368209000022034,
+          "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\merge-qpdf-1.pdf",
+          "output_bytes": 1166436,
+          "sha256": "28ed60d9648caf0f6d1b198f68d689d168b4c93d6cfd1c1c7aa4e21c968671fb",
+          "qa": {
+            "status": "PASS",
+            "errors": [],
+            "pages_checked": 1000,
+            "decoded_samples": [
+              {
+                "page": 1,
+                "payload": "200000000000",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-qpdf-1_2ba222f53c\\page_0001.png"
+              },
+              {
+                "page": 501,
+                "payload": "200000000500",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-qpdf-1_2ba222f53c\\page_0501.png"
+              },
+              {
+                "page": 1000,
+                "payload": "200000000999",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-qpdf-1_2ba222f53c\\page_1000.png"
+              }
+            ],
+            "render_samples": true,
+            "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+            "geometry_tolerance_points": 0.0003,
+            "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+          },
+          "qa_seconds": 5.131820000002335,
+          "total_seconds": 8.886049799999455
+        },
+        {
+          "seconds": 2.2263545999994676,
+          "cpu_seconds": 2.21875,
+          "peak_rss_bytes": 53993472,
+          "ram_scope": "OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)",
+          "cpu_scope": "method process CPU; excludes imports, input loading and QA; includes external engine CPU",
+          "child_cpu_seconds": 1.828125,
+          "child_peak_rss_bytes": 31584256,
+          "worker_wall_seconds": 2.4420124999996915,
+          "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\merge-qpdf-2.pdf",
+          "output_bytes": 1166436,
+          "sha256": "74bfca33065bc17e679064ee22099c0151e83937d4eb8a1e511059c08b5c574c",
+          "qa": {
+            "status": "PASS",
+            "errors": [],
+            "pages_checked": 1000,
+            "decoded_samples": [
+              {
+                "page": 1,
+                "payload": "200000000000",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-qpdf-2_f3efca359b\\page_0001.png"
+              },
+              {
+                "page": 501,
+                "payload": "200000000500",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-qpdf-2_f3efca359b\\page_0501.png"
+              },
+              {
+                "page": 1000,
+                "payload": "200000000999",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-qpdf-2_f3efca359b\\page_1000.png"
+              }
+            ],
+            "render_samples": true,
+            "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+            "geometry_tolerance_points": 0.0003,
+            "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+          },
+          "qa_seconds": 5.066490400000475,
+          "total_seconds": 8.836530700002186
+        },
+        {
+          "seconds": 2.1903739999979734,
+          "cpu_seconds": 2.171875,
+          "peak_rss_bytes": 53948416,
+          "ram_scope": "OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)",
+          "cpu_scope": "method process CPU; excludes imports, input loading and QA; includes external engine CPU",
+          "child_cpu_seconds": 1.796875,
+          "child_peak_rss_bytes": 31531008,
+          "worker_wall_seconds": 2.4032917999975325,
+          "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\merge-qpdf-3.pdf",
+          "output_bytes": 1166436,
+          "sha256": "09e323c16be5a41e1d18c9637546cbf0ecca280d9909fe0d60f18589add24b7d",
+          "qa": {
+            "status": "PASS",
+            "errors": [],
+            "pages_checked": 1000,
+            "decoded_samples": [
+              {
+                "page": 1,
+                "payload": "200000000000",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-qpdf-3_c6dc38a08d\\page_0001.png"
+              },
+              {
+                "page": 501,
+                "payload": "200000000500",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-qpdf-3_c6dc38a08d\\page_0501.png"
+              },
+              {
+                "page": 1000,
+                "payload": "200000000999",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-qpdf-3_c6dc38a08d\\page_1000.png"
+              }
+            ],
+            "render_samples": true,
+            "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+            "geometry_tolerance_points": 0.0003,
+            "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+          },
+          "qa_seconds": 5.059377700003097,
+          "total_seconds": 8.830049200001667
+        }
+      ],
+      "median_seconds": 2.222498800001631,
+      "spread_seconds": 0.03598060000149417,
+      "eligible_for_1000": false,
+      "output_bytes": 1166436,
+      "probe": {
+        "available": true,
+        "reason": "",
+        "version": "qpdf version 12.4.2",
+        "executable": "<project>\\tools\\qpdf\\qpdf-12.4.2-msvc64\\bin\\qpdf.exe"
+      }
+    },
+    {
+      "name": "MuPDF (mutool)",
+      "category": "merge",
+      "status": "PASS",
+      "reason": "",
+      "trials": [
+        {
+          "seconds": 0.8141782999991847,
+          "cpu_seconds": 0.78125,
+          "peak_rss_bytes": 32690176,
+          "ram_scope": "OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)",
+          "cpu_scope": "method process CPU; excludes imports, input loading and QA; includes external engine CPU",
+          "child_cpu_seconds": 0.390625,
+          "child_peak_rss_bytes": 10215424,
+          "worker_wall_seconds": 1.023393399998895,
+          "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\merge-mupdf-(mutool)-1.pdf",
+          "output_bytes": 1300368,
+          "sha256": "008e8bd9e665b12bf75e75fecd54f7758a682e004cbf508d0208aa8a6ed71200",
+          "qa": {
+            "status": "PASS",
+            "errors": [],
+            "pages_checked": 1000,
+            "decoded_samples": [
+              {
+                "page": 1,
+                "payload": "200000000000",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-mupdf-(mutool)-1_9b6c98919e\\page_0001.png"
+              },
+              {
+                "page": 501,
+                "payload": "200000000500",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-mupdf-(mutool)-1_9b6c98919e\\page_0501.png"
+              },
+              {
+                "page": 1000,
+                "payload": "200000000999",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-mupdf-(mutool)-1_9b6c98919e\\page_1000.png"
+              }
+            ],
+            "render_samples": true,
+            "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+            "geometry_tolerance_points": 0.0003,
+            "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+          },
+          "qa_seconds": 5.402121099999931,
+          "total_seconds": 7.477729299997009
+        },
+        {
+          "seconds": 0.8462409999992815,
+          "cpu_seconds": 0.8125,
+          "peak_rss_bytes": 32727040,
+          "ram_scope": "OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)",
+          "cpu_scope": "method process CPU; excludes imports, input loading and QA; includes external engine CPU",
+          "child_cpu_seconds": 0.390625,
+          "child_peak_rss_bytes": 10366976,
+          "worker_wall_seconds": 1.06451929999821,
+          "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\merge-mupdf-(mutool)-2.pdf",
+          "output_bytes": 1300368,
+          "sha256": "008e8bd9e665b12bf75e75fecd54f7758a682e004cbf508d0208aa8a6ed71200",
+          "qa": {
+            "status": "PASS",
+            "errors": [],
+            "pages_checked": 1000,
+            "decoded_samples": [
+              {
+                "page": 1,
+                "payload": "200000000000",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-mupdf-(mutool)-2_e38d14ae1e\\page_0001.png"
+              },
+              {
+                "page": 501,
+                "payload": "200000000500",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-mupdf-(mutool)-2_e38d14ae1e\\page_0501.png"
+              },
+              {
+                "page": 1000,
+                "payload": "200000000999",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-mupdf-(mutool)-2_e38d14ae1e\\page_1000.png"
+              }
+            ],
+            "render_samples": true,
+            "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+            "geometry_tolerance_points": 0.0003,
+            "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+          },
+          "qa_seconds": 5.276689799997257,
+          "total_seconds": 7.456417100002
+        },
+        {
+          "seconds": 0.8149736000013945,
+          "cpu_seconds": 0.8125,
+          "peak_rss_bytes": 32964608,
+          "ram_scope": "OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)",
+          "cpu_scope": "method process CPU; excludes imports, input loading and QA; includes external engine CPU",
+          "child_cpu_seconds": 0.390625,
+          "child_peak_rss_bytes": 10383360,
+          "worker_wall_seconds": 1.0269680000019434,
+          "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\merge-mupdf-(mutool)-3.pdf",
+          "output_bytes": 1300368,
+          "sha256": "008e8bd9e665b12bf75e75fecd54f7758a682e004cbf508d0208aa8a6ed71200",
+          "qa": {
+            "status": "PASS",
+            "errors": [],
+            "pages_checked": 1000,
+            "decoded_samples": [
+              {
+                "page": 1,
+                "payload": "200000000000",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-mupdf-(mutool)-3_e22737269e\\page_0001.png"
+              },
+              {
+                "page": 501,
+                "payload": "200000000500",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-mupdf-(mutool)-3_e22737269e\\page_0501.png"
+              },
+              {
+                "page": 1000,
+                "payload": "200000000999",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-mupdf-(mutool)-3_e22737269e\\page_1000.png"
+              }
+            ],
+            "render_samples": true,
+            "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+            "geometry_tolerance_points": 0.0003,
+            "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+          },
+          "qa_seconds": 5.261197400002857,
+          "total_seconds": 7.454648800005089
+        }
+      ],
+      "median_seconds": 0.8149736000013945,
+      "spread_seconds": 0.03206270000009681,
+      "eligible_for_1000": false,
+      "output_bytes": 1300368,
+      "probe": {
+        "available": true,
+        "reason": "",
+        "version": "mutool version 1.28.5",
+        "executable": "<project>\\tools\\mutool\\mupdf-1.28.5-windows\\mutool.exe"
+      }
+    },
+    {
+      "name": "PyMuPDF",
+      "category": "merge",
+      "status": "PASS",
+      "reason": "",
+      "trials": [
+        {
+          "seconds": 1.6722846999982721,
+          "cpu_seconds": 1.671875,
+          "peak_rss_bytes": 130318336,
+          "ram_scope": "OS process peak working set including imports and input loading; QA excluded",
+          "cpu_scope": "method process CPU; excludes imports, input loading and QA",
+          "worker_wall_seconds": 3.672777199997654,
+          "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\merge-pymupdf-1.pdf",
+          "output_bytes": 1300441,
+          "sha256": "251ed9208133ed0e7cc9b70e5cb91408427bf08298a8422db61f1cb7df5a64ae",
+          "qa": {
+            "status": "PASS",
+            "errors": [],
+            "pages_checked": 1000,
+            "decoded_samples": [
+              {
+                "page": 1,
+                "payload": "200000000000",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pymupdf-1_405525f7b8\\page_0001.png"
+              },
+              {
+                "page": 501,
+                "payload": "200000000500",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pymupdf-1_405525f7b8\\page_0501.png"
+              },
+              {
+                "page": 1000,
+                "payload": "200000000999",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pymupdf-1_405525f7b8\\page_1000.png"
+              }
+            ],
+            "render_samples": true,
+            "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+            "geometry_tolerance_points": 0.0003,
+            "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+          },
+          "qa_seconds": 6.100005600001168,
+          "total_seconds": 8.335835699996096
+        },
+        {
+          "seconds": 1.666581599998608,
+          "cpu_seconds": 1.671875,
+          "peak_rss_bytes": 130924544,
+          "ram_scope": "OS process peak working set including imports and input loading; QA excluded",
+          "cpu_scope": "method process CPU; excludes imports, input loading and QA",
+          "worker_wall_seconds": 3.6066304000014497,
+          "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\merge-pymupdf-2.pdf",
+          "output_bytes": 1300441,
+          "sha256": "901c3a2ae6283a6b74399635223b965f120c6004da48fad15dd0fd8cf51b9eb8",
+          "qa": {
+            "status": "PASS",
+            "errors": [],
+            "pages_checked": 1000,
+            "decoded_samples": [
+              {
+                "page": 1,
+                "payload": "200000000000",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pymupdf-2_54cbe2fd3f\\page_0001.png"
+              },
+              {
+                "page": 501,
+                "payload": "200000000500",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pymupdf-2_54cbe2fd3f\\page_0501.png"
+              },
+              {
+                "page": 1000,
+                "payload": "200000000999",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pymupdf-2_54cbe2fd3f\\page_1000.png"
+              }
+            ],
+            "render_samples": true,
+            "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+            "geometry_tolerance_points": 0.0003,
+            "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+          },
+          "qa_seconds": 5.276621900000464,
+          "total_seconds": 8.276757700001326
+        },
+        {
+          "seconds": 1.6536343999978271,
+          "cpu_seconds": 1.65625,
+          "peak_rss_bytes": 130699264,
+          "ram_scope": "OS process peak working set including imports and input loading; QA excluded",
+          "cpu_scope": "method process CPU; excludes imports, input loading and QA",
+          "worker_wall_seconds": 3.55032520000168,
+          "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\merge-pymupdf-3.pdf",
+          "output_bytes": 1300441,
+          "sha256": "47c606c802a2569d196caa63b197e600c08b1def5bcaf4b9e17393fb3a8d1211",
+          "qa": {
+            "status": "PASS",
+            "errors": [],
+            "pages_checked": 1000,
+            "decoded_samples": [
+              {
+                "page": 1,
+                "payload": "200000000000",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pymupdf-3_56df2f6be9\\page_0001.png"
+              },
+              {
+                "page": 501,
+                "payload": "200000000500",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pymupdf-3_56df2f6be9\\page_0501.png"
+              },
+              {
+                "page": 1000,
+                "payload": "200000000999",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pymupdf-3_56df2f6be9\\page_1000.png"
+              }
+            ],
+            "render_samples": true,
+            "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+            "geometry_tolerance_points": 0.0003,
+            "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+          },
+          "qa_seconds": 5.421512500000972,
+          "total_seconds": 8.293309600001521
+        }
+      ],
+      "median_seconds": 1.666581599998608,
+      "spread_seconds": 0.018650300000444986,
+      "eligible_for_1000": false,
+      "output_bytes": 1300441,
+      "probe": {
+        "available": true,
+        "reason": "",
+        "version": "2.0"
+      }
+    },
+    {
+      "name": "pikepdf",
+      "category": "merge",
+      "status": "PASS",
+      "reason": "",
+      "trials": [
+        {
+          "seconds": 1.0756049000010535,
+          "cpu_seconds": 1.078125,
+          "peak_rss_bytes": 40951808,
+          "ram_scope": "OS process peak working set including imports and input loading; QA excluded",
+          "cpu_scope": "method process CPU; excludes imports, input loading and QA",
+          "worker_wall_seconds": 1.364184699999896,
+          "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\merge-pikepdf-1.pdf",
+          "output_bytes": 1167436,
+          "sha256": "eee7beb3ce7b20784da2fd1f0e664ee2deff7c3854ace07edb8aebe5a28c2d54",
+          "qa": {
+            "status": "PASS",
+            "errors": [],
+            "pages_checked": 1000,
+            "decoded_samples": [
+              {
+                "page": 1,
+                "payload": "200000000000",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pikepdf-1_666c6d9f7a\\page_0001.png"
+              },
+              {
+                "page": 501,
+                "payload": "200000000500",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pikepdf-1_666c6d9f7a\\page_0501.png"
+              },
+              {
+                "page": 1000,
+                "payload": "200000000999",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pikepdf-1_666c6d9f7a\\page_1000.png"
+              }
+            ],
+            "render_samples": true,
+            "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+            "geometry_tolerance_points": 0.0003,
+            "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+          },
+          "qa_seconds": 5.132910200001788,
+          "total_seconds": 7.739155899998877
+        },
+        {
+          "seconds": 1.0908622999995714,
+          "cpu_seconds": 1.09375,
+          "peak_rss_bytes": 40824832,
+          "ram_scope": "OS process peak working set including imports and input loading; QA excluded",
+          "cpu_scope": "method process CPU; excludes imports, input loading and QA",
+          "worker_wall_seconds": 1.3853526000020793,
+          "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\merge-pikepdf-2.pdf",
+          "output_bytes": 1167436,
+          "sha256": "439e9f6cc3c060837ceb4e2865013dfc21b07802355b35f35d19c4f75145850d",
+          "qa": {
+            "status": "PASS",
+            "errors": [],
+            "pages_checked": 1000,
+            "decoded_samples": [
+              {
+                "page": 1,
+                "payload": "200000000000",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pikepdf-2_c55eb43306\\page_0001.png"
+              },
+              {
+                "page": 501,
+                "payload": "200000000500",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pikepdf-2_c55eb43306\\page_0501.png"
+              },
+              {
+                "page": 1000,
+                "payload": "200000000999",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pikepdf-2_c55eb43306\\page_1000.png"
+              }
+            ],
+            "render_samples": true,
+            "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+            "geometry_tolerance_points": 0.0003,
+            "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+          },
+          "qa_seconds": 5.069289999999455,
+          "total_seconds": 7.70103840000229
+        },
+        {
+          "seconds": 1.1049947999999858,
+          "cpu_seconds": 1.109375,
+          "peak_rss_bytes": 40689664,
+          "ram_scope": "OS process peak working set including imports and input loading; QA excluded",
+          "cpu_scope": "method process CPU; excludes imports, input loading and QA",
+          "worker_wall_seconds": 1.392594699998881,
+          "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\merge-pikepdf-3.pdf",
+          "output_bytes": 1167436,
+          "sha256": "f67e2beef7d5d68d86e1162f2f19b0ccd7ed37058434570a7da72eedd9b3c89e",
+          "qa": {
+            "status": "PASS",
+            "errors": [],
+            "pages_checked": 1000,
+            "decoded_samples": [
+              {
+                "page": 1,
+                "payload": "200000000000",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pikepdf-3_9048d702a2\\page_0001.png"
+              },
+              {
+                "page": 501,
+                "payload": "200000000500",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pikepdf-3_9048d702a2\\page_0501.png"
+              },
+              {
+                "page": 1000,
+                "payload": "200000000999",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pikepdf-3_9048d702a2\\page_1000.png"
+              }
+            ],
+            "render_samples": true,
+            "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+            "geometry_tolerance_points": 0.0003,
+            "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+          },
+          "qa_seconds": 5.062803199998598,
+          "total_seconds": 7.74467000000368
+        }
+      ],
+      "median_seconds": 1.0908622999995714,
+      "spread_seconds": 0.02938989999893238,
+      "eligible_for_1000": false,
+      "output_bytes": 1167436,
+      "probe": {
+        "available": true,
+        "reason": "",
+        "version": "10.17.0"
+      }
+    },
+    {
+      "name": "pypdf",
+      "category": "merge",
+      "status": "PASS",
+      "reason": "",
+      "trials": [
+        {
+          "seconds": 1.6065933999998379,
+          "cpu_seconds": 1.59375,
+          "peak_rss_bytes": 60440576,
+          "ram_scope": "OS process peak working set including imports and input loading; QA excluded",
+          "cpu_scope": "method process CPU; excludes imports, input loading and QA",
+          "worker_wall_seconds": 2.035448099999485,
+          "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\merge-pypdf-1.pdf",
+          "output_bytes": 1351461,
+          "sha256": "399372807d40771b31216d2245e295d0a24d4e6168ae290aea331c6d16a24ef8",
+          "qa": {
+            "status": "PASS",
+            "errors": [],
+            "pages_checked": 1000,
+            "decoded_samples": [
+              {
+                "page": 1,
+                "payload": "200000000000",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pypdf-1_bb44c65c6f\\page_0001.png"
+              },
+              {
+                "page": 501,
+                "payload": "200000000500",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pypdf-1_bb44c65c6f\\page_0501.png"
+              },
+              {
+                "page": 1000,
+                "payload": "200000000999",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pypdf-1_bb44c65c6f\\page_1000.png"
+              }
+            ],
+            "render_samples": true,
+            "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+            "geometry_tolerance_points": 0.0003,
+            "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+          },
+          "qa_seconds": 5.3075850999994145,
+          "total_seconds": 8.270144399997662
+        },
+        {
+          "seconds": 1.6226434000018344,
+          "cpu_seconds": 1.625,
+          "peak_rss_bytes": 60518400,
+          "ram_scope": "OS process peak working set including imports and input loading; QA excluded",
+          "cpu_scope": "method process CPU; excludes imports, input loading and QA",
+          "worker_wall_seconds": 2.058203799999319,
+          "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\merge-pypdf-2.pdf",
+          "output_bytes": 1351461,
+          "sha256": "399372807d40771b31216d2245e295d0a24d4e6168ae290aea331c6d16a24ef8",
+          "qa": {
+            "status": "PASS",
+            "errors": [],
+            "pages_checked": 1000,
+            "decoded_samples": [
+              {
+                "page": 1,
+                "payload": "200000000000",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pypdf-2_6177f35b50\\page_0001.png"
+              },
+              {
+                "page": 501,
+                "payload": "200000000500",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pypdf-2_6177f35b50\\page_0501.png"
+              },
+              {
+                "page": 1000,
+                "payload": "200000000999",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pypdf-2_6177f35b50\\page_1000.png"
+              }
+            ],
+            "render_samples": true,
+            "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+            "geometry_tolerance_points": 0.0003,
+            "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+          },
+          "qa_seconds": 5.334945400001743,
+          "total_seconds": 8.232819500004553
+        },
+        {
+          "seconds": 1.6762302999995882,
+          "cpu_seconds": 1.6875,
+          "peak_rss_bytes": 60416000,
+          "ram_scope": "OS process peak working set including imports and input loading; QA excluded",
+          "cpu_scope": "method process CPU; excludes imports, input loading and QA",
+          "worker_wall_seconds": 2.118934400001308,
+          "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\merge-pypdf-3.pdf",
+          "output_bytes": 1351461,
+          "sha256": "399372807d40771b31216d2245e295d0a24d4e6168ae290aea331c6d16a24ef8",
+          "qa": {
+            "status": "PASS",
+            "errors": [],
+            "pages_checked": 1000,
+            "decoded_samples": [
+              {
+                "page": 1,
+                "payload": "200000000000",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pypdf-3_63026280c6\\page_0001.png"
+              },
+              {
+                "page": 501,
+                "payload": "200000000500",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pypdf-3_63026280c6\\page_0501.png"
+              },
+              {
+                "page": 1000,
+                "payload": "200000000999",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pypdf-3_63026280c6\\page_1000.png"
+              }
+            ],
+            "render_samples": true,
+            "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+            "geometry_tolerance_points": 0.0003,
+            "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+          },
+          "qa_seconds": 5.338328799996816,
+          "total_seconds": 8.315905500003282
+        }
+      ],
+      "median_seconds": 1.6226434000018344,
+      "spread_seconds": 0.06963689999975031,
+      "eligible_for_1000": false,
+      "output_bytes": 1351461,
+      "probe": {
+        "available": true,
+        "reason": "",
+        "version": "6.21.2"
+      }
+    },
+    {
+      "name": "pdfrw",
+      "category": "merge",
+      "status": "PASS",
+      "reason": "",
+      "trials": [
+        {
+          "seconds": 1.326907200000278,
+          "cpu_seconds": 1.328125,
+          "peak_rss_bytes": 66785280,
+          "ram_scope": "OS process peak working set including imports and input loading; QA excluded",
+          "cpu_scope": "method process CPU; excludes imports, input loading and QA",
+          "worker_wall_seconds": 1.6320005999987188,
+          "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\merge-pdfrw-1.pdf",
+          "output_bytes": 1342562,
+          "sha256": "536642865f4903b0982f2466ccf67c26d2c7d06c0b2a7d9d46d4866e2a8c2e1a",
+          "qa": {
+            "status": "PASS",
+            "errors": [],
+            "pages_checked": 1000,
+            "decoded_samples": [
+              {
+                "page": 1,
+                "payload": "200000000000",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfrw-1_4a4f8a3a17\\page_0001.png"
+              },
+              {
+                "page": 501,
+                "payload": "200000000500",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfrw-1_4a4f8a3a17\\page_0501.png"
+              },
+              {
+                "page": 1000,
+                "payload": "200000000999",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfrw-1_4a4f8a3a17\\page_1000.png"
+              }
+            ],
+            "render_samples": true,
+            "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+            "geometry_tolerance_points": 0.0003,
+            "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+          },
+          "qa_seconds": 5.31622409999909,
+          "total_seconds": 7.990458199998102
+        },
+        {
+          "seconds": 1.3384097999987716,
+          "cpu_seconds": 1.34375,
+          "peak_rss_bytes": 66740224,
+          "ram_scope": "OS process peak working set including imports and input loading; QA excluded",
+          "cpu_scope": "method process CPU; excludes imports, input loading and QA",
+          "worker_wall_seconds": 1.6298886000004131,
+          "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\merge-pdfrw-2.pdf",
+          "output_bytes": 1342562,
+          "sha256": "536642865f4903b0982f2466ccf67c26d2c7d06c0b2a7d9d46d4866e2a8c2e1a",
+          "qa": {
+            "status": "PASS",
+            "errors": [],
+            "pages_checked": 1000,
+            "decoded_samples": [
+              {
+                "page": 1,
+                "payload": "200000000000",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfrw-2_1c075f03c2\\page_0001.png"
+              },
+              {
+                "page": 501,
+                "payload": "200000000500",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfrw-2_1c075f03c2\\page_0501.png"
+              },
+              {
+                "page": 1000,
+                "payload": "200000000999",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfrw-2_1c075f03c2\\page_1000.png"
+              }
+            ],
+            "render_samples": true,
+            "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+            "geometry_tolerance_points": 0.0003,
+            "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+          },
+          "qa_seconds": 5.301677500003279,
+          "total_seconds": 7.94858590000149
+        },
+        {
+          "seconds": 1.3711054999985208,
+          "cpu_seconds": 1.375,
+          "peak_rss_bytes": 66748416,
+          "ram_scope": "OS process peak working set including imports and input loading; QA excluded",
+          "cpu_scope": "method process CPU; excludes imports, input loading and QA",
+          "worker_wall_seconds": 1.6745545000012498,
+          "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\merge-pdfrw-3.pdf",
+          "output_bytes": 1342562,
+          "sha256": "536642865f4903b0982f2466ccf67c26d2c7d06c0b2a7d9d46d4866e2a8c2e1a",
+          "qa": {
+            "status": "PASS",
+            "errors": [],
+            "pages_checked": 1000,
+            "decoded_samples": [
+              {
+                "page": 1,
+                "payload": "200000000000",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfrw-3_d2669823b5\\page_0001.png"
+              },
+              {
+                "page": 501,
+                "payload": "200000000500",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfrw-3_d2669823b5\\page_0501.png"
+              },
+              {
+                "page": 1000,
+                "payload": "200000000999",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfrw-3_d2669823b5\\page_1000.png"
+              }
+            ],
+            "render_samples": true,
+            "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+            "geometry_tolerance_points": 0.0003,
+            "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+          },
+          "qa_seconds": 5.318008099999133,
+          "total_seconds": 8.010780700002215
+        }
+      ],
+      "median_seconds": 1.3384097999987716,
+      "spread_seconds": 0.044198299998242874,
+      "eligible_for_1000": false,
+      "output_bytes": 1342562,
+      "probe": {
+        "available": true,
+        "reason": "",
+        "version": "0.4"
+      }
+    },
+    {
+      "name": "PDFium (pypdfium2)",
+      "category": "merge",
+      "status": "PASS",
+      "reason": "",
+      "trials": [
+        {
+          "seconds": 1.181448499999533,
+          "cpu_seconds": 1.171875,
+          "peak_rss_bytes": 35540992,
+          "ram_scope": "OS process peak working set including imports and input loading; QA excluded",
+          "cpu_scope": "method process CPU; excludes imports, input loading and QA",
+          "worker_wall_seconds": 1.4948215000003984,
+          "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\merge-pdfium-(pypdfium2)-1.pdf",
+          "output_bytes": 1325533,
+          "sha256": "4845c22bceeb0b6c842b596a561394a92b58f96e0e36fd8a93ff813ddc47c750",
+          "qa": {
+            "status": "PASS",
+            "errors": [],
+            "pages_checked": 1000,
+            "decoded_samples": [
+              {
+                "page": 1,
+                "payload": "200000000000",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfium-(pypdfium2)-1_d3690dcb40\\page_0001.png"
+              },
+              {
+                "page": 501,
+                "payload": "200000000500",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfium-(pypdfium2)-1_d3690dcb40\\page_0501.png"
+              },
+              {
+                "page": 1000,
+                "payload": "200000000999",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfium-(pypdfium2)-1_d3690dcb40\\page_1000.png"
+              }
+            ],
+            "render_samples": true,
+            "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+            "geometry_tolerance_points": 0.0003,
+            "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+          },
+          "qa_seconds": 5.33291779999854,
+          "total_seconds": 7.844999499997357
+        },
+        {
+          "seconds": 1.2009075000023586,
+          "cpu_seconds": 1.203125,
+          "peak_rss_bytes": 35729408,
+          "ram_scope": "OS process peak working set including imports and input loading; QA excluded",
+          "cpu_scope": "method process CPU; excludes imports, input loading and QA",
+          "worker_wall_seconds": 1.5096234000011464,
+          "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\merge-pdfium-(pypdfium2)-2.pdf",
+          "output_bytes": 1325533,
+          "sha256": "3704f1a291347c2775a4e9744c745ad684d366b9e6a86f8d9312bbc4aff703b6",
+          "qa": {
+            "status": "PASS",
+            "errors": [],
+            "pages_checked": 1000,
+            "decoded_samples": [
+              {
+                "page": 1,
+                "payload": "200000000000",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfium-(pypdfium2)-2_c6ba51a162\\page_0001.png"
+              },
+              {
+                "page": 501,
+                "payload": "200000000500",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfium-(pypdfium2)-2_c6ba51a162\\page_0501.png"
+              },
+              {
+                "page": 1000,
+                "payload": "200000000999",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfium-(pypdfium2)-2_c6ba51a162\\page_1000.png"
+              }
+            ],
+            "render_samples": true,
+            "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+            "geometry_tolerance_points": 0.0003,
+            "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+          },
+          "qa_seconds": 5.344934799999464,
+          "total_seconds": 7.811083600005077
+        },
+        {
+          "seconds": 1.2077728000003844,
+          "cpu_seconds": 1.21875,
+          "peak_rss_bytes": 35385344,
+          "ram_scope": "OS process peak working set including imports and input loading; QA excluded",
+          "cpu_scope": "method process CPU; excludes imports, input loading and QA",
+          "worker_wall_seconds": 1.5211452000003192,
+          "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\merge-pdfium-(pypdfium2)-3.pdf",
+          "output_bytes": 1325533,
+          "sha256": "1b30806390904c431f2b38cd0fdc8044afdc92ff34f8d2a39a75cf0ec57d0ec2",
+          "qa": {
+            "status": "PASS",
+            "errors": [],
+            "pages_checked": 1000,
+            "decoded_samples": [
+              {
+                "page": 1,
+                "payload": "200000000000",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfium-(pypdfium2)-3_570205b515\\page_0001.png"
+              },
+              {
+                "page": 501,
+                "payload": "200000000500",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfium-(pypdfium2)-3_570205b515\\page_0501.png"
+              },
+              {
+                "page": 1000,
+                "payload": "200000000999",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfium-(pypdfium2)-3_570205b515\\page_1000.png"
+              }
+            ],
+            "render_samples": true,
+            "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+            "geometry_tolerance_points": 0.0003,
+            "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+          },
+          "qa_seconds": 5.320225600000413,
+          "total_seconds": 7.8474480000040785
+        }
+      ],
+      "median_seconds": 1.2009075000023586,
+      "spread_seconds": 0.026324300000851508,
+      "eligible_for_1000": false,
+      "output_bytes": 1325533,
+      "probe": {
+        "available": true,
+        "reason": "",
+        "version": "5.14.0"
+      }
+    },
+    {
+      "name": "pdfcpu",
+      "category": "merge",
+      "status": "PASS",
+      "reason": "",
+      "trials": [
+        {
+          "seconds": 1.252470600000379,
+          "cpu_seconds": 1.4375,
+          "peak_rss_bytes": 68026368,
+          "ram_scope": "OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)",
+          "cpu_scope": "method process CPU; excludes imports, input loading and QA; includes external engine CPU",
+          "child_cpu_seconds": 1.0,
+          "child_peak_rss_bytes": 45580288,
+          "worker_wall_seconds": 1.4712702999968315,
+          "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\merge-pdfcpu-1.pdf",
+          "output_bytes": 1356636,
+          "sha256": "71bd4d475c344cdd58bb83c80be45935e01aa88da0686e1cfbb1c87faad109e3",
+          "qa": {
+            "status": "PASS",
+            "errors": [],
+            "pages_checked": 1000,
+            "decoded_samples": [
+              {
+                "page": 1,
+                "payload": "200000000000",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfcpu-1_7b49fdb8bc\\page_0001.png"
+              },
+              {
+                "page": 501,
+                "payload": "200000000500",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfcpu-1_7b49fdb8bc\\page_0501.png"
+              },
+              {
+                "page": 1000,
+                "payload": "200000000999",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfcpu-1_7b49fdb8bc\\page_1000.png"
+              }
+            ],
+            "render_samples": true,
+            "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+            "geometry_tolerance_points": 0.0003,
+            "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+          },
+          "qa_seconds": 5.424307100001897,
+          "total_seconds": 7.916021599998203
+        },
+        {
+          "seconds": 1.247993700002553,
+          "cpu_seconds": 1.5625,
+          "peak_rss_bytes": 68558848,
+          "ram_scope": "OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)",
+          "cpu_scope": "method process CPU; excludes imports, input loading and QA; includes external engine CPU",
+          "child_cpu_seconds": 1.140625,
+          "child_peak_rss_bytes": 46067712,
+          "worker_wall_seconds": 1.457507600000099,
+          "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\merge-pdfcpu-2.pdf",
+          "output_bytes": 1356589,
+          "sha256": "7bbf3cdeaee1b51c926f198a0f901bf005852bd6fd3dcb6c2df52e254ebdf5b2",
+          "qa": {
+            "status": "PASS",
+            "errors": [],
+            "pages_checked": 1000,
+            "decoded_samples": [
+              {
+                "page": 1,
+                "payload": "200000000000",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfcpu-2_daa2587d98\\page_0001.png"
+              },
+              {
+                "page": 501,
+                "payload": "200000000500",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfcpu-2_daa2587d98\\page_0501.png"
+              },
+              {
+                "page": 1000,
+                "payload": "200000000999",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfcpu-2_daa2587d98\\page_1000.png"
+              }
+            ],
+            "render_samples": true,
+            "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+            "geometry_tolerance_points": 0.0003,
+            "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+          },
+          "qa_seconds": 5.42403270000068,
+          "total_seconds": 7.858169800005271
+        },
+        {
+          "seconds": 1.2240628999970795,
+          "cpu_seconds": 1.34375,
+          "peak_rss_bytes": 68755456,
+          "ram_scope": "OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)",
+          "cpu_scope": "method process CPU; excludes imports, input loading and QA; includes external engine CPU",
+          "child_cpu_seconds": 0.921875,
+          "child_peak_rss_bytes": 46370816,
+          "worker_wall_seconds": 1.4400853000006464,
+          "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\merge-pdfcpu-3.pdf",
+          "output_bytes": 1356594,
+          "sha256": "1f687f78d55f83cb19a151cf2f62fc74ae6b41f5cd1d94cb9e983f14524fe477",
+          "qa": {
+            "status": "PASS",
+            "errors": [],
+            "pages_checked": 1000,
+            "decoded_samples": [
+              {
+                "page": 1,
+                "payload": "200000000000",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfcpu-3_afeedfc98d\\page_0001.png"
+              },
+              {
+                "page": 501,
+                "payload": "200000000500",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfcpu-3_afeedfc98d\\page_0501.png"
+              },
+              {
+                "page": 1000,
+                "payload": "200000000999",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfcpu-3_afeedfc98d\\page_1000.png"
+              }
+            ],
+            "render_samples": true,
+            "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+            "geometry_tolerance_points": 0.0003,
+            "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+          },
+          "qa_seconds": 5.415390400001343,
+          "total_seconds": 7.863738100000774
+        }
+      ],
+      "median_seconds": 1.247993700002553,
+      "spread_seconds": 0.028407700003299396,
+      "eligible_for_1000": false,
+      "output_bytes": 1356594,
+      "probe": {
+        "available": true,
+        "reason": "",
+        "version": "version: 0.16.3",
+        "executable": "<project>\\tools\\pdfcpu\\pdfcpu_0.16.3_Windows_x86_64\\pdfcpu.exe"
+      }
+    },
+    {
+      "name": "Apache PDFBox",
+      "category": "merge",
+      "status": "PASS",
+      "reason": "",
+      "trials": [
+        {
+          "seconds": 2.1975963999975647,
+          "cpu_seconds": 0.546875,
+          "peak_rss_bytes": 32137216,
+          "ram_scope": "OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)",
+          "cpu_scope": "method process CPU; excludes imports, input loading and QA; includes external engine CPU",
+          "child_cpu_seconds": 0.125,
+          "child_peak_rss_bytes": 9842688,
+          "engine_options": "PDFBOX_LEGACY_MODE; temp-file-only stream cache; Java startup included",
+          "worker_wall_seconds": 2.4080930999989505,
+          "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\merge-apache-pdfbox-1.pdf",
+          "output_bytes": 971877,
+          "sha256": "0c577466226c4ddc4b627016d34bd7a0a430fd30325511629657e6c910c75ac0",
+          "qa": {
+            "status": "PASS",
+            "errors": [],
+            "pages_checked": 1000,
+            "decoded_samples": [
+              {
+                "page": 1,
+                "payload": "200000000000",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-apache-pdfbox-1_6abcab9681\\page_0001.png"
+              },
+              {
+                "page": 501,
+                "payload": "200000000500",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-apache-pdfbox-1_6abcab9681\\page_0501.png"
+              },
+              {
+                "page": 1000,
+                "payload": "200000000999",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-apache-pdfbox-1_6abcab9681\\page_1000.png"
+              }
+            ],
+            "render_samples": true,
+            "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+            "geometry_tolerance_points": 0.0003,
+            "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+          },
+          "qa_seconds": 5.392206699998496,
+          "total_seconds": 8.861147399995389
+        },
+        {
+          "seconds": 2.1775394000032975,
+          "cpu_seconds": 0.515625,
+          "peak_rss_bytes": 32116736,
+          "ram_scope": "OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)",
+          "cpu_scope": "method process CPU; excludes imports, input loading and QA; includes external engine CPU",
+          "child_cpu_seconds": 0.109375,
+          "child_peak_rss_bytes": 9846784,
+          "engine_options": "PDFBOX_LEGACY_MODE; temp-file-only stream cache; Java startup included",
+          "worker_wall_seconds": 2.391561399999773,
+          "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\merge-apache-pdfbox-2.pdf",
+          "output_bytes": 971877,
+          "sha256": "5f15261b44b29a91bb53a508f0f883828a713da745667226281102e742da6df5",
+          "qa": {
+            "status": "PASS",
+            "errors": [],
+            "pages_checked": 1000,
+            "decoded_samples": [
+              {
+                "page": 1,
+                "payload": "200000000000",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-apache-pdfbox-2_d84a835861\\page_0001.png"
+              },
+              {
+                "page": 501,
+                "payload": "200000000500",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-apache-pdfbox-2_d84a835861\\page_0501.png"
+              },
+              {
+                "page": 1000,
+                "payload": "200000000999",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-apache-pdfbox-2_d84a835861\\page_1000.png"
+              }
+            ],
+            "render_samples": true,
+            "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+            "geometry_tolerance_points": 0.0003,
+            "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+          },
+          "qa_seconds": 5.377679099998204,
+          "total_seconds": 8.787715500006016
+        },
+        {
+          "seconds": 2.136334700000589,
+          "cpu_seconds": 0.5,
+          "peak_rss_bytes": 32489472,
+          "ram_scope": "OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)",
+          "cpu_scope": "method process CPU; excludes imports, input loading and QA; includes external engine CPU",
+          "child_cpu_seconds": 0.109375,
+          "child_peak_rss_bytes": 9846784,
+          "engine_options": "PDFBOX_LEGACY_MODE; temp-file-only stream cache; Java startup included",
+          "worker_wall_seconds": 2.3520209999987856,
+          "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\merge-apache-pdfbox-3.pdf",
+          "output_bytes": 971877,
+          "sha256": "5bf606430990e280204eaff8a1c80ffb57f0efa992ead099a0bed40277f5f91d",
+          "qa": {
+            "status": "PASS",
+            "errors": [],
+            "pages_checked": 1000,
+            "decoded_samples": [
+              {
+                "page": 1,
+                "payload": "200000000000",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-apache-pdfbox-3_05cacc012c\\page_0001.png"
+              },
+              {
+                "page": 501,
+                "payload": "200000000500",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-apache-pdfbox-3_05cacc012c\\page_0501.png"
+              },
+              {
+                "page": 1000,
+                "payload": "200000000999",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-apache-pdfbox-3_05cacc012c\\page_1000.png"
+              }
+            ],
+            "render_samples": true,
+            "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+            "geometry_tolerance_points": 0.0003,
+            "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+          },
+          "qa_seconds": 5.389762899998459,
+          "total_seconds": 8.776009900004283
+        }
+      ],
+      "median_seconds": 2.1775394000032975,
+      "spread_seconds": 0.06126169999697595,
+      "eligible_for_1000": false,
+      "output_bytes": 971877,
+      "probe": {
+        "available": true,
+        "reason": "",
+        "version": "3.0.8",
+        "executable": "C:\\Program Files (x86)\\Common Files\\Oracle\\Java\\java8path\\java.EXE",
+        "java_version": "java version \"1.8.0_511\"",
+        "jar": "<project>\\tools\\pdfbox\\pdfbox-app-3.0.8.jar",
+        "classes": "<project>\\tools\\pdfbox\\classes"
+      }
+    },
+    {
+      "name": "pdf-lib (Node.js)",
+      "category": "merge",
+      "status": "PASS",
+      "reason": "",
+      "trials": [
+        {
+          "seconds": 3.15331309999965,
+          "cpu_seconds": 2.390625,
+          "peak_rss_bytes": 126918656,
+          "ram_scope": "OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)",
+          "cpu_scope": "method process CPU; excludes imports, input loading and QA; includes external engine CPU",
+          "child_cpu_seconds": 1.96875,
+          "child_peak_rss_bytes": 104816640,
+          "engine_options": "copyPages; object streams enabled; Node.js startup included",
+          "worker_wall_seconds": 3.3660396999985096,
+          "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\merge-pdf-lib-(node.js)-1.pdf",
+          "output_bytes": 964547,
+          "sha256": "c5ae3a82c713e30124687d33de5d72ae7abde8c884e685b08378f3c6b2bc8a7c",
+          "qa": {
+            "status": "PASS",
+            "errors": [],
+            "pages_checked": 1000,
+            "decoded_samples": [
+              {
+                "page": 1,
+                "payload": "200000000000",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdf-lib-(node.js)-1_ac76265ca5\\page_0001.png"
+              },
+              {
+                "page": 501,
+                "payload": "200000000500",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdf-lib-(node.js)-1_ac76265ca5\\page_0501.png"
+              },
+              {
+                "page": 1000,
+                "payload": "200000000999",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdf-lib-(node.js)-1_ac76265ca5\\page_1000.png"
+              }
+            ],
+            "render_samples": true,
+            "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+            "geometry_tolerance_points": 0.0003,
+            "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+          },
+          "qa_seconds": 5.423205900002358,
+          "total_seconds": 9.816864099997474
+        },
+        {
+          "seconds": 3.199363200001244,
+          "cpu_seconds": 2.09375,
+          "peak_rss_bytes": 127500288,
+          "ram_scope": "OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)",
+          "cpu_scope": "method process CPU; excludes imports, input loading and QA; includes external engine CPU",
+          "child_cpu_seconds": 1.671875,
+          "child_peak_rss_bytes": 105332736,
+          "engine_options": "copyPages; object streams enabled; Node.js startup included",
+          "worker_wall_seconds": 3.40905869999915,
+          "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\merge-pdf-lib-(node.js)-2.pdf",
+          "output_bytes": 964547,
+          "sha256": "c5ae3a82c713e30124687d33de5d72ae7abde8c884e685b08378f3c6b2bc8a7c",
+          "qa": {
+            "status": "PASS",
+            "errors": [],
+            "pages_checked": 1000,
+            "decoded_samples": [
+              {
+                "page": 1,
+                "payload": "200000000000",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdf-lib-(node.js)-2_973cf1bb7f\\page_0001.png"
+              },
+              {
+                "page": 501,
+                "payload": "200000000500",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdf-lib-(node.js)-2_973cf1bb7f\\page_0501.png"
+              },
+              {
+                "page": 1000,
+                "payload": "200000000999",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdf-lib-(node.js)-2_973cf1bb7f\\page_1000.png"
+              }
+            ],
+            "render_samples": true,
+            "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+            "geometry_tolerance_points": 0.0003,
+            "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+          },
+          "qa_seconds": 5.424480300000141,
+          "total_seconds": 9.809539300003962
+        },
+        {
+          "seconds": 3.1898481999996875,
+          "cpu_seconds": 2.15625,
+          "peak_rss_bytes": 126844928,
+          "ram_scope": "OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)",
+          "cpu_scope": "method process CPU; excludes imports, input loading and QA; includes external engine CPU",
+          "child_cpu_seconds": 1.734375,
+          "child_peak_rss_bytes": 104779776,
+          "engine_options": "copyPages; object streams enabled; Node.js startup included",
+          "worker_wall_seconds": 3.399686400000064,
+          "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\merge-pdf-lib-(node.js)-3.pdf",
+          "output_bytes": 964547,
+          "sha256": "c5ae3a82c713e30124687d33de5d72ae7abde8c884e685b08378f3c6b2bc8a7c",
+          "qa": {
+            "status": "PASS",
+            "errors": [],
+            "pages_checked": 1000,
+            "decoded_samples": [
+              {
+                "page": 1,
+                "payload": "200000000000",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdf-lib-(node.js)-3_d85b8431b0\\page_0001.png"
+              },
+              {
+                "page": 501,
+                "payload": "200000000500",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdf-lib-(node.js)-3_d85b8431b0\\page_0501.png"
+              },
+              {
+                "page": 1000,
+                "payload": "200000000999",
+                "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdf-lib-(node.js)-3_d85b8431b0\\page_1000.png"
+              }
+            ],
+            "render_samples": true,
+            "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+            "geometry_tolerance_points": 0.0003,
+            "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+          },
+          "qa_seconds": 5.362701199999719,
+          "total_seconds": 9.829523400003382
+        }
+      ],
+      "median_seconds": 3.1898481999996875,
+      "spread_seconds": 0.04605010000159382,
+      "eligible_for_1000": false,
+      "output_bytes": 964547,
+      "probe": {
+        "available": true,
+        "reason": "",
+        "version": "1.17.1",
+        "executable": "C:\\Program Files\\nodejs\\node.EXE",
+        "node_version": "v22.13.0",
+        "helper": "<project>\\scripts\\merge-pdflib.mjs"
+      }
+    },
+    {
+      "name": "PDFsharp (.NET)",
+      "category": "merge",
+      "status": "SKIPPED",
+      "reason": "Не допущен по отчёту этапа 200",
+      "trials": [],
+      "median_seconds": null,
+      "spread_seconds": null,
+      "eligible_for_1000": false,
+      "output_bytes": null
+    }
+  ],
+  "stages": {
+    "qr_encoding": [
+      {
+        "seconds": 4.0321650999976555,
+        "cpu_seconds": 4.03125,
+        "peak_rss_bytes": 36388864,
+        "ram_scope": "OS process peak working set including imports and input loading; QA excluded",
+        "cpu_scope": "method process CPU; excludes imports, input loading and QA",
+        "worker_wall_seconds": 4.647631799998635,
+        "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\frames-1.json"
+      },
+      {
+        "seconds": 3.9908054000006814,
+        "cpu_seconds": 4.0,
+        "peak_rss_bytes": 36458496,
+        "ram_scope": "OS process peak working set including imports and input loading; QA excluded",
+        "cpu_scope": "method process CPU; excludes imports, input loading and QA",
+        "worker_wall_seconds": 4.589767299999949,
+        "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\frames-2.json"
+      },
+      {
+        "seconds": 4.028507300001365,
+        "cpu_seconds": 4.03125,
+        "peak_rss_bytes": 36581376,
+        "ram_scope": "OS process peak working set including imports and input loading; QA excluded",
+        "cpu_scope": "method process CPU; excludes imports, input loading and QA",
+        "worker_wall_seconds": 4.642435199999454,
+        "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\frames-3.json"
+      }
+    ],
+    "single_files": [
+      {
+        "seconds": 2.6313859000001685,
+        "cpu_seconds": 2.640625,
+        "peak_rss_bytes": 34217984,
+        "ram_scope": "OS process peak working set including imports and input loading; QA excluded",
+        "cpu_scope": "method process CPU; excludes imports, input loading and QA",
+        "worker_wall_seconds": 2.986879300002329,
+        "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\singles-1",
+        "output_bytes": 2078270,
+        "qa": {
+          "status": "PASS",
+          "errors": [],
+          "pages_checked": 1000,
+          "decoded_samples": [
+            {
+              "page": 1,
+              "payload": "200000000000",
+              "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\singles-1\\qa_0001_200000000000_ee07fca6a2\\page_0001.png"
+            },
+            {
+              "page": 1,
+              "payload": "200000000500",
+              "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\singles-1\\qa_0501_200000000500_1a882c2d6c\\page_0001.png"
+            },
+            {
+              "page": 1,
+              "payload": "200000000999",
+              "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\singles-1\\qa_1000_200000000999_7b079a2721\\page_0001.png"
+            }
+          ],
+          "render_samples": true
+        },
+        "qa_seconds": 5.85434560000067,
+        "generation_total_seconds": 6.663550999997824
+      },
+      {
+        "seconds": 2.6193707000020368,
+        "cpu_seconds": 2.625,
+        "peak_rss_bytes": 34361344,
+        "ram_scope": "OS process peak working set including imports and input loading; QA excluded",
+        "cpu_scope": "method process CPU; excludes imports, input loading and QA",
+        "worker_wall_seconds": 2.9758586999996623,
+        "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\singles-2",
+        "output_bytes": 2078270,
+        "qa": {
+          "status": "PASS",
+          "errors": [],
+          "pages_checked": 1000,
+          "decoded_samples": [
+            {
+              "page": 1,
+              "payload": "200000000000",
+              "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\singles-2\\qa_0001_200000000000_ccded321fb\\page_0001.png"
+            },
+            {
+              "page": 1,
+              "payload": "200000000500",
+              "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\singles-2\\qa_0501_200000000500_687853b41b\\page_0001.png"
+            },
+            {
+              "page": 1,
+              "payload": "200000000999",
+              "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\singles-2\\qa_1000_200000000999_f31b1bf2f9\\page_0001.png"
+            }
+          ],
+          "render_samples": true
+        },
+        "qa_seconds": 5.879635499997676,
+        "generation_total_seconds": 6.610176100002718
+      },
+      {
+        "seconds": 2.6111679000023287,
+        "cpu_seconds": 2.609375,
+        "peak_rss_bytes": 34402304,
+        "ram_scope": "OS process peak working set including imports and input loading; QA excluded",
+        "cpu_scope": "method process CPU; excludes imports, input loading and QA",
+        "worker_wall_seconds": 2.9734682999987854,
+        "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\singles-3",
+        "output_bytes": 2078270,
+        "qa": {
+          "status": "PASS",
+          "errors": [],
+          "pages_checked": 1000,
+          "decoded_samples": [
+            {
+              "page": 1,
+              "payload": "200000000000",
+              "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\singles-3\\qa_0001_200000000000_00ce4804ed\\page_0001.png"
+            },
+            {
+              "page": 1,
+              "payload": "200000000500",
+              "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\singles-3\\qa_0501_200000000500_c5dc40921a\\page_0001.png"
+            },
+            {
+              "page": 1,
+              "payload": "200000000999",
+              "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\singles-3\\qa_1000_200000000999_fad7731a65\\page_0001.png"
+            }
+          ],
+          "render_samples": true
+        },
+        "qa_seconds": 5.914806400000089,
+        "generation_total_seconds": 6.639675200003694
+      }
+    ],
+    "direct_pdf": [
+      {
+        "seconds": 5.512571199997183,
+        "cpu_seconds": 5.515625,
+        "peak_rss_bytes": 49143808,
+        "ram_scope": "OS process peak working set including imports and input loading; QA excluded",
+        "cpu_scope": "method process CPU; excludes imports, input loading and QA",
+        "worker_wall_seconds": 5.903130499998952,
+        "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\direct-direct-pdf-1.pdf",
+        "output_bytes": 1168319,
+        "sha256": "acb11ca054d642fc5e3d5cc78a363fd753e0021f03a1b26662c4b15d51e58977",
+        "qa": {
+          "status": "PASS",
+          "errors": [],
+          "pages_checked": 1000,
+          "decoded_samples": [
+            {
+              "page": 1,
+              "payload": "200000000000",
+              "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-1_5608419627\\page_0001.png"
+            },
+            {
+              "page": 501,
+              "payload": "200000000500",
+              "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-1_5608419627\\page_0501.png"
+            },
+            {
+              "page": 1000,
+              "payload": "200000000999",
+              "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-1_5608419627\\page_1000.png"
+            }
+          ],
+          "render_samples": true,
+          "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+          "geometry_tolerance_points": 0.0003,
+          "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+        },
+        "qa_seconds": 5.275320000000647,
+        "total_seconds": 5.512571199997183
+      },
+      {
+        "seconds": 5.516497699998581,
+        "cpu_seconds": 5.515625,
+        "peak_rss_bytes": 49446912,
+        "ram_scope": "OS process peak working set including imports and input loading; QA excluded",
+        "cpu_scope": "method process CPU; excludes imports, input loading and QA",
+        "worker_wall_seconds": 5.908638500000961,
+        "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\direct-direct-pdf-2.pdf",
+        "output_bytes": 1168319,
+        "sha256": "acb11ca054d642fc5e3d5cc78a363fd753e0021f03a1b26662c4b15d51e58977",
+        "qa": {
+          "status": "PASS",
+          "errors": [],
+          "pages_checked": 1000,
+          "decoded_samples": [
+            {
+              "page": 1,
+              "payload": "200000000000",
+              "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-2_3a48ae373c\\page_0001.png"
+            },
+            {
+              "page": 501,
+              "payload": "200000000500",
+              "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-2_3a48ae373c\\page_0501.png"
+            },
+            {
+              "page": 1000,
+              "payload": "200000000999",
+              "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-2_3a48ae373c\\page_1000.png"
+            }
+          ],
+          "render_samples": true,
+          "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+          "geometry_tolerance_points": 0.0003,
+          "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+        },
+        "qa_seconds": 5.311272300001292,
+        "total_seconds": 5.516497699998581
+      },
+      {
+        "seconds": 5.516372100002627,
+        "cpu_seconds": 5.515625,
+        "peak_rss_bytes": 49324032,
+        "ram_scope": "OS process peak working set including imports and input loading; QA excluded",
+        "cpu_scope": "method process CPU; excludes imports, input loading and QA",
+        "worker_wall_seconds": 5.912696399998822,
+        "path": ".\\runs\\run-1000-20261027-141915-690e50b0\\direct-direct-pdf-3.pdf",
+        "output_bytes": 1168319,
+        "sha256": "acb11ca054d642fc5e3d5cc78a363fd753e0021f03a1b26662c4b15d51e58977",
+        "qa": {
+          "status": "PASS",
+          "errors": [],
+          "pages_checked": 1000,
+          "decoded_samples": [
+            {
+              "page": 1,
+              "payload": "200000000000",
+              "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-3_10052dc731\\page_0001.png"
+            },
+            {
+              "page": 501,
+              "payload": "200000000500",
+              "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-3_10052dc731\\page_0501.png"
+            },
+            {
+              "page": 1000,
+              "payload": "200000000999",
+              "png": ".\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-3_10052dc731\\page_1000.png"
+            }
+          ],
+          "render_samples": true,
+          "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+          "geometry_tolerance_points": 0.0003,
+          "decoded_payload_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e"
+        },
+        "qa_seconds": 5.295697899997322,
+        "total_seconds": 5.516372100002627
+      }
+    ],
+    "numbers_txt_sha256": "d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e",
+    "overall_seconds": 298.0472252999971
+  },
+  "notes": [
+    "Acrobat 120 s is a user-provided reference, not measured in this run.",
+    "No warmup; three measured trials. QA, imports, input reads, hashes excluded from method times.",
+    "Imports above means preloaded Python libraries; external CLI/JVM/Node/.NET startup and imports are included.",
+    "Direct includes encoding plus PDF. Merge times exclude source generation; total_seconds includes it.",
+    "RAM: fresh worker OS peak working set incl. imports/input, QA excluded. External sum is upper bound.",
+    "Only QR V1-M numeric 12-digit payloads; no PDF/X certification or physical print scan.",
+    "QA independent numeric decoder rejects damage (no error correction); raster controls first/middle/last."
+  ]
+}

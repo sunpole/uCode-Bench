@@ -1,0 +1,7 @@
+{
+  "name": "ucode-bench-engines",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Project-local JavaScript PDF merge adapter",
+  "dependencies": { "pdf-lib": "1.17.1" }
+}

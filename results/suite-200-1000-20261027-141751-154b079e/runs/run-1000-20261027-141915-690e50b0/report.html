@@ -1,0 +1,1632 @@
+<!doctype html><html lang='ru'><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>uCode — результаты QR-бенчмарка</title><style>body{font:16px/1.5 system-ui,Segoe UI,sans-serif;margin:0;background:#f4f6f9;color:#162238}main{max-width:1400px;margin:auto;padding:28px}h1{margin-bottom:4px}h2{margin-top:32px}table{border-collapse:collapse;width:100%;background:white;font-variant-numeric:tabular-nums}th,td{text-align:left;border-bottom:1px solid #d9e0eb;padding:10px;vertical-align:top}thead{background:#e8edf5}tbody th{font-weight:600}.scroll{overflow:auto;border:1px solid #d9e0eb;border-radius:8px}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.5 ui-monospace,monospace}.PASS{color:#116239}.INVALID,.ERROR,.FAIL{color:#a52929}.SKIPPED{color:#5c687a}.intro{background:white;padding:18px;border-radius:10px;border-left:4px solid #325fca}.muted{color:#56657b}details{max-width:700px}a{color:#214da8}</style><main><h1>uCode · QR-бенчмарк</h1><p class='muted'>1000 файлов · 3 повтора · статус запуска: COMPLETE</p><div class='intro'><p>Обычный QR Code, уровень M, модуль 0,5 мм, свободное поле 4 модуля. PDF: векторный CMYK C0 M0 Y0 K100, страница 14,5 × 14,5 мм.</p><p>Допуск к 1000: все три QA PASS и медиана строго меньше 120 с на 200 файлах. Этап на 1000 требует отдельного запуска.</p><p>Acrobat: 120 с на объединение 200 готовых PDF — исходное значение пользователя; в этом запуске Acrobat не измерялся.</p></div><h2>Объединение готовых PDF</h2><p>Время создания исходных файлов сюда не входит. В рейтинг входят только методы со статусом PASS.</p><div class='scroll'><table><thead><tr><th>Место</th><th>Метод</th><th>Статус</th><th>Медиана, с</th><th>max−min, с</th><th>Размер, байт</th><th>Допуск к 1000</th><th>Примечание</th></tr></thead><tbody><tr><td>1</td><th scope='row'>MuPDF (mutool)</th><td class='PASS'>PASS</td><td>0.8150</td><td>0.0321</td><td>1300368</td><td>Нет</td><td></td></tr><tr><td>2</td><th scope='row'>pikepdf</th><td class='PASS'>PASS</td><td>1.0909</td><td>0.0294</td><td>1167436</td><td>Нет</td><td></td></tr><tr><td>3</td><th scope='row'>PDFium (pypdfium2)</th><td class='PASS'>PASS</td><td>1.2009</td><td>0.0263</td><td>1325533</td><td>Нет</td><td></td></tr><tr><td>4</td><th scope='row'>pdfcpu</th><td class='PASS'>PASS</td><td>1.2480</td><td>0.0284</td><td>1356594</td><td>Нет</td><td></td></tr><tr><td>5</td><th scope='row'>pdfrw</th><td class='PASS'>PASS</td><td>1.3384</td><td>0.0442</td><td>1342562</td><td>Нет</td><td></td></tr><tr><td>6</td><th scope='row'>pypdf</th><td class='PASS'>PASS</td><td>1.6226</td><td>0.0696</td><td>1351461</td><td>Нет</td><td></td></tr><tr><td>7</td><th scope='row'>PyMuPDF</th><td class='PASS'>PASS</td><td>1.6666</td><td>0.0187</td><td>1300441</td><td>Нет</td><td></td></tr><tr><td>8</td><th scope='row'>Apache PDFBox</th><td class='PASS'>PASS</td><td>2.1775</td><td>0.0613</td><td>971877</td><td>Нет</td><td></td></tr><tr><td>9</td><th scope='row'>qpdf</th><td class='PASS'>PASS</td><td>2.2225</td><td>0.0360</td><td>1166436</td><td>Нет</td><td></td></tr><tr><td>10</td><th scope='row'>pdf-lib (Node.js)</th><td class='PASS'>PASS</td><td>3.1898</td><td>0.0461</td><td>964547</td><td>Нет</td><td></td></tr><tr><td>—</td><th scope='row'>PDFsharp (.NET)</th><td class='SKIPPED'>SKIPPED</td><td>—</td><td>—</td><td>—</td><td>Нет</td><td>Не допущен по отчёту этапа 200</td></tr></tbody></table></div><h2>Прямая генерация</h2><p>QR-кодирование и создание многостраничного PDF. Оценивается отдельно от объединения.</p><div class='scroll'><table><thead><tr><th>Место</th><th>Метод</th><th>Статус</th><th>Медиана, с</th><th>max−min, с</th><th>Размер, байт</th><th>Допуск к 1000</th><th>Примечание</th></tr></thead><tbody><tr><td>1</td><th scope='row'>Direct PDF</th><td class='PASS'>PASS</td><td>5.5164</td><td>0.0039</td><td>1168319</td><td>Нет</td><td></td></tr></tbody></table></div><h2>Измерения по этапам</h2><h3>Кодирование QR</h3><div class='scroll'><table><thead><tr><th>Повтор</th><th>Время метода, с</th><th>Генерация + метод, с</th><th>CPU, с</th><th>Пик Working Set / RSS, MiB</th><th>Размер, байт</th><th>QA</th><th>Подробности</th><th>Файл</th></tr></thead><tbody><tr><td>1</td><td>4.0322</td><td>—</td><td>4.0312</td><td>34.70</td><td>—</td><td>—</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 4.0321650999976555,
+  &quot;cpu_seconds&quot;: 4.03125,
+  &quot;peak_rss_bytes&quot;: 36388864,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 4.647631799998635,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\frames-1.json&quot;
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\frames-1.json</td></tr><tr><td>2</td><td>3.9908</td><td>—</td><td>4.0000</td><td>34.77</td><td>—</td><td>—</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 3.9908054000006814,
+  &quot;cpu_seconds&quot;: 4.0,
+  &quot;peak_rss_bytes&quot;: 36458496,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 4.589767299999949,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\frames-2.json&quot;
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\frames-2.json</td></tr><tr><td>3</td><td>4.0285</td><td>—</td><td>4.0312</td><td>34.89</td><td>—</td><td>—</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 4.028507300001365,
+  &quot;cpu_seconds&quot;: 4.03125,
+  &quot;peak_rss_bytes&quot;: 36581376,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 4.642435199999454,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\frames-3.json&quot;
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\frames-3.json</td></tr></tbody></table></div><h3>Создание отдельных PDF</h3><div class='scroll'><table><thead><tr><th>Повтор</th><th>Время метода, с</th><th>Генерация + метод, с</th><th>CPU, с</th><th>Пик Working Set / RSS, MiB</th><th>Размер, байт</th><th>QA</th><th>Подробности</th><th>Файл</th></tr></thead><tbody><tr><td>1</td><td>2.6314</td><td>6.6636</td><td>2.6406</td><td>32.63</td><td>2078270</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 2.6313859000001685,
+  &quot;cpu_seconds&quot;: 2.640625,
+  &quot;peak_rss_bytes&quot;: 34217984,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 2.986879300002329,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\singles-1&quot;,
+  &quot;output_bytes&quot;: 2078270,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\singles-1\\qa_0001_200000000000_ee07fca6a2\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\singles-1\\qa_0501_200000000500_1a882c2d6c\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\singles-1\\qa_1000_200000000999_7b079a2721\\page_0001.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true
+  },
+  &quot;qa_seconds&quot;: 5.85434560000067,
+  &quot;generation_total_seconds&quot;: 6.663550999997824
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\singles-1</td></tr><tr><td>2</td><td>2.6194</td><td>6.6102</td><td>2.6250</td><td>32.77</td><td>2078270</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 2.6193707000020368,
+  &quot;cpu_seconds&quot;: 2.625,
+  &quot;peak_rss_bytes&quot;: 34361344,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 2.9758586999996623,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\singles-2&quot;,
+  &quot;output_bytes&quot;: 2078270,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\singles-2\\qa_0001_200000000000_ccded321fb\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\singles-2\\qa_0501_200000000500_687853b41b\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\singles-2\\qa_1000_200000000999_f31b1bf2f9\\page_0001.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true
+  },
+  &quot;qa_seconds&quot;: 5.879635499997676,
+  &quot;generation_total_seconds&quot;: 6.610176100002718
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\singles-2</td></tr><tr><td>3</td><td>2.6112</td><td>6.6397</td><td>2.6094</td><td>32.81</td><td>2078270</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 2.6111679000023287,
+  &quot;cpu_seconds&quot;: 2.609375,
+  &quot;peak_rss_bytes&quot;: 34402304,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 2.9734682999987854,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\singles-3&quot;,
+  &quot;output_bytes&quot;: 2078270,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\singles-3\\qa_0001_200000000000_00ce4804ed\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\singles-3\\qa_0501_200000000500_c5dc40921a\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\singles-3\\qa_1000_200000000999_fad7731a65\\page_0001.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true
+  },
+  &quot;qa_seconds&quot;: 5.914806400000089,
+  &quot;generation_total_seconds&quot;: 6.639675200003694
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\singles-3</td></tr></tbody></table></div><h3>Прямой PDF</h3><div class='scroll'><table><thead><tr><th>Повтор</th><th>Время метода, с</th><th>Генерация + метод, с</th><th>CPU, с</th><th>Пик Working Set / RSS, MiB</th><th>Размер, байт</th><th>QA</th><th>Подробности</th><th>Файл</th></tr></thead><tbody><tr><td>1</td><td>5.5126</td><td>5.5126</td><td>5.5156</td><td>46.87</td><td>1168319</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 5.512571199997183,
+  &quot;cpu_seconds&quot;: 5.515625,
+  &quot;peak_rss_bytes&quot;: 49143808,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 5.903130499998952,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\direct-direct-pdf-1.pdf&quot;,
+  &quot;output_bytes&quot;: 1168319,
+  &quot;sha256&quot;: &quot;acb11ca054d642fc5e3d5cc78a363fd753e0021f03a1b26662c4b15d51e58977&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-1_5608419627\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-1_5608419627\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-1_5608419627\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 5.275320000000647,
+  &quot;total_seconds&quot;: 5.512571199997183
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\direct-direct-pdf-1.pdf</td></tr><tr><td>2</td><td>5.5165</td><td>5.5165</td><td>5.5156</td><td>47.16</td><td>1168319</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 5.516497699998581,
+  &quot;cpu_seconds&quot;: 5.515625,
+  &quot;peak_rss_bytes&quot;: 49446912,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 5.908638500000961,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\direct-direct-pdf-2.pdf&quot;,
+  &quot;output_bytes&quot;: 1168319,
+  &quot;sha256&quot;: &quot;acb11ca054d642fc5e3d5cc78a363fd753e0021f03a1b26662c4b15d51e58977&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-2_3a48ae373c\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-2_3a48ae373c\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-2_3a48ae373c\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 5.311272300001292,
+  &quot;total_seconds&quot;: 5.516497699998581
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\direct-direct-pdf-2.pdf</td></tr><tr><td>3</td><td>5.5164</td><td>5.5164</td><td>5.5156</td><td>47.04</td><td>1168319</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 5.516372100002627,
+  &quot;cpu_seconds&quot;: 5.515625,
+  &quot;peak_rss_bytes&quot;: 49324032,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 5.912696399998822,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\direct-direct-pdf-3.pdf&quot;,
+  &quot;output_bytes&quot;: 1168319,
+  &quot;sha256&quot;: &quot;acb11ca054d642fc5e3d5cc78a363fd753e0021f03a1b26662c4b15d51e58977&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-3_10052dc731\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-3_10052dc731\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-3_10052dc731\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 5.295697899997322,
+  &quot;total_seconds&quot;: 5.516372100002627
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\direct-direct-pdf-3.pdf</td></tr></tbody></table></div><p>Общее время этапов и QA до сохранения отчётов, с: 298.0472</p><h2>Повторы каждого метода</h2><h3>Direct PDF · PASS</h3><div class='scroll'><table><thead><tr><th>Повтор</th><th>Время метода, с</th><th>Генерация + метод, с</th><th>CPU, с</th><th>Пик Working Set / RSS, MiB</th><th>Размер, байт</th><th>QA</th><th>Подробности</th><th>Файл</th></tr></thead><tbody><tr><td>1</td><td>5.5126</td><td>5.5126</td><td>5.5156</td><td>46.87</td><td>1168319</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 5.512571199997183,
+  &quot;cpu_seconds&quot;: 5.515625,
+  &quot;peak_rss_bytes&quot;: 49143808,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 5.903130499998952,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\direct-direct-pdf-1.pdf&quot;,
+  &quot;output_bytes&quot;: 1168319,
+  &quot;sha256&quot;: &quot;acb11ca054d642fc5e3d5cc78a363fd753e0021f03a1b26662c4b15d51e58977&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-1_5608419627\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-1_5608419627\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-1_5608419627\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 5.275320000000647,
+  &quot;total_seconds&quot;: 5.512571199997183
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\direct-direct-pdf-1.pdf</td></tr><tr><td>2</td><td>5.5165</td><td>5.5165</td><td>5.5156</td><td>47.16</td><td>1168319</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 5.516497699998581,
+  &quot;cpu_seconds&quot;: 5.515625,
+  &quot;peak_rss_bytes&quot;: 49446912,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 5.908638500000961,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\direct-direct-pdf-2.pdf&quot;,
+  &quot;output_bytes&quot;: 1168319,
+  &quot;sha256&quot;: &quot;acb11ca054d642fc5e3d5cc78a363fd753e0021f03a1b26662c4b15d51e58977&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-2_3a48ae373c\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-2_3a48ae373c\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-2_3a48ae373c\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 5.311272300001292,
+  &quot;total_seconds&quot;: 5.516497699998581
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\direct-direct-pdf-2.pdf</td></tr><tr><td>3</td><td>5.5164</td><td>5.5164</td><td>5.5156</td><td>47.04</td><td>1168319</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 5.516372100002627,
+  &quot;cpu_seconds&quot;: 5.515625,
+  &quot;peak_rss_bytes&quot;: 49324032,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 5.912696399998822,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\direct-direct-pdf-3.pdf&quot;,
+  &quot;output_bytes&quot;: 1168319,
+  &quot;sha256&quot;: &quot;acb11ca054d642fc5e3d5cc78a363fd753e0021f03a1b26662c4b15d51e58977&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-3_10052dc731\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-3_10052dc731\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_direct-direct-pdf-3_10052dc731\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 5.295697899997322,
+  &quot;total_seconds&quot;: 5.516372100002627
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\direct-direct-pdf-3.pdf</td></tr></tbody></table></div><h3>qpdf · PASS</h3><div class='scroll'><table><thead><tr><th>Повтор</th><th>Время метода, с</th><th>Генерация + метод, с</th><th>CPU, с</th><th>Пик Working Set / RSS, MiB</th><th>Размер, байт</th><th>QA</th><th>Подробности</th><th>Файл</th></tr></thead><tbody><tr><td>1</td><td>2.2225</td><td>8.8860</td><td>2.2031</td><td>51.16</td><td>1166436</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 2.222498800001631,
+  &quot;cpu_seconds&quot;: 2.203125,
+  &quot;peak_rss_bytes&quot;: 53641216,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA; includes external engine CPU&quot;,
+  &quot;child_cpu_seconds&quot;: 1.8125,
+  &quot;child_peak_rss_bytes&quot;: 31514624,
+  &quot;worker_wall_seconds&quot;: 2.4368209000022034,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\merge-qpdf-1.pdf&quot;,
+  &quot;output_bytes&quot;: 1166436,
+  &quot;sha256&quot;: &quot;28ed60d9648caf0f6d1b198f68d689d168b4c93d6cfd1c1c7aa4e21c968671fb&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-qpdf-1_2ba222f53c\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-qpdf-1_2ba222f53c\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-qpdf-1_2ba222f53c\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 5.131820000002335,
+  &quot;total_seconds&quot;: 8.886049799999455
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\merge-qpdf-1.pdf</td></tr><tr><td>2</td><td>2.2264</td><td>8.8365</td><td>2.2188</td><td>51.49</td><td>1166436</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 2.2263545999994676,
+  &quot;cpu_seconds&quot;: 2.21875,
+  &quot;peak_rss_bytes&quot;: 53993472,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA; includes external engine CPU&quot;,
+  &quot;child_cpu_seconds&quot;: 1.828125,
+  &quot;child_peak_rss_bytes&quot;: 31584256,
+  &quot;worker_wall_seconds&quot;: 2.4420124999996915,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\merge-qpdf-2.pdf&quot;,
+  &quot;output_bytes&quot;: 1166436,
+  &quot;sha256&quot;: &quot;74bfca33065bc17e679064ee22099c0151e83937d4eb8a1e511059c08b5c574c&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-qpdf-2_f3efca359b\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-qpdf-2_f3efca359b\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-qpdf-2_f3efca359b\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 5.066490400000475,
+  &quot;total_seconds&quot;: 8.836530700002186
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\merge-qpdf-2.pdf</td></tr><tr><td>3</td><td>2.1904</td><td>8.8300</td><td>2.1719</td><td>51.45</td><td>1166436</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 2.1903739999979734,
+  &quot;cpu_seconds&quot;: 2.171875,
+  &quot;peak_rss_bytes&quot;: 53948416,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA; includes external engine CPU&quot;,
+  &quot;child_cpu_seconds&quot;: 1.796875,
+  &quot;child_peak_rss_bytes&quot;: 31531008,
+  &quot;worker_wall_seconds&quot;: 2.4032917999975325,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\merge-qpdf-3.pdf&quot;,
+  &quot;output_bytes&quot;: 1166436,
+  &quot;sha256&quot;: &quot;09e323c16be5a41e1d18c9637546cbf0ecca280d9909fe0d60f18589add24b7d&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-qpdf-3_c6dc38a08d\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-qpdf-3_c6dc38a08d\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-qpdf-3_c6dc38a08d\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 5.059377700003097,
+  &quot;total_seconds&quot;: 8.830049200001667
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\merge-qpdf-3.pdf</td></tr></tbody></table></div><h3>MuPDF (mutool) · PASS</h3><div class='scroll'><table><thead><tr><th>Повтор</th><th>Время метода, с</th><th>Генерация + метод, с</th><th>CPU, с</th><th>Пик Working Set / RSS, MiB</th><th>Размер, байт</th><th>QA</th><th>Подробности</th><th>Файл</th></tr></thead><tbody><tr><td>1</td><td>0.8142</td><td>7.4777</td><td>0.7812</td><td>31.18</td><td>1300368</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.8141782999991847,
+  &quot;cpu_seconds&quot;: 0.78125,
+  &quot;peak_rss_bytes&quot;: 32690176,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA; includes external engine CPU&quot;,
+  &quot;child_cpu_seconds&quot;: 0.390625,
+  &quot;child_peak_rss_bytes&quot;: 10215424,
+  &quot;worker_wall_seconds&quot;: 1.023393399998895,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\merge-mupdf-(mutool)-1.pdf&quot;,
+  &quot;output_bytes&quot;: 1300368,
+  &quot;sha256&quot;: &quot;008e8bd9e665b12bf75e75fecd54f7758a682e004cbf508d0208aa8a6ed71200&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-mupdf-(mutool)-1_9b6c98919e\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-mupdf-(mutool)-1_9b6c98919e\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-mupdf-(mutool)-1_9b6c98919e\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 5.402121099999931,
+  &quot;total_seconds&quot;: 7.477729299997009
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\merge-mupdf-(mutool)-1.pdf</td></tr><tr><td>2</td><td>0.8462</td><td>7.4564</td><td>0.8125</td><td>31.21</td><td>1300368</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.8462409999992815,
+  &quot;cpu_seconds&quot;: 0.8125,
+  &quot;peak_rss_bytes&quot;: 32727040,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA; includes external engine CPU&quot;,
+  &quot;child_cpu_seconds&quot;: 0.390625,
+  &quot;child_peak_rss_bytes&quot;: 10366976,
+  &quot;worker_wall_seconds&quot;: 1.06451929999821,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\merge-mupdf-(mutool)-2.pdf&quot;,
+  &quot;output_bytes&quot;: 1300368,
+  &quot;sha256&quot;: &quot;008e8bd9e665b12bf75e75fecd54f7758a682e004cbf508d0208aa8a6ed71200&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-mupdf-(mutool)-2_e38d14ae1e\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-mupdf-(mutool)-2_e38d14ae1e\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-mupdf-(mutool)-2_e38d14ae1e\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 5.276689799997257,
+  &quot;total_seconds&quot;: 7.456417100002
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\merge-mupdf-(mutool)-2.pdf</td></tr><tr><td>3</td><td>0.8150</td><td>7.4546</td><td>0.8125</td><td>31.44</td><td>1300368</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.8149736000013945,
+  &quot;cpu_seconds&quot;: 0.8125,
+  &quot;peak_rss_bytes&quot;: 32964608,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA; includes external engine CPU&quot;,
+  &quot;child_cpu_seconds&quot;: 0.390625,
+  &quot;child_peak_rss_bytes&quot;: 10383360,
+  &quot;worker_wall_seconds&quot;: 1.0269680000019434,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\merge-mupdf-(mutool)-3.pdf&quot;,
+  &quot;output_bytes&quot;: 1300368,
+  &quot;sha256&quot;: &quot;008e8bd9e665b12bf75e75fecd54f7758a682e004cbf508d0208aa8a6ed71200&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-mupdf-(mutool)-3_e22737269e\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-mupdf-(mutool)-3_e22737269e\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-mupdf-(mutool)-3_e22737269e\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 5.261197400002857,
+  &quot;total_seconds&quot;: 7.454648800005089
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\merge-mupdf-(mutool)-3.pdf</td></tr></tbody></table></div><h3>PyMuPDF · PASS</h3><div class='scroll'><table><thead><tr><th>Повтор</th><th>Время метода, с</th><th>Генерация + метод, с</th><th>CPU, с</th><th>Пик Working Set / RSS, MiB</th><th>Размер, байт</th><th>QA</th><th>Подробности</th><th>Файл</th></tr></thead><tbody><tr><td>1</td><td>1.6723</td><td>8.3358</td><td>1.6719</td><td>124.28</td><td>1300441</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 1.6722846999982721,
+  &quot;cpu_seconds&quot;: 1.671875,
+  &quot;peak_rss_bytes&quot;: 130318336,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 3.672777199997654,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\merge-pymupdf-1.pdf&quot;,
+  &quot;output_bytes&quot;: 1300441,
+  &quot;sha256&quot;: &quot;251ed9208133ed0e7cc9b70e5cb91408427bf08298a8422db61f1cb7df5a64ae&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pymupdf-1_405525f7b8\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pymupdf-1_405525f7b8\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pymupdf-1_405525f7b8\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 6.100005600001168,
+  &quot;total_seconds&quot;: 8.335835699996096
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\merge-pymupdf-1.pdf</td></tr><tr><td>2</td><td>1.6666</td><td>8.2768</td><td>1.6719</td><td>124.86</td><td>1300441</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 1.666581599998608,
+  &quot;cpu_seconds&quot;: 1.671875,
+  &quot;peak_rss_bytes&quot;: 130924544,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 3.6066304000014497,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\merge-pymupdf-2.pdf&quot;,
+  &quot;output_bytes&quot;: 1300441,
+  &quot;sha256&quot;: &quot;901c3a2ae6283a6b74399635223b965f120c6004da48fad15dd0fd8cf51b9eb8&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pymupdf-2_54cbe2fd3f\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pymupdf-2_54cbe2fd3f\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pymupdf-2_54cbe2fd3f\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 5.276621900000464,
+  &quot;total_seconds&quot;: 8.276757700001326
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\merge-pymupdf-2.pdf</td></tr><tr><td>3</td><td>1.6536</td><td>8.2933</td><td>1.6562</td><td>124.64</td><td>1300441</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 1.6536343999978271,
+  &quot;cpu_seconds&quot;: 1.65625,
+  &quot;peak_rss_bytes&quot;: 130699264,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 3.55032520000168,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\merge-pymupdf-3.pdf&quot;,
+  &quot;output_bytes&quot;: 1300441,
+  &quot;sha256&quot;: &quot;47c606c802a2569d196caa63b197e600c08b1def5bcaf4b9e17393fb3a8d1211&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pymupdf-3_56df2f6be9\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pymupdf-3_56df2f6be9\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pymupdf-3_56df2f6be9\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 5.421512500000972,
+  &quot;total_seconds&quot;: 8.293309600001521
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\merge-pymupdf-3.pdf</td></tr></tbody></table></div><h3>pikepdf · PASS</h3><div class='scroll'><table><thead><tr><th>Повтор</th><th>Время метода, с</th><th>Генерация + метод, с</th><th>CPU, с</th><th>Пик Working Set / RSS, MiB</th><th>Размер, байт</th><th>QA</th><th>Подробности</th><th>Файл</th></tr></thead><tbody><tr><td>1</td><td>1.0756</td><td>7.7392</td><td>1.0781</td><td>39.05</td><td>1167436</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 1.0756049000010535,
+  &quot;cpu_seconds&quot;: 1.078125,
+  &quot;peak_rss_bytes&quot;: 40951808,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 1.364184699999896,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\merge-pikepdf-1.pdf&quot;,
+  &quot;output_bytes&quot;: 1167436,
+  &quot;sha256&quot;: &quot;eee7beb3ce7b20784da2fd1f0e664ee2deff7c3854ace07edb8aebe5a28c2d54&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pikepdf-1_666c6d9f7a\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pikepdf-1_666c6d9f7a\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pikepdf-1_666c6d9f7a\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 5.132910200001788,
+  &quot;total_seconds&quot;: 7.739155899998877
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\merge-pikepdf-1.pdf</td></tr><tr><td>2</td><td>1.0909</td><td>7.7010</td><td>1.0938</td><td>38.93</td><td>1167436</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 1.0908622999995714,
+  &quot;cpu_seconds&quot;: 1.09375,
+  &quot;peak_rss_bytes&quot;: 40824832,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 1.3853526000020793,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\merge-pikepdf-2.pdf&quot;,
+  &quot;output_bytes&quot;: 1167436,
+  &quot;sha256&quot;: &quot;439e9f6cc3c060837ceb4e2865013dfc21b07802355b35f35d19c4f75145850d&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pikepdf-2_c55eb43306\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pikepdf-2_c55eb43306\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pikepdf-2_c55eb43306\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 5.069289999999455,
+  &quot;total_seconds&quot;: 7.70103840000229
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\merge-pikepdf-2.pdf</td></tr><tr><td>3</td><td>1.1050</td><td>7.7447</td><td>1.1094</td><td>38.80</td><td>1167436</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 1.1049947999999858,
+  &quot;cpu_seconds&quot;: 1.109375,
+  &quot;peak_rss_bytes&quot;: 40689664,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 1.392594699998881,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\merge-pikepdf-3.pdf&quot;,
+  &quot;output_bytes&quot;: 1167436,
+  &quot;sha256&quot;: &quot;f67e2beef7d5d68d86e1162f2f19b0ccd7ed37058434570a7da72eedd9b3c89e&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pikepdf-3_9048d702a2\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pikepdf-3_9048d702a2\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pikepdf-3_9048d702a2\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 5.062803199998598,
+  &quot;total_seconds&quot;: 7.74467000000368
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\merge-pikepdf-3.pdf</td></tr></tbody></table></div><h3>pypdf · PASS</h3><div class='scroll'><table><thead><tr><th>Повтор</th><th>Время метода, с</th><th>Генерация + метод, с</th><th>CPU, с</th><th>Пик Working Set / RSS, MiB</th><th>Размер, байт</th><th>QA</th><th>Подробности</th><th>Файл</th></tr></thead><tbody><tr><td>1</td><td>1.6066</td><td>8.2701</td><td>1.5938</td><td>57.64</td><td>1351461</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 1.6065933999998379,
+  &quot;cpu_seconds&quot;: 1.59375,
+  &quot;peak_rss_bytes&quot;: 60440576,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 2.035448099999485,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\merge-pypdf-1.pdf&quot;,
+  &quot;output_bytes&quot;: 1351461,
+  &quot;sha256&quot;: &quot;399372807d40771b31216d2245e295d0a24d4e6168ae290aea331c6d16a24ef8&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pypdf-1_bb44c65c6f\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pypdf-1_bb44c65c6f\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pypdf-1_bb44c65c6f\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 5.3075850999994145,
+  &quot;total_seconds&quot;: 8.270144399997662
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\merge-pypdf-1.pdf</td></tr><tr><td>2</td><td>1.6226</td><td>8.2328</td><td>1.6250</td><td>57.71</td><td>1351461</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 1.6226434000018344,
+  &quot;cpu_seconds&quot;: 1.625,
+  &quot;peak_rss_bytes&quot;: 60518400,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 2.058203799999319,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\merge-pypdf-2.pdf&quot;,
+  &quot;output_bytes&quot;: 1351461,
+  &quot;sha256&quot;: &quot;399372807d40771b31216d2245e295d0a24d4e6168ae290aea331c6d16a24ef8&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pypdf-2_6177f35b50\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pypdf-2_6177f35b50\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pypdf-2_6177f35b50\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 5.334945400001743,
+  &quot;total_seconds&quot;: 8.232819500004553
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\merge-pypdf-2.pdf</td></tr><tr><td>3</td><td>1.6762</td><td>8.3159</td><td>1.6875</td><td>57.62</td><td>1351461</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 1.6762302999995882,
+  &quot;cpu_seconds&quot;: 1.6875,
+  &quot;peak_rss_bytes&quot;: 60416000,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 2.118934400001308,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\merge-pypdf-3.pdf&quot;,
+  &quot;output_bytes&quot;: 1351461,
+  &quot;sha256&quot;: &quot;399372807d40771b31216d2245e295d0a24d4e6168ae290aea331c6d16a24ef8&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pypdf-3_63026280c6\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pypdf-3_63026280c6\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pypdf-3_63026280c6\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 5.338328799996816,
+  &quot;total_seconds&quot;: 8.315905500003282
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\merge-pypdf-3.pdf</td></tr></tbody></table></div><h3>pdfrw · PASS</h3><div class='scroll'><table><thead><tr><th>Повтор</th><th>Время метода, с</th><th>Генерация + метод, с</th><th>CPU, с</th><th>Пик Working Set / RSS, MiB</th><th>Размер, байт</th><th>QA</th><th>Подробности</th><th>Файл</th></tr></thead><tbody><tr><td>1</td><td>1.3269</td><td>7.9905</td><td>1.3281</td><td>63.69</td><td>1342562</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 1.326907200000278,
+  &quot;cpu_seconds&quot;: 1.328125,
+  &quot;peak_rss_bytes&quot;: 66785280,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 1.6320005999987188,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\merge-pdfrw-1.pdf&quot;,
+  &quot;output_bytes&quot;: 1342562,
+  &quot;sha256&quot;: &quot;536642865f4903b0982f2466ccf67c26d2c7d06c0b2a7d9d46d4866e2a8c2e1a&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfrw-1_4a4f8a3a17\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfrw-1_4a4f8a3a17\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfrw-1_4a4f8a3a17\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 5.31622409999909,
+  &quot;total_seconds&quot;: 7.990458199998102
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\merge-pdfrw-1.pdf</td></tr><tr><td>2</td><td>1.3384</td><td>7.9486</td><td>1.3438</td><td>63.65</td><td>1342562</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 1.3384097999987716,
+  &quot;cpu_seconds&quot;: 1.34375,
+  &quot;peak_rss_bytes&quot;: 66740224,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 1.6298886000004131,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\merge-pdfrw-2.pdf&quot;,
+  &quot;output_bytes&quot;: 1342562,
+  &quot;sha256&quot;: &quot;536642865f4903b0982f2466ccf67c26d2c7d06c0b2a7d9d46d4866e2a8c2e1a&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfrw-2_1c075f03c2\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfrw-2_1c075f03c2\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfrw-2_1c075f03c2\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 5.301677500003279,
+  &quot;total_seconds&quot;: 7.94858590000149
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\merge-pdfrw-2.pdf</td></tr><tr><td>3</td><td>1.3711</td><td>8.0108</td><td>1.3750</td><td>63.66</td><td>1342562</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 1.3711054999985208,
+  &quot;cpu_seconds&quot;: 1.375,
+  &quot;peak_rss_bytes&quot;: 66748416,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 1.6745545000012498,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\merge-pdfrw-3.pdf&quot;,
+  &quot;output_bytes&quot;: 1342562,
+  &quot;sha256&quot;: &quot;536642865f4903b0982f2466ccf67c26d2c7d06c0b2a7d9d46d4866e2a8c2e1a&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfrw-3_d2669823b5\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfrw-3_d2669823b5\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfrw-3_d2669823b5\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 5.318008099999133,
+  &quot;total_seconds&quot;: 8.010780700002215
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\merge-pdfrw-3.pdf</td></tr></tbody></table></div><h3>PDFium (pypdfium2) · PASS</h3><div class='scroll'><table><thead><tr><th>Повтор</th><th>Время метода, с</th><th>Генерация + метод, с</th><th>CPU, с</th><th>Пик Working Set / RSS, MiB</th><th>Размер, байт</th><th>QA</th><th>Подробности</th><th>Файл</th></tr></thead><tbody><tr><td>1</td><td>1.1814</td><td>7.8450</td><td>1.1719</td><td>33.89</td><td>1325533</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 1.181448499999533,
+  &quot;cpu_seconds&quot;: 1.171875,
+  &quot;peak_rss_bytes&quot;: 35540992,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 1.4948215000003984,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\merge-pdfium-(pypdfium2)-1.pdf&quot;,
+  &quot;output_bytes&quot;: 1325533,
+  &quot;sha256&quot;: &quot;4845c22bceeb0b6c842b596a561394a92b58f96e0e36fd8a93ff813ddc47c750&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfium-(pypdfium2)-1_d3690dcb40\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfium-(pypdfium2)-1_d3690dcb40\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfium-(pypdfium2)-1_d3690dcb40\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 5.33291779999854,
+  &quot;total_seconds&quot;: 7.844999499997357
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\merge-pdfium-(pypdfium2)-1.pdf</td></tr><tr><td>2</td><td>1.2009</td><td>7.8111</td><td>1.2031</td><td>34.07</td><td>1325533</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 1.2009075000023586,
+  &quot;cpu_seconds&quot;: 1.203125,
+  &quot;peak_rss_bytes&quot;: 35729408,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 1.5096234000011464,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\merge-pdfium-(pypdfium2)-2.pdf&quot;,
+  &quot;output_bytes&quot;: 1325533,
+  &quot;sha256&quot;: &quot;3704f1a291347c2775a4e9744c745ad684d366b9e6a86f8d9312bbc4aff703b6&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfium-(pypdfium2)-2_c6ba51a162\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfium-(pypdfium2)-2_c6ba51a162\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfium-(pypdfium2)-2_c6ba51a162\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 5.344934799999464,
+  &quot;total_seconds&quot;: 7.811083600005077
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\merge-pdfium-(pypdfium2)-2.pdf</td></tr><tr><td>3</td><td>1.2078</td><td>7.8474</td><td>1.2188</td><td>33.75</td><td>1325533</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 1.2077728000003844,
+  &quot;cpu_seconds&quot;: 1.21875,
+  &quot;peak_rss_bytes&quot;: 35385344,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 1.5211452000003192,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\merge-pdfium-(pypdfium2)-3.pdf&quot;,
+  &quot;output_bytes&quot;: 1325533,
+  &quot;sha256&quot;: &quot;1b30806390904c431f2b38cd0fdc8044afdc92ff34f8d2a39a75cf0ec57d0ec2&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfium-(pypdfium2)-3_570205b515\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfium-(pypdfium2)-3_570205b515\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfium-(pypdfium2)-3_570205b515\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 5.320225600000413,
+  &quot;total_seconds&quot;: 7.8474480000040785
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\merge-pdfium-(pypdfium2)-3.pdf</td></tr></tbody></table></div><h3>pdfcpu · PASS</h3><div class='scroll'><table><thead><tr><th>Повтор</th><th>Время метода, с</th><th>Генерация + метод, с</th><th>CPU, с</th><th>Пик Working Set / RSS, MiB</th><th>Размер, байт</th><th>QA</th><th>Подробности</th><th>Файл</th></tr></thead><tbody><tr><td>1</td><td>1.2525</td><td>7.9160</td><td>1.4375</td><td>64.88</td><td>1356636</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 1.252470600000379,
+  &quot;cpu_seconds&quot;: 1.4375,
+  &quot;peak_rss_bytes&quot;: 68026368,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA; includes external engine CPU&quot;,
+  &quot;child_cpu_seconds&quot;: 1.0,
+  &quot;child_peak_rss_bytes&quot;: 45580288,
+  &quot;worker_wall_seconds&quot;: 1.4712702999968315,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\merge-pdfcpu-1.pdf&quot;,
+  &quot;output_bytes&quot;: 1356636,
+  &quot;sha256&quot;: &quot;71bd4d475c344cdd58bb83c80be45935e01aa88da0686e1cfbb1c87faad109e3&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfcpu-1_7b49fdb8bc\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfcpu-1_7b49fdb8bc\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfcpu-1_7b49fdb8bc\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 5.424307100001897,
+  &quot;total_seconds&quot;: 7.916021599998203
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\merge-pdfcpu-1.pdf</td></tr><tr><td>2</td><td>1.2480</td><td>7.8582</td><td>1.5625</td><td>65.38</td><td>1356589</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 1.247993700002553,
+  &quot;cpu_seconds&quot;: 1.5625,
+  &quot;peak_rss_bytes&quot;: 68558848,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA; includes external engine CPU&quot;,
+  &quot;child_cpu_seconds&quot;: 1.140625,
+  &quot;child_peak_rss_bytes&quot;: 46067712,
+  &quot;worker_wall_seconds&quot;: 1.457507600000099,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\merge-pdfcpu-2.pdf&quot;,
+  &quot;output_bytes&quot;: 1356589,
+  &quot;sha256&quot;: &quot;7bbf3cdeaee1b51c926f198a0f901bf005852bd6fd3dcb6c2df52e254ebdf5b2&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfcpu-2_daa2587d98\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfcpu-2_daa2587d98\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfcpu-2_daa2587d98\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 5.42403270000068,
+  &quot;total_seconds&quot;: 7.858169800005271
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\merge-pdfcpu-2.pdf</td></tr><tr><td>3</td><td>1.2241</td><td>7.8637</td><td>1.3438</td><td>65.57</td><td>1356594</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 1.2240628999970795,
+  &quot;cpu_seconds&quot;: 1.34375,
+  &quot;peak_rss_bytes&quot;: 68755456,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA; includes external engine CPU&quot;,
+  &quot;child_cpu_seconds&quot;: 0.921875,
+  &quot;child_peak_rss_bytes&quot;: 46370816,
+  &quot;worker_wall_seconds&quot;: 1.4400853000006464,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\merge-pdfcpu-3.pdf&quot;,
+  &quot;output_bytes&quot;: 1356594,
+  &quot;sha256&quot;: &quot;1f687f78d55f83cb19a151cf2f62fc74ae6b41f5cd1d94cb9e983f14524fe477&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfcpu-3_afeedfc98d\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfcpu-3_afeedfc98d\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdfcpu-3_afeedfc98d\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 5.415390400001343,
+  &quot;total_seconds&quot;: 7.863738100000774
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\merge-pdfcpu-3.pdf</td></tr></tbody></table></div><h3>Apache PDFBox · PASS</h3><div class='scroll'><table><thead><tr><th>Повтор</th><th>Время метода, с</th><th>Генерация + метод, с</th><th>CPU, с</th><th>Пик Working Set / RSS, MiB</th><th>Размер, байт</th><th>QA</th><th>Подробности</th><th>Файл</th></tr></thead><tbody><tr><td>1</td><td>2.1976</td><td>8.8611</td><td>0.5469</td><td>30.65</td><td>971877</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 2.1975963999975647,
+  &quot;cpu_seconds&quot;: 0.546875,
+  &quot;peak_rss_bytes&quot;: 32137216,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA; includes external engine CPU&quot;,
+  &quot;child_cpu_seconds&quot;: 0.125,
+  &quot;child_peak_rss_bytes&quot;: 9842688,
+  &quot;engine_options&quot;: &quot;PDFBOX_LEGACY_MODE; temp-file-only stream cache; Java startup included&quot;,
+  &quot;worker_wall_seconds&quot;: 2.4080930999989505,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\merge-apache-pdfbox-1.pdf&quot;,
+  &quot;output_bytes&quot;: 971877,
+  &quot;sha256&quot;: &quot;0c577466226c4ddc4b627016d34bd7a0a430fd30325511629657e6c910c75ac0&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-apache-pdfbox-1_6abcab9681\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-apache-pdfbox-1_6abcab9681\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-apache-pdfbox-1_6abcab9681\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 5.392206699998496,
+  &quot;total_seconds&quot;: 8.861147399995389
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\merge-apache-pdfbox-1.pdf</td></tr><tr><td>2</td><td>2.1775</td><td>8.7877</td><td>0.5156</td><td>30.63</td><td>971877</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 2.1775394000032975,
+  &quot;cpu_seconds&quot;: 0.515625,
+  &quot;peak_rss_bytes&quot;: 32116736,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA; includes external engine CPU&quot;,
+  &quot;child_cpu_seconds&quot;: 0.109375,
+  &quot;child_peak_rss_bytes&quot;: 9846784,
+  &quot;engine_options&quot;: &quot;PDFBOX_LEGACY_MODE; temp-file-only stream cache; Java startup included&quot;,
+  &quot;worker_wall_seconds&quot;: 2.391561399999773,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\merge-apache-pdfbox-2.pdf&quot;,
+  &quot;output_bytes&quot;: 971877,
+  &quot;sha256&quot;: &quot;5f15261b44b29a91bb53a508f0f883828a713da745667226281102e742da6df5&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-apache-pdfbox-2_d84a835861\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-apache-pdfbox-2_d84a835861\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-apache-pdfbox-2_d84a835861\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 5.377679099998204,
+  &quot;total_seconds&quot;: 8.787715500006016
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\merge-apache-pdfbox-2.pdf</td></tr><tr><td>3</td><td>2.1363</td><td>8.7760</td><td>0.5000</td><td>30.98</td><td>971877</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 2.136334700000589,
+  &quot;cpu_seconds&quot;: 0.5,
+  &quot;peak_rss_bytes&quot;: 32489472,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA; includes external engine CPU&quot;,
+  &quot;child_cpu_seconds&quot;: 0.109375,
+  &quot;child_peak_rss_bytes&quot;: 9846784,
+  &quot;engine_options&quot;: &quot;PDFBOX_LEGACY_MODE; temp-file-only stream cache; Java startup included&quot;,
+  &quot;worker_wall_seconds&quot;: 2.3520209999987856,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\merge-apache-pdfbox-3.pdf&quot;,
+  &quot;output_bytes&quot;: 971877,
+  &quot;sha256&quot;: &quot;5bf606430990e280204eaff8a1c80ffb57f0efa992ead099a0bed40277f5f91d&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-apache-pdfbox-3_05cacc012c\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-apache-pdfbox-3_05cacc012c\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-apache-pdfbox-3_05cacc012c\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 5.389762899998459,
+  &quot;total_seconds&quot;: 8.776009900004283
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\merge-apache-pdfbox-3.pdf</td></tr></tbody></table></div><h3>pdf-lib (Node.js) · PASS</h3><div class='scroll'><table><thead><tr><th>Повтор</th><th>Время метода, с</th><th>Генерация + метод, с</th><th>CPU, с</th><th>Пик Working Set / RSS, MiB</th><th>Размер, байт</th><th>QA</th><th>Подробности</th><th>Файл</th></tr></thead><tbody><tr><td>1</td><td>3.1533</td><td>9.8169</td><td>2.3906</td><td>121.04</td><td>964547</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 3.15331309999965,
+  &quot;cpu_seconds&quot;: 2.390625,
+  &quot;peak_rss_bytes&quot;: 126918656,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA; includes external engine CPU&quot;,
+  &quot;child_cpu_seconds&quot;: 1.96875,
+  &quot;child_peak_rss_bytes&quot;: 104816640,
+  &quot;engine_options&quot;: &quot;copyPages; object streams enabled; Node.js startup included&quot;,
+  &quot;worker_wall_seconds&quot;: 3.3660396999985096,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\merge-pdf-lib-(node.js)-1.pdf&quot;,
+  &quot;output_bytes&quot;: 964547,
+  &quot;sha256&quot;: &quot;c5ae3a82c713e30124687d33de5d72ae7abde8c884e685b08378f3c6b2bc8a7c&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdf-lib-(node.js)-1_ac76265ca5\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdf-lib-(node.js)-1_ac76265ca5\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdf-lib-(node.js)-1_ac76265ca5\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 5.423205900002358,
+  &quot;total_seconds&quot;: 9.816864099997474
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\merge-pdf-lib-(node.js)-1.pdf</td></tr><tr><td>2</td><td>3.1994</td><td>9.8095</td><td>2.0938</td><td>121.59</td><td>964547</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 3.199363200001244,
+  &quot;cpu_seconds&quot;: 2.09375,
+  &quot;peak_rss_bytes&quot;: 127500288,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA; includes external engine CPU&quot;,
+  &quot;child_cpu_seconds&quot;: 1.671875,
+  &quot;child_peak_rss_bytes&quot;: 105332736,
+  &quot;engine_options&quot;: &quot;copyPages; object streams enabled; Node.js startup included&quot;,
+  &quot;worker_wall_seconds&quot;: 3.40905869999915,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\merge-pdf-lib-(node.js)-2.pdf&quot;,
+  &quot;output_bytes&quot;: 964547,
+  &quot;sha256&quot;: &quot;c5ae3a82c713e30124687d33de5d72ae7abde8c884e685b08378f3c6b2bc8a7c&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdf-lib-(node.js)-2_973cf1bb7f\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdf-lib-(node.js)-2_973cf1bb7f\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdf-lib-(node.js)-2_973cf1bb7f\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 5.424480300000141,
+  &quot;total_seconds&quot;: 9.809539300003962
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\merge-pdf-lib-(node.js)-2.pdf</td></tr><tr><td>3</td><td>3.1898</td><td>9.8295</td><td>2.1562</td><td>120.97</td><td>964547</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 3.1898481999996875,
+  &quot;cpu_seconds&quot;: 2.15625,
+  &quot;peak_rss_bytes&quot;: 126844928,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA; includes external engine CPU&quot;,
+  &quot;child_cpu_seconds&quot;: 1.734375,
+  &quot;child_peak_rss_bytes&quot;: 104779776,
+  &quot;engine_options&quot;: &quot;copyPages; object streams enabled; Node.js startup included&quot;,
+  &quot;worker_wall_seconds&quot;: 3.399686400000064,
+  &quot;path&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\merge-pdf-lib-(node.js)-3.pdf&quot;,
+  &quot;output_bytes&quot;: 964547,
+  &quot;sha256&quot;: &quot;c5ae3a82c713e30124687d33de5d72ae7abde8c884e685b08378f3c6b2bc8a7c&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 1000,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdf-lib-(node.js)-3_d85b8431b0\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 501,
+        &quot;payload&quot;: &quot;200000000500&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdf-lib-(node.js)-3_d85b8431b0\\page_0501.png&quot;
+      },
+      {
+        &quot;page&quot;: 1000,
+        &quot;payload&quot;: &quot;200000000999&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-1000-20261027-141915-690e50b0\\qa_merge-pdf-lib-(node.js)-3_d85b8431b0\\page_1000.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;d281581c15bee1e7961aee577e331e2643755a34824ef1ca41153628f28fb11e&quot;
+  },
+  &quot;qa_seconds&quot;: 5.362701199999719,
+  &quot;total_seconds&quot;: 9.829523400003382
+}</pre></details></td><td>.\runs\run-1000-20261027-141915-690e50b0\merge-pdf-lib-(node.js)-3.pdf</td></tr></tbody></table></div><h3>PDFsharp (.NET) · SKIPPED</h3><p>Не допущен по отчёту этапа 200</p><h2>Условия измерений и ограничения</h2><ul><li>Acrobat 120 s is a user-provided reference, not measured in this run.</li><li>No warmup; three measured trials. QA, imports, input reads, hashes excluded from method times.</li><li>Imports above means preloaded Python libraries; external CLI/JVM/Node/.NET startup and imports are included.</li><li>Direct includes encoding plus PDF. Merge times exclude source generation; total_seconds includes it.</li><li>RAM: fresh worker OS peak working set incl. imports/input, QA excluded. External sum is upper bound.</li><li>Only QR V1-M numeric 12-digit payloads; no PDF/X certification or physical print scan.</li><li>QA independent numeric decoder rejects damage (no error correction); raster controls first/middle/last.</li></ul><p>QA выполняется вне измеряемого времени метода. CPU — процессные секунды. RAM — сохранённый ОС пик Working Set / RSS отдельного рабочего процесса; включает импорты и загрузку входов. При внешнем движке сумма индивидуальных пиков — верхняя оценка, а не одновременное потребление. Точная область CPU/RAM и дочерние процессы указаны в подробностях каждого замера.</p><h2>Окружение</h2><pre>{
+  &quot;python&quot;: &quot;3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]&quot;,
+  &quot;executable&quot;: &quot;<project>\\.venv\\Scripts\\python.exe&quot;,
+  &quot;platform&quot;: &quot;Windows-10-10.0.19045-SP0&quot;,
+  &quot;logical_processors&quot;: 28,
+  &quot;cpu&quot;: &quot;Intel(R) Xeon(R) CPU E5-2680 v4 @ 2.40GHz&quot;,
+  &quot;dependencies&quot;: {
+    &quot;reportlab&quot;: &quot;4.4.9&quot;,
+    &quot;pypdf&quot;: &quot;6.21.2&quot;,
+    &quot;Pillow&quot;: &quot;12.3.0&quot;,
+    &quot;segno&quot;: null,
+    &quot;PyMuPDF&quot;: &quot;2.0&quot;,
+    &quot;pikepdf&quot;: &quot;10.17.0&quot;,
+    &quot;pdfrw&quot;: &quot;0.4&quot;,
+    &quot;pypdfium2&quot;: &quot;5.14.0&quot;
+  },
+  &quot;pdftoppm&quot;: &quot;<user-home>\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\poppler\\Library\\bin\\pdftoppm.EXE&quot;,
+  &quot;tkinter&quot;: true,
+  &quot;physical_memory_bytes&quot;: 17079623680,
+  &quot;available_memory_bytes&quot;: 8360120320,
+  &quot;adapters&quot;: [
+    {
+      &quot;name&quot;: &quot;qpdf&quot;,
+      &quot;available&quot;: true,
+      &quot;reason&quot;: &quot;&quot;,
+      &quot;version&quot;: &quot;qpdf version 12.4.2&quot;,
+      &quot;executable&quot;: &quot;<project>\\tools\\qpdf\\qpdf-12.4.2-msvc64\\bin\\qpdf.exe&quot;
+    },
+    {
+      &quot;name&quot;: &quot;MuPDF (mutool)&quot;,
+      &quot;available&quot;: true,
+      &quot;reason&quot;: &quot;&quot;,
+      &quot;version&quot;: &quot;mutool version 1.28.5&quot;,
+      &quot;executable&quot;: &quot;<project>\\tools\\mutool\\mupdf-1.28.5-windows\\mutool.exe&quot;
+    },
+    {
+      &quot;name&quot;: &quot;PyMuPDF&quot;,
+      &quot;available&quot;: true,
+      &quot;reason&quot;: &quot;&quot;,
+      &quot;version&quot;: &quot;2.0&quot;
+    },
+    {
+      &quot;name&quot;: &quot;pikepdf&quot;,
+      &quot;available&quot;: true,
+      &quot;reason&quot;: &quot;&quot;,
+      &quot;version&quot;: &quot;10.17.0&quot;
+    },
+    {
+      &quot;name&quot;: &quot;pypdf&quot;,
+      &quot;available&quot;: true,
+      &quot;reason&quot;: &quot;&quot;,
+      &quot;version&quot;: &quot;6.21.2&quot;
+    },
+    {
+      &quot;name&quot;: &quot;pdfrw&quot;,
+      &quot;available&quot;: true,
+      &quot;reason&quot;: &quot;&quot;,
+      &quot;version&quot;: &quot;0.4&quot;
+    },
+    {
+      &quot;name&quot;: &quot;PDFium (pypdfium2)&quot;,
+      &quot;available&quot;: true,
+      &quot;reason&quot;: &quot;&quot;,
+      &quot;version&quot;: &quot;5.14.0&quot;
+    },
+    {
+      &quot;name&quot;: &quot;pdfcpu&quot;,
+      &quot;available&quot;: true,
+      &quot;reason&quot;: &quot;&quot;,
+      &quot;version&quot;: &quot;version: 0.16.3&quot;,
+      &quot;executable&quot;: &quot;<project>\\tools\\pdfcpu\\pdfcpu_0.16.3_Windows_x86_64\\pdfcpu.exe&quot;
+    },
+    {
+      &quot;name&quot;: &quot;Apache PDFBox&quot;,
+      &quot;available&quot;: true,
+      &quot;reason&quot;: &quot;&quot;,
+      &quot;version&quot;: &quot;3.0.8&quot;,
+      &quot;executable&quot;: &quot;C:\\Program Files (x86)\\Common Files\\Oracle\\Java\\java8path\\java.EXE&quot;,
+      &quot;java_version&quot;: &quot;java version \&quot;1.8.0_511\&quot;&quot;,
+      &quot;jar&quot;: &quot;<project>\\tools\\pdfbox\\pdfbox-app-3.0.8.jar&quot;,
+      &quot;classes&quot;: &quot;<project>\\tools\\pdfbox\\classes&quot;
+    },
+    {
+      &quot;name&quot;: &quot;pdf-lib (Node.js)&quot;,
+      &quot;available&quot;: true,
+      &quot;reason&quot;: &quot;&quot;,
+      &quot;version&quot;: &quot;1.17.1&quot;,
+      &quot;executable&quot;: &quot;C:\\Program Files\\nodejs\\node.EXE&quot;,
+      &quot;node_version&quot;: &quot;v22.13.0&quot;,
+      &quot;helper&quot;: &quot;<project>\\scripts\\merge-pdflib.mjs&quot;
+    },
+    {
+      &quot;name&quot;: &quot;PDFsharp (.NET)&quot;,
+      &quot;available&quot;: true,
+      &quot;reason&quot;: &quot;&quot;,
+      &quot;version&quot;: &quot;PDFsharp 6.2.4 / .NET 8 helper&quot;,
+      &quot;executable&quot;: &quot;C:\\Program Files\\dotnet\\dotnet.EXE&quot;,
+      &quot;helper&quot;: &quot;<project>\\tools\\pdfsharp\\PdfSharpMerge.dll&quot;
+    }
+  ],
+  &quot;core_ready&quot;: true
+}</pre><p class='muted'>Каталог запуска: .\runs\run-1000-20261027-141915-690e50b0</p><p><a href='report.json'>JSON с полными данными</a> · <a href='report.csv'>CSV с повторами</a></p></main></html>

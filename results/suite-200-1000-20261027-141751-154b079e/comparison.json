@@ -1,0 +1,674 @@
+{
+  "schema_version": 1,
+  "status": "COMPLETE",
+  "created_at": "2026-10-27T14:17:51.059693+03:00",
+  "requested_counts": [
+    200,
+    1000
+  ],
+  "repeats": 3,
+  "qualifying_methods": [
+    "Direct PDF",
+    "qpdf",
+    "MuPDF (mutool)",
+    "PyMuPDF",
+    "pikepdf",
+    "pypdf",
+    "pdfrw",
+    "PDFium (pypdfium2)",
+    "pdfcpu",
+    "Apache PDFBox",
+    "pdf-lib (Node.js)"
+  ],
+  "methods": [
+    {
+      "category": "direct",
+      "name": "Direct PDF",
+      "time_growth_1000_vs_200": 4.92632101514574,
+      "per_page_growth_1000_vs_200": 0.9852642030291481,
+      "results": {
+        "200": {
+          "count": 200,
+          "status": "PASS",
+          "reason": "",
+          "median_seconds": 1.1197752000007313,
+          "spread_seconds": 0.019199099999241298,
+          "cpu_median_seconds": 1.125,
+          "peak_rss_bytes": 34639872,
+          "output_bytes": 233480,
+          "trial_count": 3,
+          "qa_pass_count": 3,
+          "qa_pages_checked": 600,
+          "decoded_control_count": 9,
+          "seconds_per_page": 0.005598876000003656,
+          "speedup_vs_pypdf": null,
+          "pdf_files": [
+            "runs/run-200-20261027-141751-97ef28c9/direct-direct-pdf-1.pdf",
+            "runs/run-200-20261027-141751-97ef28c9/direct-direct-pdf-2.pdf",
+            "runs/run-200-20261027-141751-97ef28c9/direct-direct-pdf-3.pdf"
+          ],
+          "report_html": "runs/run-200-20261027-141751-97ef28c9/report.html"
+        },
+        "1000": {
+          "count": 1000,
+          "status": "PASS",
+          "reason": "",
+          "median_seconds": 5.516372100002627,
+          "spread_seconds": 0.003926500001398381,
+          "cpu_median_seconds": 5.515625,
+          "peak_rss_bytes": 49446912,
+          "output_bytes": 1168319,
+          "trial_count": 3,
+          "qa_pass_count": 3,
+          "qa_pages_checked": 3000,
+          "decoded_control_count": 9,
+          "seconds_per_page": 0.005516372100002627,
+          "speedup_vs_pypdf": null,
+          "pdf_files": [
+            "runs/run-1000-20261027-141915-690e50b0/direct-direct-pdf-1.pdf",
+            "runs/run-1000-20261027-141915-690e50b0/direct-direct-pdf-2.pdf",
+            "runs/run-1000-20261027-141915-690e50b0/direct-direct-pdf-3.pdf"
+          ],
+          "report_html": "runs/run-1000-20261027-141915-690e50b0/report.html"
+        }
+      }
+    },
+    {
+      "category": "merge",
+      "name": "Apache PDFBox",
+      "time_growth_1000_vs_200": 1.758160462126189,
+      "per_page_growth_1000_vs_200": 0.3516320924252378,
+      "results": {
+        "200": {
+          "count": 200,
+          "status": "PASS",
+          "reason": "",
+          "median_seconds": 1.238532799998211,
+          "spread_seconds": 0.07966960000339895,
+          "cpu_median_seconds": 0.203125,
+          "peak_rss_bytes": 30588928,
+          "output_bytes": 194403,
+          "trial_count": 3,
+          "qa_pass_count": 3,
+          "qa_pages_checked": 600,
+          "decoded_control_count": 9,
+          "seconds_per_page": 0.0061926639999910545,
+          "speedup_vs_pypdf": 0.2521814521175075,
+          "pdf_files": [
+            "runs/run-200-20261027-141751-97ef28c9/merge-apache-pdfbox-1.pdf",
+            "runs/run-200-20261027-141751-97ef28c9/merge-apache-pdfbox-2.pdf",
+            "runs/run-200-20261027-141751-97ef28c9/merge-apache-pdfbox-3.pdf"
+          ],
+          "report_html": "runs/run-200-20261027-141751-97ef28c9/report.html"
+        },
+        "1000": {
+          "count": 1000,
+          "status": "PASS",
+          "reason": "",
+          "median_seconds": 2.1775394000032975,
+          "spread_seconds": 0.06126169999697595,
+          "cpu_median_seconds": 0.515625,
+          "peak_rss_bytes": 32489472,
+          "output_bytes": 971877,
+          "trial_count": 3,
+          "qa_pass_count": 3,
+          "qa_pages_checked": 3000,
+          "decoded_control_count": 9,
+          "seconds_per_page": 0.0021775394000032974,
+          "speedup_vs_pypdf": 0.7451729231624361,
+          "pdf_files": [
+            "runs/run-1000-20261027-141915-690e50b0/merge-apache-pdfbox-1.pdf",
+            "runs/run-1000-20261027-141915-690e50b0/merge-apache-pdfbox-2.pdf",
+            "runs/run-1000-20261027-141915-690e50b0/merge-apache-pdfbox-3.pdf"
+          ],
+          "report_html": "runs/run-1000-20261027-141915-690e50b0/report.html"
+        }
+      }
+    },
+    {
+      "category": "merge",
+      "name": "MuPDF (mutool)",
+      "time_growth_1000_vs_200": 4.459592593448737,
+      "per_page_growth_1000_vs_200": 0.8919185186897474,
+      "results": {
+        "200": {
+          "count": 200,
+          "status": "PASS",
+          "reason": "",
+          "median_seconds": 0.18274620000011055,
+          "spread_seconds": 0.0035195999989809934,
+          "cpu_median_seconds": 0.171875,
+          "peak_rss_bytes": 27594752,
+          "output_bytes": 258775,
+          "trial_count": 3,
+          "qa_pass_count": 3,
+          "qa_pages_checked": 600,
+          "decoded_control_count": 9,
+          "seconds_per_page": 0.0009137310000005527,
+          "speedup_vs_pypdf": 1.7091189857765707,
+          "pdf_files": [
+            "runs/run-200-20261027-141751-97ef28c9/merge-mupdf-(mutool)-1.pdf",
+            "runs/run-200-20261027-141751-97ef28c9/merge-mupdf-(mutool)-2.pdf",
+            "runs/run-200-20261027-141751-97ef28c9/merge-mupdf-(mutool)-3.pdf"
+          ],
+          "report_html": "runs/run-200-20261027-141751-97ef28c9/report.html"
+        },
+        "1000": {
+          "count": 1000,
+          "status": "PASS",
+          "reason": "",
+          "median_seconds": 0.8149736000013945,
+          "spread_seconds": 0.03206270000009681,
+          "cpu_median_seconds": 0.8125,
+          "peak_rss_bytes": 32964608,
+          "output_bytes": 1300368,
+          "trial_count": 3,
+          "qa_pass_count": 3,
+          "qa_pages_checked": 3000,
+          "decoded_control_count": 9,
+          "seconds_per_page": 0.0008149736000013945,
+          "speedup_vs_pypdf": 1.9910379919043486,
+          "pdf_files": [
+            "runs/run-1000-20261027-141915-690e50b0/merge-mupdf-(mutool)-1.pdf",
+            "runs/run-1000-20261027-141915-690e50b0/merge-mupdf-(mutool)-2.pdf",
+            "runs/run-1000-20261027-141915-690e50b0/merge-mupdf-(mutool)-3.pdf"
+          ],
+          "report_html": "runs/run-1000-20261027-141915-690e50b0/report.html"
+        }
+      }
+    },
+    {
+      "category": "merge",
+      "name": "PDFium (pypdfium2)",
+      "time_growth_1000_vs_200": 4.880636685639676,
+      "per_page_growth_1000_vs_200": 0.9761273371279351,
+      "results": {
+        "200": {
+          "count": 200,
+          "status": "PASS",
+          "reason": "",
+          "median_seconds": 0.24605549999978393,
+          "spread_seconds": 0.0029614000013680197,
+          "cpu_median_seconds": 0.25,
+          "peak_rss_bytes": 29474816,
+          "output_bytes": 263938,
+          "trial_count": 3,
+          "qa_pass_count": 3,
+          "qa_pages_checked": 600,
+          "decoded_control_count": 9,
+          "seconds_per_page": 0.0012302774999989198,
+          "speedup_vs_pypdf": 1.2693680897154729,
+          "pdf_files": [
+            "runs/run-200-20261027-141751-97ef28c9/merge-pdfium-(pypdfium2)-1.pdf",
+            "runs/run-200-20261027-141751-97ef28c9/merge-pdfium-(pypdfium2)-2.pdf",
+            "runs/run-200-20261027-141751-97ef28c9/merge-pdfium-(pypdfium2)-3.pdf"
+          ],
+          "report_html": "runs/run-200-20261027-141751-97ef28c9/report.html"
+        },
+        "1000": {
+          "count": 1000,
+          "status": "PASS",
+          "reason": "",
+          "median_seconds": 1.2009075000023586,
+          "spread_seconds": 0.026324300000851508,
+          "cpu_median_seconds": 1.203125,
+          "peak_rss_bytes": 35729408,
+          "output_bytes": 1325533,
+          "trial_count": 3,
+          "qa_pass_count": 3,
+          "qa_pages_checked": 3000,
+          "decoded_control_count": 9,
+          "seconds_per_page": 0.0012009075000023585,
+          "speedup_vs_pypdf": 1.3511810026989153,
+          "pdf_files": [
+            "runs/run-1000-20261027-141915-690e50b0/merge-pdfium-(pypdfium2)-1.pdf",
+            "runs/run-1000-20261027-141915-690e50b0/merge-pdfium-(pypdfium2)-2.pdf",
+            "runs/run-1000-20261027-141915-690e50b0/merge-pdfium-(pypdfium2)-3.pdf"
+          ],
+          "report_html": "runs/run-1000-20261027-141915-690e50b0/report.html"
+        }
+      }
+    },
+    {
+      "category": "merge",
+      "name": "PDFsharp (.NET)",
+      "time_growth_1000_vs_200": null,
+      "per_page_growth_1000_vs_200": null,
+      "results": {
+        "200": {
+          "count": 200,
+          "status": "INVALID",
+          "reason": "Не все три повтора и исходные PDF прошли QA",
+          "median_seconds": 0.4353147000001627,
+          "spread_seconds": 0.009466200001043035,
+          "cpu_median_seconds": 0.421875,
+          "peak_rss_bytes": 65146880,
+          "output_bytes": 266511,
+          "trial_count": 3,
+          "qa_pass_count": 0,
+          "qa_pages_checked": 600,
+          "decoded_control_count": 0,
+          "seconds_per_page": 0.0021765735000008135,
+          "speedup_vs_pypdf": null,
+          "pdf_files": [
+            "runs/run-200-20261027-141751-97ef28c9/merge-pdfsharp-(.net)-1.pdf",
+            "runs/run-200-20261027-141751-97ef28c9/merge-pdfsharp-(.net)-2.pdf",
+            "runs/run-200-20261027-141751-97ef28c9/merge-pdfsharp-(.net)-3.pdf"
+          ],
+          "report_html": "runs/run-200-20261027-141751-97ef28c9/report.html"
+        },
+        "1000": {
+          "count": 1000,
+          "status": "SKIPPED",
+          "reason": "Не допущен по отчёту этапа 200",
+          "median_seconds": null,
+          "spread_seconds": null,
+          "cpu_median_seconds": null,
+          "peak_rss_bytes": null,
+          "output_bytes": null,
+          "trial_count": 0,
+          "qa_pass_count": 0,
+          "qa_pages_checked": 0,
+          "decoded_control_count": 0,
+          "seconds_per_page": null,
+          "speedup_vs_pypdf": null,
+          "pdf_files": [],
+          "report_html": "runs/run-1000-20261027-141915-690e50b0/report.html"
+        }
+      }
+    },
+    {
+      "category": "merge",
+      "name": "PyMuPDF",
+      "time_growth_1000_vs_200": 5.246930861019328,
+      "per_page_growth_1000_vs_200": 1.0493861722038655,
+      "results": {
+        "200": {
+          "count": 200,
+          "status": "PASS",
+          "reason": "",
+          "median_seconds": 0.31762979999984964,
+          "spread_seconds": 0.002824999999575084,
+          "cpu_median_seconds": 0.3125,
+          "peak_rss_bytes": 130498560,
+          "output_bytes": 258848,
+          "trial_count": 3,
+          "qa_pass_count": 3,
+          "qa_pages_checked": 600,
+          "decoded_control_count": 9,
+          "seconds_per_page": 0.0015881489999992483,
+          "speedup_vs_pypdf": 0.9833302794601109,
+          "pdf_files": [
+            "runs/run-200-20261027-141751-97ef28c9/merge-pymupdf-1.pdf",
+            "runs/run-200-20261027-141751-97ef28c9/merge-pymupdf-2.pdf",
+            "runs/run-200-20261027-141751-97ef28c9/merge-pymupdf-3.pdf"
+          ],
+          "report_html": "runs/run-200-20261027-141751-97ef28c9/report.html"
+        },
+        "1000": {
+          "count": 1000,
+          "status": "PASS",
+          "reason": "",
+          "median_seconds": 1.666581599998608,
+          "spread_seconds": 0.018650300000444986,
+          "cpu_median_seconds": 1.671875,
+          "peak_rss_bytes": 130924544,
+          "output_bytes": 1300441,
+          "trial_count": 3,
+          "qa_pass_count": 3,
+          "qa_pages_checked": 3000,
+          "decoded_control_count": 9,
+          "seconds_per_page": 0.001666581599998608,
+          "speedup_vs_pypdf": 0.973635734369796,
+          "pdf_files": [
+            "runs/run-1000-20261027-141915-690e50b0/merge-pymupdf-1.pdf",
+            "runs/run-1000-20261027-141915-690e50b0/merge-pymupdf-2.pdf",
+            "runs/run-1000-20261027-141915-690e50b0/merge-pymupdf-3.pdf"
+          ],
+          "report_html": "runs/run-1000-20261027-141915-690e50b0/report.html"
+        }
+      }
+    },
+    {
+      "category": "merge",
+      "name": "pdf-lib (Node.js)",
+      "time_growth_1000_vs_200": 3.1244616536354393,
+      "per_page_growth_1000_vs_200": 0.6248923307270878,
+      "results": {
+        "200": {
+          "count": 200,
+          "status": "PASS",
+          "reason": "",
+          "median_seconds": 1.0209273000000394,
+          "spread_seconds": 0.020985399998608045,
+          "cpu_median_seconds": 1.0,
+          "peak_rss_bytes": 82137088,
+          "output_bytes": 192856,
+          "trial_count": 3,
+          "qa_pass_count": 3,
+          "qa_pages_checked": 600,
+          "decoded_control_count": 9,
+          "seconds_per_page": 0.005104636500000197,
+          "speedup_vs_pypdf": 0.30593265553649046,
+          "pdf_files": [
+            "runs/run-200-20261027-141751-97ef28c9/merge-pdf-lib-(node.js)-1.pdf",
+            "runs/run-200-20261027-141751-97ef28c9/merge-pdf-lib-(node.js)-2.pdf",
+            "runs/run-200-20261027-141751-97ef28c9/merge-pdf-lib-(node.js)-3.pdf"
+          ],
+          "report_html": "runs/run-200-20261027-141751-97ef28c9/report.html"
+        },
+        "1000": {
+          "count": 1000,
+          "status": "PASS",
+          "reason": "",
+          "median_seconds": 3.1898481999996875,
+          "spread_seconds": 0.04605010000159382,
+          "cpu_median_seconds": 2.15625,
+          "peak_rss_bytes": 127500288,
+          "output_bytes": 964547,
+          "trial_count": 3,
+          "qa_pass_count": 3,
+          "qa_pages_checked": 3000,
+          "decoded_control_count": 9,
+          "seconds_per_page": 0.0031898481999996873,
+          "speedup_vs_pypdf": 0.5086898492542665,
+          "pdf_files": [
+            "runs/run-1000-20261027-141915-690e50b0/merge-pdf-lib-(node.js)-1.pdf",
+            "runs/run-1000-20261027-141915-690e50b0/merge-pdf-lib-(node.js)-2.pdf",
+            "runs/run-1000-20261027-141915-690e50b0/merge-pdf-lib-(node.js)-3.pdf"
+          ],
+          "report_html": "runs/run-1000-20261027-141915-690e50b0/report.html"
+        }
+      }
+    },
+    {
+      "category": "merge",
+      "name": "pdfcpu",
+      "time_growth_1000_vs_200": 4.618851077226884,
+      "per_page_growth_1000_vs_200": 0.9237702154453767,
+      "results": {
+        "200": {
+          "count": 200,
+          "status": "PASS",
+          "reason": "",
+          "median_seconds": 0.2701956999990216,
+          "spread_seconds": 0.016796699997939868,
+          "cpu_median_seconds": 0.28125,
+          "peak_rss_bytes": 44216320,
+          "output_bytes": 269718,
+          "trial_count": 3,
+          "qa_pass_count": 3,
+          "qa_pages_checked": 600,
+          "decoded_control_count": 9,
+          "seconds_per_page": 0.0013509784999951079,
+          "speedup_vs_pypdf": 1.1559584404927328,
+          "pdf_files": [
+            "runs/run-200-20261027-141751-97ef28c9/merge-pdfcpu-1.pdf",
+            "runs/run-200-20261027-141751-97ef28c9/merge-pdfcpu-2.pdf",
+            "runs/run-200-20261027-141751-97ef28c9/merge-pdfcpu-3.pdf"
+          ],
+          "report_html": "runs/run-200-20261027-141751-97ef28c9/report.html"
+        },
+        "1000": {
+          "count": 1000,
+          "status": "PASS",
+          "reason": "",
+          "median_seconds": 1.247993700002553,
+          "spread_seconds": 0.028407700003299396,
+          "cpu_median_seconds": 1.4375,
+          "peak_rss_bytes": 68755456,
+          "output_bytes": 1356594,
+          "trial_count": 3,
+          "qa_pass_count": 3,
+          "qa_pages_checked": 3000,
+          "decoded_control_count": 9,
+          "seconds_per_page": 0.0012479937000025529,
+          "speedup_vs_pypdf": 1.3002015955677622,
+          "pdf_files": [
+            "runs/run-1000-20261027-141915-690e50b0/merge-pdfcpu-1.pdf",
+            "runs/run-1000-20261027-141915-690e50b0/merge-pdfcpu-2.pdf",
+            "runs/run-1000-20261027-141915-690e50b0/merge-pdfcpu-3.pdf"
+          ],
+          "report_html": "runs/run-1000-20261027-141915-690e50b0/report.html"
+        }
+      }
+    },
+    {
+      "category": "merge",
+      "name": "pdfrw",
+      "time_growth_1000_vs_200": 5.1414139706730895,
+      "per_page_growth_1000_vs_200": 1.028282794134618,
+      "results": {
+        "200": {
+          "count": 200,
+          "status": "PASS",
+          "reason": "",
+          "median_seconds": 0.26031940000029863,
+          "spread_seconds": 0.004948599998897407,
+          "cpu_median_seconds": 0.25,
+          "peak_rss_bytes": 31621120,
+          "output_bytes": 267169,
+          "trial_count": 3,
+          "qa_pass_count": 3,
+          "qa_pages_checked": 600,
+          "decoded_control_count": 9,
+          "seconds_per_page": 0.0013015970000014932,
+          "speedup_vs_pypdf": 1.199814535521951,
+          "pdf_files": [
+            "runs/run-200-20261027-141751-97ef28c9/merge-pdfrw-1.pdf",
+            "runs/run-200-20261027-141751-97ef28c9/merge-pdfrw-2.pdf",
+            "runs/run-200-20261027-141751-97ef28c9/merge-pdfrw-3.pdf"
+          ],
+          "report_html": "runs/run-200-20261027-141751-97ef28c9/report.html"
+        },
+        "1000": {
+          "count": 1000,
+          "status": "PASS",
+          "reason": "",
+          "median_seconds": 1.3384097999987716,
+          "spread_seconds": 0.044198299998242874,
+          "cpu_median_seconds": 1.34375,
+          "peak_rss_bytes": 66785280,
+          "output_bytes": 1342562,
+          "trial_count": 3,
+          "qa_pass_count": 3,
+          "qa_pages_checked": 3000,
+          "decoded_control_count": 9,
+          "seconds_per_page": 0.0013384097999987717,
+          "speedup_vs_pypdf": 1.2123666458534028,
+          "pdf_files": [
+            "runs/run-1000-20261027-141915-690e50b0/merge-pdfrw-1.pdf",
+            "runs/run-1000-20261027-141915-690e50b0/merge-pdfrw-2.pdf",
+            "runs/run-1000-20261027-141915-690e50b0/merge-pdfrw-3.pdf"
+          ],
+          "report_html": "runs/run-1000-20261027-141915-690e50b0/report.html"
+        }
+      }
+    },
+    {
+      "category": "merge",
+      "name": "pikepdf",
+      "time_growth_1000_vs_200": 5.1426707926684765,
+      "per_page_growth_1000_vs_200": 1.0285341585336953,
+      "results": {
+        "200": {
+          "count": 200,
+          "status": "PASS",
+          "reason": "",
+          "median_seconds": 0.21211979999861796,
+          "spread_seconds": 0.0030215000006137416,
+          "cpu_median_seconds": 0.21875,
+          "peak_rss_bytes": 31207424,
+          "output_bytes": 232245,
+          "trial_count": 3,
+          "qa_pass_count": 3,
+          "qa_pages_checked": 600,
+          "decoded_control_count": 9,
+          "seconds_per_page": 0.00106059899999309,
+          "speedup_vs_pypdf": 1.472446230859855,
+          "pdf_files": [
+            "runs/run-200-20261027-141751-97ef28c9/merge-pikepdf-1.pdf",
+            "runs/run-200-20261027-141751-97ef28c9/merge-pikepdf-2.pdf",
+            "runs/run-200-20261027-141751-97ef28c9/merge-pikepdf-3.pdf"
+          ],
+          "report_html": "runs/run-200-20261027-141751-97ef28c9/report.html"
+        },
+        "1000": {
+          "count": 1000,
+          "status": "PASS",
+          "reason": "",
+          "median_seconds": 1.0908622999995714,
+          "spread_seconds": 0.02938989999893238,
+          "cpu_median_seconds": 1.09375,
+          "peak_rss_bytes": 40951808,
+          "output_bytes": 1167436,
+          "trial_count": 3,
+          "qa_pass_count": 3,
+          "qa_pages_checked": 3000,
+          "decoded_control_count": 9,
+          "seconds_per_page": 0.0010908622999995714,
+          "speedup_vs_pypdf": 1.4874869174619674,
+          "pdf_files": [
+            "runs/run-1000-20261027-141915-690e50b0/merge-pikepdf-1.pdf",
+            "runs/run-1000-20261027-141915-690e50b0/merge-pikepdf-2.pdf",
+            "runs/run-1000-20261027-141915-690e50b0/merge-pikepdf-3.pdf"
+          ],
+          "report_html": "runs/run-1000-20261027-141915-690e50b0/report.html"
+        }
+      }
+    },
+    {
+      "category": "merge",
+      "name": "pypdf",
+      "time_growth_1000_vs_200": 5.1952019466551285,
+      "per_page_growth_1000_vs_200": 1.0390403893310256,
+      "results": {
+        "200": {
+          "count": 200,
+          "status": "PASS",
+          "reason": "",
+          "median_seconds": 0.3123349999987113,
+          "spread_seconds": 0.003058700003748527,
+          "cpu_median_seconds": 0.3125,
+          "peak_rss_bytes": 36720640,
+          "output_bytes": 269064,
+          "trial_count": 3,
+          "qa_pass_count": 3,
+          "qa_pages_checked": 600,
+          "decoded_control_count": 9,
+          "seconds_per_page": 0.0015616749999935564,
+          "speedup_vs_pypdf": 1.0,
+          "pdf_files": [
+            "runs/run-200-20261027-141751-97ef28c9/merge-pypdf-1.pdf",
+            "runs/run-200-20261027-141751-97ef28c9/merge-pypdf-2.pdf",
+            "runs/run-200-20261027-141751-97ef28c9/merge-pypdf-3.pdf"
+          ],
+          "report_html": "runs/run-200-20261027-141751-97ef28c9/report.html"
+        },
+        "1000": {
+          "count": 1000,
+          "status": "PASS",
+          "reason": "",
+          "median_seconds": 1.6226434000018344,
+          "spread_seconds": 0.06963689999975031,
+          "cpu_median_seconds": 1.625,
+          "peak_rss_bytes": 60518400,
+          "output_bytes": 1351461,
+          "trial_count": 3,
+          "qa_pass_count": 3,
+          "qa_pages_checked": 3000,
+          "decoded_control_count": 9,
+          "seconds_per_page": 0.0016226434000018344,
+          "speedup_vs_pypdf": 1.0,
+          "pdf_files": [
+            "runs/run-1000-20261027-141915-690e50b0/merge-pypdf-1.pdf",
+            "runs/run-1000-20261027-141915-690e50b0/merge-pypdf-2.pdf",
+            "runs/run-1000-20261027-141915-690e50b0/merge-pypdf-3.pdf"
+          ],
+          "report_html": "runs/run-1000-20261027-141915-690e50b0/report.html"
+        }
+      }
+    },
+    {
+      "category": "merge",
+      "name": "qpdf",
+      "time_growth_1000_vs_200": 4.4166655736726605,
+      "per_page_growth_1000_vs_200": 0.8833331147345321,
+      "results": {
+        "200": {
+          "count": 200,
+          "status": "PASS",
+          "reason": "",
+          "median_seconds": 0.5032074000009743,
+          "spread_seconds": 0.0023677999997744337,
+          "cpu_median_seconds": 0.5,
+          "peak_rss_bytes": 32870400,
+          "output_bytes": 232045,
+          "trial_count": 3,
+          "qa_pass_count": 3,
+          "qa_pages_checked": 600,
+          "decoded_control_count": 9,
+          "seconds_per_page": 0.0025160370000048716,
+          "speedup_vs_pypdf": 0.6206884079965965,
+          "pdf_files": [
+            "runs/run-200-20261027-141751-97ef28c9/merge-qpdf-1.pdf",
+            "runs/run-200-20261027-141751-97ef28c9/merge-qpdf-2.pdf",
+            "runs/run-200-20261027-141751-97ef28c9/merge-qpdf-3.pdf"
+          ],
+          "report_html": "runs/run-200-20261027-141751-97ef28c9/report.html"
+        },
+        "1000": {
+          "count": 1000,
+          "status": "PASS",
+          "reason": "",
+          "median_seconds": 2.222498800001631,
+          "spread_seconds": 0.03598060000149417,
+          "cpu_median_seconds": 2.203125,
+          "peak_rss_bytes": 53993472,
+          "output_bytes": 1166436,
+          "trial_count": 3,
+          "qa_pass_count": 3,
+          "qa_pages_checked": 3000,
+          "decoded_control_count": 9,
+          "seconds_per_page": 0.002222498800001631,
+          "speedup_vs_pypdf": 0.730098661920827,
+          "pdf_files": [
+            "runs/run-1000-20261027-141915-690e50b0/merge-qpdf-1.pdf",
+            "runs/run-1000-20261027-141915-690e50b0/merge-qpdf-2.pdf",
+            "runs/run-1000-20261027-141915-690e50b0/merge-qpdf-3.pdf"
+          ],
+          "report_html": "runs/run-1000-20261027-141915-690e50b0/report.html"
+        }
+      }
+    }
+  ],
+  "stages": {
+    "200": {
+      "status": "COMPLETE",
+      "report_html": "runs/run-200-20261027-141751-97ef28c9/report.html",
+      "report_json": "runs/run-200-20261027-141751-97ef28c9/report.json",
+      "report_csv": "runs/run-200-20261027-141751-97ef28c9/report.csv",
+      "reason": ""
+    },
+    "1000": {
+      "status": "COMPLETE",
+      "report_html": "runs/run-1000-20261027-141915-690e50b0/report.html",
+      "report_json": "runs/run-1000-20261027-141915-690e50b0/report.json",
+      "report_csv": "runs/run-1000-20261027-141915-690e50b0/report.csv",
+      "reason": ""
+    }
+  },
+  "notes": [
+    "Explicit user request authorizes this 200 -> 1000 suite; ordinary benchmark gating remains active.",
+    "Only measured values are reported; missing results are SKIPPED, never extrapolated.",
+    "Direct PDF includes QR encoding + PDF; merge timings exclude input generation.",
+    "QA, imports, input-list loading and hashes are outside method time. Three repeats, no warmup.",
+    "Python engine imports are preloaded; external CLI/JVM/Node/.NET startup and library loading are included in adapter-call time.",
+    "RAM is each fresh worker OS peak including imports/loading. External-process sums are upper bounds.",
+    "CPU is process seconds; exact scopes, all trials and QA evidence remain in per-size reports.",
+    "pypdf speedup compares PASS merger methods at the same count; direct generation is excluded.",
+    "The 120-second threshold applies only to qualification at 200; no 1000 timing is predicted."
+  ],
+  "has_invalid_results": true,
+  "overall_seconds": 382.41350669999883
+}

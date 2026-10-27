@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.venv/
+output/
+tmp/
+*.egg-info/
+build/
+dist/
+tools/
+node_modules/
+.npm-cache/
+.pip-cache/
+.local-state/
+.nuget/
+**/obj/
+**/bin/

@@ -1,0 +1,102 @@
+{
+  "python": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+  "executable": "<project>\\.venv\\Scripts\\python.exe",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "logical_processors": 28,
+  "cpu": "Intel(R) Xeon(R) CPU E5-2680 v4 @ 2.40GHz",
+  "dependencies": {
+    "reportlab": "4.4.9",
+    "pypdf": "6.21.2",
+    "Pillow": "12.3.0",
+    "segno": null,
+    "PyMuPDF": "2.0",
+    "pikepdf": "10.17.0",
+    "pdfrw": "0.4",
+    "pypdfium2": "5.14.0"
+  },
+  "pdftoppm": "<user-home>\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\poppler\\Library\\bin\\pdftoppm.EXE",
+  "tkinter": true,
+  "physical_memory_bytes": 17079623680,
+  "available_memory_bytes": 8288518144,
+  "adapters": [
+    {
+      "name": "qpdf",
+      "available": true,
+      "reason": "",
+      "version": "qpdf version 12.4.2",
+      "executable": "<project>\\tools\\qpdf\\qpdf-12.4.2-msvc64\\bin\\qpdf.exe"
+    },
+    {
+      "name": "MuPDF (mutool)",
+      "available": true,
+      "reason": "",
+      "version": "mutool version 1.28.5",
+      "executable": "<project>\\tools\\mutool\\mupdf-1.28.5-windows\\mutool.exe"
+    },
+    {
+      "name": "PyMuPDF",
+      "available": true,
+      "reason": "",
+      "version": "2.0"
+    },
+    {
+      "name": "pikepdf",
+      "available": true,
+      "reason": "",
+      "version": "10.17.0"
+    },
+    {
+      "name": "pypdf",
+      "available": true,
+      "reason": "",
+      "version": "6.21.2"
+    },
+    {
+      "name": "pdfrw",
+      "available": true,
+      "reason": "",
+      "version": "0.4"
+    },
+    {
+      "name": "PDFium (pypdfium2)",
+      "available": true,
+      "reason": "",
+      "version": "5.14.0"
+    },
+    {
+      "name": "pdfcpu",
+      "available": true,
+      "reason": "",
+      "version": "version: 0.16.3",
+      "executable": "<project>\\tools\\pdfcpu\\pdfcpu_0.16.3_Windows_x86_64\\pdfcpu.exe"
+    },
+    {
+      "name": "Apache PDFBox",
+      "available": true,
+      "reason": "",
+      "version": "3.0.8",
+      "executable": "C:\\Program Files (x86)\\Common Files\\Oracle\\Java\\java8path\\java.EXE",
+      "java_version": "java version \"1.8.0_511\"",
+      "jar": "<project>\\tools\\pdfbox\\pdfbox-app-3.0.8.jar",
+      "classes": "<project>\\tools\\pdfbox\\classes"
+    },
+    {
+      "name": "pdf-lib (Node.js)",
+      "available": true,
+      "reason": "",
+      "version": "1.17.1",
+      "executable": "C:\\Program Files\\nodejs\\node.EXE",
+      "node_version": "v22.13.0",
+      "helper": "<project>\\scripts\\merge-pdflib.mjs"
+    },
+    {
+      "name": "PDFsharp (.NET)",
+      "available": true,
+      "reason": "",
+      "version": "PDFsharp 6.2.4 / .NET 8 helper",
+      "executable": "C:\\Program Files\\dotnet\\dotnet.EXE",
+      "helper": "<project>\\tools\\pdfsharp\\PdfSharpMerge.dll"
+    }
+  ],
+  "core_ready": true
+}

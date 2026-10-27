@@ -1,0 +1,219 @@
+"""M08: strict vector PDF verification and raster control-symbol decoding."""
+
+from __future__ import annotations
+
+import hashlib
+from pathlib import Path
+import shutil
+import subprocess
+import uuid
+
+from pypdf import PdfReader
+from pypdf.generic import ContentStream
+
+from .config import Experiment, QRFrame
+from .qrdecode import DecodeError, decode_numeric_v1_m
+
+
+PT_PER_MM = 72 / 25.4
+PT_TOLERANCE = 0.0003  # ReportLab serializes path coordinates with finite precision.
+
+
+def _near(actual, expected):
+    return abs(float(actual) - expected) <= PT_TOLERANCE
+
+
+def _page_matrix(page, reader, frame: QRFrame, config: Experiment):
+    n = frame.size
+    unit = config.module_mm * PT_PER_MM
+    side = (n + 2 * config.quiet_modules) * unit
+    for box_name in ("mediabox", "cropbox", "trimbox", "bleedbox", "artbox"):
+        box = getattr(page, box_name)
+        if not all(_near(v, expected) for v, expected in zip(box, (0, 0, side, side))):
+            raise ValueError(f"{box_name} is not the exact expected square")
+    if int(page.get("/Rotate", 0)) % 360 or float(page.get("/UserUnit", 1)) != 1:
+        raise ValueError("Page rotation/UserUnit is unsupported")
+    if page.get("/Annots"):
+        raise ValueError("Annotations are not permitted")
+    if page.get("/Group") is not None:
+        raise ValueError("Page transparency groups are not permitted")
+    resources = page.get("/Resources", {})
+    if hasattr(resources, "get_object"):
+        resources = resources.get_object()
+    for key in ("/XObject", "/ExtGState", "/ColorSpace", "/Pattern", "/Shading"):
+        if resources.get(key):
+            raise ValueError(f"Unsupported PDF resource {key}")
+    matrix = [[False] * n for _ in range(n)]
+    fill = None
+    saved = []
+    rectangles = []
+    in_text = False
+    painted = False
+    contents = page.get_contents()
+    if contents is None:
+        raise ValueError("Page content is missing")
+    for operands, operator in ContentStream(contents, reader).operations:
+        if operator == b"k":
+            if len(operands) != 4:
+                raise ValueError("Invalid CMYK color")
+            fill = tuple(float(v) for v in operands)
+        elif operator == b"cm":
+            # A geometry rounding tolerance is unsafe here: many individually
+            # tiny transforms can accumulate to a visible translation or scale.
+            if len(operands) != 6 or tuple(float(v) for v in operands) != (1, 0, 0, 1, 0, 0):
+                raise ValueError("Nonidentity transformation is not permitted")
+        elif operator == b"q":
+            saved.append(fill)
+        elif operator == b"Q":
+            if not saved:
+                raise ValueError("Unbalanced PDF graphics state")
+            fill = saved.pop()
+        elif operator == b"n":
+            rectangles = []
+        elif operator == b"re":
+            if len(operands) != 4:
+                raise ValueError("Invalid rectangle")
+            rectangles.append(tuple(float(v) for v in operands))
+        elif operator in (b"f", b"f*"):
+            if fill != (0.0, 0.0, 0.0, 1.0):
+                raise ValueError("Painted fill must be DeviceCMYK C0 M0 Y0 K100")
+            if not rectangles:
+                raise ValueError("Empty/unsupported painted path")
+            if in_text:
+                raise ValueError("Graphics inside a text object are unsupported")
+            for x, y, width, height in rectangles:
+                values = (x, y, x + width, y + height)
+                grid = tuple(round(value / unit) for value in values)
+                if not all(_near(value, index * unit) for value, index in zip(values, grid)):
+                    raise ValueError("Rectangle edges do not align to 0.5 mm module grid")
+                x0, y0, x1, y1 = grid
+                quiet = config.quiet_modules
+                if not (quiet <= x0 < x1 <= quiet + n and quiet <= y0 < y1 <= quiet + n):
+                    raise ValueError("Painting enters quiet zone or lies outside the QR matrix")
+                for bottom_row in range(y0, y1):
+                    row = n - 1 - (bottom_row - quiet)
+                    for column in range(x0 - quiet, x1 - quiet):
+                        if matrix[row][column]:
+                            raise ValueError("Overlapping module rectangles are unsupported")
+                        matrix[row][column] = True
+            rectangles = []
+            painted = True
+        elif operator == b"BT":
+            if in_text:
+                raise ValueError("Nested text objects")
+            in_text = True
+        elif operator == b"ET":
+            if not in_text:
+                raise ValueError("Unbalanced text object")
+            in_text = False
+        elif operator in (b"Tf", b"TL"):
+            # ReportLab writes an empty font setup even for graphics-only pages.
+            if not in_text:
+                raise ValueError("Text setup outside text object")
+        else:
+            raise ValueError(f"Unsupported PDF operator {operator!r}; only CMYK rectangles are accepted")
+    if saved or in_text or rectangles or not painted:
+        raise ValueError("Incomplete/unbalanced page content")
+    result = tuple(tuple(row) for row in matrix)
+    if result != frame.matrix:
+        raise ValueError("Vector QR matrix differs from the expected number/order")
+    decoded = decode_numeric_v1_m(result)
+    if decoded != frame.payload:
+        raise ValueError(f"Decoded payload {decoded!r} differs from TXT {frame.payload!r}")
+    return result, decoded
+
+
+def _decode_image(image_path: Path, config: Experiment, size=21):
+    from PIL import Image
+
+    with Image.open(image_path) as image:
+        image = image.convert("L")
+        cells = size + 2 * config.quiet_modules
+        if abs(image.width - image.height) > 1 or min(image.size) < cells * 8:
+            raise DecodeError("Rendered symbol is too small or not square")
+        full_matrix = []
+        for row in range(cells):
+            values = []
+            for col in range(cells):
+                # Interior of the module avoids renderer antialiasing at boundaries.
+                box = (
+                    round((col + 0.25) * image.width / cells),
+                    round((row + 0.25) * image.height / cells),
+                    round((col + 0.75) * image.width / cells),
+                    round((row + 0.75) * image.height / cells),
+                )
+                low, high = image.crop(box).getextrema()
+                if high < 90:
+                    values.append(True)
+                elif low > 230:
+                    values.append(False)
+                else:
+                    raise DecodeError("Rendered module interior is neither uniform black nor white")
+            full_matrix.append(values)
+        quiet = config.quiet_modules
+        for r in range(cells):
+            for c in range(cells):
+                if (r < quiet or c < quiet or r >= quiet + size or c >= quiet + size) and full_matrix[r][c]:
+                    raise DecodeError("Rendered quiet zone is not white")
+        matrix = tuple(tuple(row[quiet:quiet + size]) for row in full_matrix[quiet:quiet + size])
+        return decode_numeric_v1_m(matrix)
+
+
+def check_pdf(path: Path, frames: list[QRFrame], config: Experiment, *, render_samples=True) -> dict:
+    """Check every vector page and independently decode rendered control pages.
+
+    Raster decoding is required for PASS by default. `render_samples=False` is
+    intended only for focused tests; the result explicitly records that scope.
+    Rendered PNGs are retained beside the PDF as auditable evidence.
+    """
+    path = Path(path)
+    result = {
+        "status": "FAIL", "errors": [], "pages_checked": 0,
+        "decoded_samples": [], "render_samples": bool(render_samples),
+        "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+        "geometry_tolerance_points": PT_TOLERANCE,
+    }
+    try:
+        if not frames:
+            raise ValueError("Expected frames are empty")
+        reader = PdfReader(path, strict=True)
+        if reader.is_encrypted:
+            raise ValueError("Encrypted PDF is unsupported")
+        if len(reader.pages) != len(frames):
+            raise ValueError(f"Page count {len(reader.pages)} != expected {len(frames)}")
+        digest = hashlib.sha256()
+        for index, (page, frame) in enumerate(zip(reader.pages, frames), 1):
+            try:
+                if frame.version != 1 or frame.error != "M" or frame.size != 21:
+                    raise ValueError("Expected frame is outside QR V1/M contract")
+                _, payload = _page_matrix(page, reader, frame, config)
+                digest.update((payload + "\n").encode("ascii"))
+            except Exception as exc:
+                result["errors"].append(f"Page {index}: {type(exc).__name__}: {exc}")
+            result["pages_checked"] += 1
+        result["decoded_payload_sha256"] = digest.hexdigest()
+        if render_samples and not result["errors"]:
+            renderer = shutil.which("pdftoppm")
+            if not renderer:
+                raise ValueError("pdftoppm unavailable: rendered control decoding cannot be verified")
+            render_dir = path.parent / f"qa_{path.stem}_{uuid.uuid4().hex[:10]}"
+            render_dir.mkdir(exist_ok=False)
+            for index in sorted({0, len(frames) // 2, len(frames) - 1}):
+                prefix = render_dir / f"page_{index + 1:04d}"
+                completed = subprocess.run(
+                    [renderer, "-f", str(index + 1), "-l", str(index + 1), "-singlefile",
+                     "-r", "1016", "-png", str(path.resolve()), str(prefix.resolve())],
+                    capture_output=True, timeout=30, check=False,
+                )
+                if completed.returncode:
+                    detail = completed.stderr.decode("utf-8", errors="replace")[:500]
+                    raise ValueError(f"pdftoppm exited {completed.returncode}: {detail}")
+                png = prefix.with_suffix(".png")
+                payload = _decode_image(png, config)
+                if payload != frames[index].payload:
+                    raise ValueError(f"Rendered page {index + 1}: decoded payload does not match TXT")
+                result["decoded_samples"].append({"page": index + 1, "payload": payload, "png": str(png.resolve())})
+        result["status"] = "PASS" if not result["errors"] else "FAIL"
+    except Exception as exc:
+        result["errors"].append(f"{type(exc).__name__}: {exc}")
+    return result

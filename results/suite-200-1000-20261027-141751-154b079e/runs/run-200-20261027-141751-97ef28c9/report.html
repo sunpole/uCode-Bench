@@ -1,0 +1,2307 @@
+<!doctype html><html lang='ru'><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>uCode — результаты QR-бенчмарка</title><style>body{font:16px/1.5 system-ui,Segoe UI,sans-serif;margin:0;background:#f4f6f9;color:#162238}main{max-width:1400px;margin:auto;padding:28px}h1{margin-bottom:4px}h2{margin-top:32px}table{border-collapse:collapse;width:100%;background:white;font-variant-numeric:tabular-nums}th,td{text-align:left;border-bottom:1px solid #d9e0eb;padding:10px;vertical-align:top}thead{background:#e8edf5}tbody th{font-weight:600}.scroll{overflow:auto;border:1px solid #d9e0eb;border-radius:8px}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.5 ui-monospace,monospace}.PASS{color:#116239}.INVALID,.ERROR,.FAIL{color:#a52929}.SKIPPED{color:#5c687a}.intro{background:white;padding:18px;border-radius:10px;border-left:4px solid #325fca}.muted{color:#56657b}details{max-width:700px}a{color:#214da8}</style><main><h1>uCode · QR-бенчмарк</h1><p class='muted'>200 файлов · 3 повтора · статус запуска: COMPLETE</p><div class='intro'><p>Обычный QR Code, уровень M, модуль 0,5 мм, свободное поле 4 модуля. PDF: векторный CMYK C0 M0 Y0 K100, страница 14,5 × 14,5 мм.</p><p>Допуск к 1000: все три QA PASS и медиана строго меньше 120 с на 200 файлах. Этап на 1000 требует отдельного запуска.</p><p>Acrobat: 120 с на объединение 200 готовых PDF — исходное значение пользователя; в этом запуске Acrobat не измерялся.</p></div><h2>Объединение готовых PDF</h2><p>Время создания исходных файлов сюда не входит. В рейтинг входят только методы со статусом PASS.</p><div class='scroll'><table><thead><tr><th>Место</th><th>Метод</th><th>Статус</th><th>Медиана, с</th><th>max−min, с</th><th>Размер, байт</th><th>Допуск к 1000</th><th>Примечание</th></tr></thead><tbody><tr><td>1</td><th scope='row'>MuPDF (mutool)</th><td class='PASS'>PASS</td><td>0.1827</td><td>0.0035</td><td>258775</td><td>Да</td><td></td></tr><tr><td>2</td><th scope='row'>pikepdf</th><td class='PASS'>PASS</td><td>0.2121</td><td>0.0030</td><td>232245</td><td>Да</td><td></td></tr><tr><td>3</td><th scope='row'>PDFium (pypdfium2)</th><td class='PASS'>PASS</td><td>0.2461</td><td>0.0030</td><td>263938</td><td>Да</td><td></td></tr><tr><td>4</td><th scope='row'>pdfrw</th><td class='PASS'>PASS</td><td>0.2603</td><td>0.0049</td><td>267169</td><td>Да</td><td></td></tr><tr><td>5</td><th scope='row'>pdfcpu</th><td class='PASS'>PASS</td><td>0.2702</td><td>0.0168</td><td>269718</td><td>Да</td><td></td></tr><tr><td>6</td><th scope='row'>pypdf</th><td class='PASS'>PASS</td><td>0.3123</td><td>0.0031</td><td>269064</td><td>Да</td><td></td></tr><tr><td>7</td><th scope='row'>PyMuPDF</th><td class='PASS'>PASS</td><td>0.3176</td><td>0.0028</td><td>258848</td><td>Да</td><td></td></tr><tr><td>8</td><th scope='row'>qpdf</th><td class='PASS'>PASS</td><td>0.5032</td><td>0.0024</td><td>232045</td><td>Да</td><td></td></tr><tr><td>9</td><th scope='row'>pdf-lib (Node.js)</th><td class='PASS'>PASS</td><td>1.0209</td><td>0.0210</td><td>192856</td><td>Да</td><td></td></tr><tr><td>10</td><th scope='row'>Apache PDFBox</th><td class='PASS'>PASS</td><td>1.2385</td><td>0.0797</td><td>194403</td><td>Да</td><td></td></tr><tr><td>—</td><th scope='row'>PDFsharp (.NET)</th><td class='INVALID'>INVALID</td><td>0.4353</td><td>0.0095</td><td>266511</td><td>Нет</td><td>Не все три повтора и исходные PDF прошли QA</td></tr></tbody></table></div><h2>Прямая генерация</h2><p>QR-кодирование и создание многостраничного PDF. Оценивается отдельно от объединения.</p><div class='scroll'><table><thead><tr><th>Место</th><th>Метод</th><th>Статус</th><th>Медиана, с</th><th>max−min, с</th><th>Размер, байт</th><th>Допуск к 1000</th><th>Примечание</th></tr></thead><tbody><tr><td>1</td><th scope='row'>Direct PDF</th><td class='PASS'>PASS</td><td>1.1198</td><td>0.0192</td><td>233480</td><td>Да</td><td></td></tr></tbody></table></div><h2>Измерения по этапам</h2><h3>Кодирование QR</h3><div class='scroll'><table><thead><tr><th>Повтор</th><th>Время метода, с</th><th>Генерация + метод, с</th><th>CPU, с</th><th>Пик Working Set / RSS, MiB</th><th>Размер, байт</th><th>QA</th><th>Подробности</th><th>Файл</th></tr></thead><tbody><tr><td>1</td><td>0.8100</td><td>—</td><td>0.7969</td><td>30.46</td><td>—</td><td>—</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.8099554000000353,
+  &quot;cpu_seconds&quot;: 0.796875,
+  &quot;peak_rss_bytes&quot;: 31936512,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 1.2550775999989128,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\frames-1.json&quot;
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\frames-1.json</td></tr><tr><td>2</td><td>0.8212</td><td>—</td><td>0.8281</td><td>30.41</td><td>—</td><td>—</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.821240499997657,
+  &quot;cpu_seconds&quot;: 0.828125,
+  &quot;peak_rss_bytes&quot;: 31887360,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 1.2605734000026132,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\frames-2.json&quot;
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\frames-2.json</td></tr><tr><td>3</td><td>0.8270</td><td>—</td><td>0.8281</td><td>30.46</td><td>—</td><td>—</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.826954600001045,
+  &quot;cpu_seconds&quot;: 0.828125,
+  &quot;peak_rss_bytes&quot;: 31940608,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 1.2647123999995529,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\frames-3.json&quot;
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\frames-3.json</td></tr></tbody></table></div><h3>Создание отдельных PDF</h3><div class='scroll'><table><thead><tr><th>Повтор</th><th>Время метода, с</th><th>Генерация + метод, с</th><th>CPU, с</th><th>Пик Working Set / RSS, MiB</th><th>Размер, байт</th><th>QA</th><th>Подробности</th><th>Файл</th></tr></thead><tbody><tr><td>1</td><td>0.5286</td><td>1.3386</td><td>0.5312</td><td>27.14</td><td>415487</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.528616300001886,
+  &quot;cpu_seconds&quot;: 0.53125,
+  &quot;peak_rss_bytes&quot;: 28463104,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 0.8205581000001985,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\singles-1&quot;,
+  &quot;output_bytes&quot;: 415487,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\singles-1\\qa_0001_200000000000_ebfef45403\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\singles-1\\qa_0101_200000000100_4a4fc58a89\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\singles-1\\qa_0200_200000000199_a72b376d66\\page_0001.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true
+  },
+  &quot;qa_seconds&quot;: 1.3253533999995852,
+  &quot;generation_total_seconds&quot;: 1.3385717000019213
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\singles-1</td></tr><tr><td>2</td><td>0.5300</td><td>1.3512</td><td>0.5312</td><td>27.05</td><td>415487</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.5299754000006942,
+  &quot;cpu_seconds&quot;: 0.53125,
+  &quot;peak_rss_bytes&quot;: 28360704,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 0.8353384000001824,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\singles-2&quot;,
+  &quot;output_bytes&quot;: 415487,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\singles-2\\qa_0001_200000000000_386f9c5fc0\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\singles-2\\qa_0101_200000000100_b41716774e\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\singles-2\\qa_0200_200000000199_521ec340ad\\page_0001.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true
+  },
+  &quot;qa_seconds&quot;: 1.3256246000019019,
+  &quot;generation_total_seconds&quot;: 1.3512158999983512
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\singles-2</td></tr><tr><td>3</td><td>0.5299</td><td>1.3569</td><td>0.5312</td><td>26.92</td><td>415487</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.5299407000020437,
+  &quot;cpu_seconds&quot;: 0.53125,
+  &quot;peak_rss_bytes&quot;: 28225536,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 0.8308498999977019,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\singles-3&quot;,
+  &quot;output_bytes&quot;: 415487,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\singles-3\\qa_0001_200000000000_42111451e3\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\singles-3\\qa_0101_200000000100_d29153ca7f\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\singles-3\\qa_0200_200000000199_0f36a6bf6e\\page_0001.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true
+  },
+  &quot;qa_seconds&quot;: 1.3295801999993273,
+  &quot;generation_total_seconds&quot;: 1.3568953000030888
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\singles-3</td></tr></tbody></table></div><h3>Прямой PDF</h3><div class='scroll'><table><thead><tr><th>Повтор</th><th>Время метода, с</th><th>Генерация + метод, с</th><th>CPU, с</th><th>Пик Working Set / RSS, MiB</th><th>Размер, байт</th><th>QA</th><th>Подробности</th><th>Файл</th></tr></thead><tbody><tr><td>1</td><td>1.1198</td><td>1.1198</td><td>1.1250</td><td>32.92</td><td>233480</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 1.1197752000007313,
+  &quot;cpu_seconds&quot;: 1.125,
+  &quot;peak_rss_bytes&quot;: 34521088,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 1.514426400000957,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\direct-direct-pdf-1.pdf&quot;,
+  &quot;output_bytes&quot;: 233480,
+  &quot;sha256&quot;: &quot;aea36347f936d8d440689e8e4c0beafa1c1d2b04d8ed5106a4c93d925f2e19f9&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_direct-direct-pdf-1_9a6d56e059\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_direct-direct-pdf-1_9a6d56e059\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_direct-direct-pdf-1_9a6d56e059\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.2018494999974791,
+  &quot;total_seconds&quot;: 1.1197752000007313
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\direct-direct-pdf-1.pdf</td></tr><tr><td>2</td><td>1.1314</td><td>1.1314</td><td>1.1406</td><td>33.04</td><td>233480</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 1.1314242000007653,
+  &quot;cpu_seconds&quot;: 1.140625,
+  &quot;peak_rss_bytes&quot;: 34639872,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 1.532228899999609,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\direct-direct-pdf-2.pdf&quot;,
+  &quot;output_bytes&quot;: 233480,
+  &quot;sha256&quot;: &quot;aea36347f936d8d440689e8e4c0beafa1c1d2b04d8ed5106a4c93d925f2e19f9&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_direct-direct-pdf-2_cb1a95f144\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_direct-direct-pdf-2_cb1a95f144\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_direct-direct-pdf-2_cb1a95f144\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.20966110000154,
+  &quot;total_seconds&quot;: 1.1314242000007653
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\direct-direct-pdf-2.pdf</td></tr><tr><td>3</td><td>1.1122</td><td>1.1122</td><td>1.1094</td><td>32.95</td><td>233480</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 1.112225100001524,
+  &quot;cpu_seconds&quot;: 1.109375,
+  &quot;peak_rss_bytes&quot;: 34549760,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 1.5076769000006607,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\direct-direct-pdf-3.pdf&quot;,
+  &quot;output_bytes&quot;: 233480,
+  &quot;sha256&quot;: &quot;aea36347f936d8d440689e8e4c0beafa1c1d2b04d8ed5106a4c93d925f2e19f9&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_direct-direct-pdf-3_fe93350ee8\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_direct-direct-pdf-3_fe93350ee8\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_direct-direct-pdf-3_fe93350ee8\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.2107386000025144,
+  &quot;total_seconds&quot;: 1.112225100001524
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\direct-direct-pdf-3.pdf</td></tr></tbody></table></div><p>Общее время этапов и QA до сохранения отчётов, с: 84.0498</p><h2>Повторы каждого метода</h2><h3>Direct PDF · PASS</h3><div class='scroll'><table><thead><tr><th>Повтор</th><th>Время метода, с</th><th>Генерация + метод, с</th><th>CPU, с</th><th>Пик Working Set / RSS, MiB</th><th>Размер, байт</th><th>QA</th><th>Подробности</th><th>Файл</th></tr></thead><tbody><tr><td>1</td><td>1.1198</td><td>1.1198</td><td>1.1250</td><td>32.92</td><td>233480</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 1.1197752000007313,
+  &quot;cpu_seconds&quot;: 1.125,
+  &quot;peak_rss_bytes&quot;: 34521088,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 1.514426400000957,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\direct-direct-pdf-1.pdf&quot;,
+  &quot;output_bytes&quot;: 233480,
+  &quot;sha256&quot;: &quot;aea36347f936d8d440689e8e4c0beafa1c1d2b04d8ed5106a4c93d925f2e19f9&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_direct-direct-pdf-1_9a6d56e059\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_direct-direct-pdf-1_9a6d56e059\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_direct-direct-pdf-1_9a6d56e059\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.2018494999974791,
+  &quot;total_seconds&quot;: 1.1197752000007313
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\direct-direct-pdf-1.pdf</td></tr><tr><td>2</td><td>1.1314</td><td>1.1314</td><td>1.1406</td><td>33.04</td><td>233480</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 1.1314242000007653,
+  &quot;cpu_seconds&quot;: 1.140625,
+  &quot;peak_rss_bytes&quot;: 34639872,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 1.532228899999609,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\direct-direct-pdf-2.pdf&quot;,
+  &quot;output_bytes&quot;: 233480,
+  &quot;sha256&quot;: &quot;aea36347f936d8d440689e8e4c0beafa1c1d2b04d8ed5106a4c93d925f2e19f9&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_direct-direct-pdf-2_cb1a95f144\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_direct-direct-pdf-2_cb1a95f144\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_direct-direct-pdf-2_cb1a95f144\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.20966110000154,
+  &quot;total_seconds&quot;: 1.1314242000007653
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\direct-direct-pdf-2.pdf</td></tr><tr><td>3</td><td>1.1122</td><td>1.1122</td><td>1.1094</td><td>32.95</td><td>233480</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 1.112225100001524,
+  &quot;cpu_seconds&quot;: 1.109375,
+  &quot;peak_rss_bytes&quot;: 34549760,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 1.5076769000006607,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\direct-direct-pdf-3.pdf&quot;,
+  &quot;output_bytes&quot;: 233480,
+  &quot;sha256&quot;: &quot;aea36347f936d8d440689e8e4c0beafa1c1d2b04d8ed5106a4c93d925f2e19f9&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_direct-direct-pdf-3_fe93350ee8\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_direct-direct-pdf-3_fe93350ee8\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_direct-direct-pdf-3_fe93350ee8\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.2107386000025144,
+  &quot;total_seconds&quot;: 1.112225100001524
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\direct-direct-pdf-3.pdf</td></tr></tbody></table></div><h3>qpdf · PASS</h3><div class='scroll'><table><thead><tr><th>Повтор</th><th>Время метода, с</th><th>Генерация + метод, с</th><th>CPU, с</th><th>Пик Working Set / RSS, MiB</th><th>Размер, байт</th><th>QA</th><th>Подробности</th><th>Файл</th></tr></thead><tbody><tr><td>1</td><td>0.5032</td><td>1.8418</td><td>0.5000</td><td>31.24</td><td>232045</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.5032074000009743,
+  &quot;cpu_seconds&quot;: 0.5,
+  &quot;peak_rss_bytes&quot;: 32755712,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA; includes external engine CPU&quot;,
+  &quot;child_cpu_seconds&quot;: 0.40625,
+  &quot;child_peak_rss_bytes&quot;: 12054528,
+  &quot;worker_wall_seconds&quot;: 0.7141745999979321,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\merge-qpdf-1.pdf&quot;,
+  &quot;output_bytes&quot;: 232045,
+  &quot;sha256&quot;: &quot;d9280622409da297c31316e3c7aac42e06efd700c21e4ef0b67634e6da0c2bce&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-qpdf-1_144aa10c15\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-qpdf-1_144aa10c15\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-qpdf-1_144aa10c15\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.1633285999996588,
+  &quot;total_seconds&quot;: 1.8417791000028956
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\merge-qpdf-1.pdf</td></tr><tr><td>2</td><td>0.5030</td><td>1.8543</td><td>0.5000</td><td>31.22</td><td>232045</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.5030358000003616,
+  &quot;cpu_seconds&quot;: 0.5,
+  &quot;peak_rss_bytes&quot;: 32739328,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA; includes external engine CPU&quot;,
+  &quot;child_cpu_seconds&quot;: 0.40625,
+  &quot;child_peak_rss_bytes&quot;: 12075008,
+  &quot;worker_wall_seconds&quot;: 0.7132719000001089,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\merge-qpdf-2.pdf&quot;,
+  &quot;output_bytes&quot;: 232045,
+  &quot;sha256&quot;: &quot;1ff72f9f16f22e97aff3dc8ad54e6413f67a779a864c5b6fecb0b07705043fba&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-qpdf-2_98f2ad26d5\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-qpdf-2_98f2ad26d5\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-qpdf-2_98f2ad26d5\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.1667522999996436,
+  &quot;total_seconds&quot;: 1.8542516999987129
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\merge-qpdf-2.pdf</td></tr><tr><td>3</td><td>0.5054</td><td>1.8623</td><td>0.5312</td><td>31.35</td><td>232045</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.5054036000001361,
+  &quot;cpu_seconds&quot;: 0.53125,
+  &quot;peak_rss_bytes&quot;: 32870400,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA; includes external engine CPU&quot;,
+  &quot;child_cpu_seconds&quot;: 0.453125,
+  &quot;child_peak_rss_bytes&quot;: 12079104,
+  &quot;worker_wall_seconds&quot;: 0.7177280000032624,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\merge-qpdf-3.pdf&quot;,
+  &quot;output_bytes&quot;: 232045,
+  &quot;sha256&quot;: &quot;0b7358ff1f0f72ea765c1c37f7add241ab18f3b2ce9669a451e0c5f1994a2277&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-qpdf-3_96c1118218\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-qpdf-3_96c1118218\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-qpdf-3_96c1118218\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.1562147000004188,
+  &quot;total_seconds&quot;: 1.8622989000032248
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\merge-qpdf-3.pdf</td></tr></tbody></table></div><h3>MuPDF (mutool) · PASS</h3><div class='scroll'><table><thead><tr><th>Повтор</th><th>Время метода, с</th><th>Генерация + метод, с</th><th>CPU, с</th><th>Пик Working Set / RSS, MiB</th><th>Размер, байт</th><th>QA</th><th>Подробности</th><th>Файл</th></tr></thead><tbody><tr><td>1</td><td>0.1827</td><td>1.5213</td><td>0.1719</td><td>26.11</td><td>258775</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.18274620000011055,
+  &quot;cpu_seconds&quot;: 0.171875,
+  &quot;peak_rss_bytes&quot;: 27377664,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA; includes external engine CPU&quot;,
+  &quot;child_cpu_seconds&quot;: 0.078125,
+  &quot;child_peak_rss_bytes&quot;: 6647808,
+  &quot;worker_wall_seconds&quot;: 0.401965699998982,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\merge-mupdf-(mutool)-1.pdf&quot;,
+  &quot;output_bytes&quot;: 258775,
+  &quot;sha256&quot;: &quot;8f70941b40134087662a494f4fb4a253fb747c4d0db3c1203249d349d92c8509&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-mupdf-(mutool)-1_4919e51d74\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-mupdf-(mutool)-1_4919e51d74\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-mupdf-(mutool)-1_4919e51d74\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.2093707000021823,
+  &quot;total_seconds&quot;: 1.5213179000020318
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\merge-mupdf-(mutool)-1.pdf</td></tr><tr><td>2</td><td>0.1795</td><td>1.5307</td><td>0.1406</td><td>26.29</td><td>258775</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.17945460000191815,
+  &quot;cpu_seconds&quot;: 0.140625,
+  &quot;peak_rss_bytes&quot;: 27561984,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA; includes external engine CPU&quot;,
+  &quot;child_cpu_seconds&quot;: 0.0625,
+  &quot;child_peak_rss_bytes&quot;: 6754304,
+  &quot;worker_wall_seconds&quot;: 0.38733749999664724,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\merge-mupdf-(mutool)-2.pdf&quot;,
+  &quot;output_bytes&quot;: 258775,
+  &quot;sha256&quot;: &quot;8f70941b40134087662a494f4fb4a253fb747c4d0db3c1203249d349d92c8509&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-mupdf-(mutool)-2_1ea0e944c3\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-mupdf-(mutool)-2_1ea0e944c3\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-mupdf-(mutool)-2_1ea0e944c3\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.1777896999992663,
+  &quot;total_seconds&quot;: 1.5306705000002694
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\merge-mupdf-(mutool)-2.pdf</td></tr><tr><td>3</td><td>0.1830</td><td>1.5399</td><td>0.1719</td><td>26.32</td><td>258775</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.18297420000089915,
+  &quot;cpu_seconds&quot;: 0.171875,
+  &quot;peak_rss_bytes&quot;: 27594752,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA; includes external engine CPU&quot;,
+  &quot;child_cpu_seconds&quot;: 0.078125,
+  &quot;child_peak_rss_bytes&quot;: 6692864,
+  &quot;worker_wall_seconds&quot;: 0.39024739999877056,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\merge-mupdf-(mutool)-3.pdf&quot;,
+  &quot;output_bytes&quot;: 258775,
+  &quot;sha256&quot;: &quot;8f70941b40134087662a494f4fb4a253fb747c4d0db3c1203249d349d92c8509&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-mupdf-(mutool)-3_96aeabee38\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-mupdf-(mutool)-3_96aeabee38\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-mupdf-(mutool)-3_96aeabee38\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.2000383000013244,
+  &quot;total_seconds&quot;: 1.539869500003988
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\merge-mupdf-(mutool)-3.pdf</td></tr></tbody></table></div><h3>PyMuPDF · PASS</h3><div class='scroll'><table><thead><tr><th>Повтор</th><th>Время метода, с</th><th>Генерация + метод, с</th><th>CPU, с</th><th>Пик Working Set / RSS, MiB</th><th>Размер, байт</th><th>QA</th><th>Подробности</th><th>Файл</th></tr></thead><tbody><tr><td>1</td><td>0.3148</td><td>1.6534</td><td>0.3125</td><td>124.45</td><td>258848</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.3148118000026443,
+  &quot;cpu_seconds&quot;: 0.3125,
+  &quot;peak_rss_bytes&quot;: 130498560,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 2.312616999999591,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\merge-pymupdf-1.pdf&quot;,
+  &quot;output_bytes&quot;: 258848,
+  &quot;sha256&quot;: &quot;daf2c929e112b88eb77666b4fb11c89727700a8c6264923816182955563dd1a6&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pymupdf-1_a3049428a3\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pymupdf-1_a3049428a3\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pymupdf-1_a3049428a3\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.1916076999987126,
+  &quot;total_seconds&quot;: 1.6533835000045656
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\merge-pymupdf-1.pdf</td></tr><tr><td>2</td><td>0.3176</td><td>1.6689</td><td>0.3125</td><td>124.42</td><td>258848</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.3176368000022194,
+  &quot;cpu_seconds&quot;: 0.3125,
+  &quot;peak_rss_bytes&quot;: 130465792,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 2.265800900000613,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\merge-pymupdf-2.pdf&quot;,
+  &quot;output_bytes&quot;: 258848,
+  &quot;sha256&quot;: &quot;cd94213dee3a968bf1f31ba86657eb742762fe7bdb3f69e2a5893f41c5963ab9&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pymupdf-2_8782284f47\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pymupdf-2_8782284f47\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pymupdf-2_8782284f47\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.19786380000005,
+  &quot;total_seconds&quot;: 1.6688527000005706
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\merge-pymupdf-2.pdf</td></tr><tr><td>3</td><td>0.3176</td><td>1.6745</td><td>0.3125</td><td>124.27</td><td>258848</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.31762979999984964,
+  &quot;cpu_seconds&quot;: 0.3125,
+  &quot;peak_rss_bytes&quot;: 130310144,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 2.241354300000239,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\merge-pymupdf-3.pdf&quot;,
+  &quot;output_bytes&quot;: 258848,
+  &quot;sha256&quot;: &quot;39ce30117d35c1be4ec67da72121b40bb9d603edf41005c51e856d9ad5799e28&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pymupdf-3_e96b2f40a8\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pymupdf-3_e96b2f40a8\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pymupdf-3_e96b2f40a8\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.18578239999988,
+  &quot;total_seconds&quot;: 1.6745251000029384
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\merge-pymupdf-3.pdf</td></tr></tbody></table></div><h3>pikepdf · PASS</h3><div class='scroll'><table><thead><tr><th>Повтор</th><th>Время метода, с</th><th>Генерация + метод, с</th><th>CPU, с</th><th>Пик Working Set / RSS, MiB</th><th>Размер, байт</th><th>QA</th><th>Подробности</th><th>Файл</th></tr></thead><tbody><tr><td>1</td><td>0.2121</td><td>1.5507</td><td>0.2188</td><td>29.53</td><td>232245</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.21211979999861796,
+  &quot;cpu_seconds&quot;: 0.21875,
+  &quot;peak_rss_bytes&quot;: 30965760,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 0.50291599999764,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\merge-pikepdf-1.pdf&quot;,
+  &quot;output_bytes&quot;: 232245,
+  &quot;sha256&quot;: &quot;a90aef8c22b89ed3273571e587c8f68fe466a87413dc5ea9e73d6a03984f8081&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pikepdf-1_cc681f9a0d\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pikepdf-1_cc681f9a0d\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pikepdf-1_cc681f9a0d\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.148536000000604,
+  &quot;total_seconds&quot;: 1.5506915000005392
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\merge-pikepdf-1.pdf</td></tr><tr><td>2</td><td>0.2126</td><td>1.5638</td><td>0.2188</td><td>29.72</td><td>232245</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.21259770000324352,
+  &quot;cpu_seconds&quot;: 0.21875,
+  &quot;peak_rss_bytes&quot;: 31162368,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 0.4903236999998626,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\merge-pikepdf-2.pdf&quot;,
+  &quot;output_bytes&quot;: 232245,
+  &quot;sha256&quot;: &quot;4fac5005eeedf66bd0a2be3f4d40ce3455b1c843d7395b8f332e5b90b19e6e4b&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pikepdf-2_69bdbb3d82\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pikepdf-2_69bdbb3d82\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pikepdf-2_69bdbb3d82\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.1494202999965637,
+  &quot;total_seconds&quot;: 1.5638136000015948
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\merge-pikepdf-2.pdf</td></tr><tr><td>3</td><td>0.2096</td><td>1.5665</td><td>0.2031</td><td>29.76</td><td>232245</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.20957620000262978,
+  &quot;cpu_seconds&quot;: 0.203125,
+  &quot;peak_rss_bytes&quot;: 31207424,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 0.4947025000001304,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\merge-pikepdf-3.pdf&quot;,
+  &quot;output_bytes&quot;: 232245,
+  &quot;sha256&quot;: &quot;952ec9cf21bb8325ff9fd689071b862d4f6b39eb0c4df926a1224f78678de083&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pikepdf-3_ae9b59e368\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pikepdf-3_ae9b59e368\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pikepdf-3_ae9b59e368\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.1506561000023794,
+  &quot;total_seconds&quot;: 1.5664715000057186
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\merge-pikepdf-3.pdf</td></tr></tbody></table></div><h3>pypdf · PASS</h3><div class='scroll'><table><thead><tr><th>Повтор</th><th>Время метода, с</th><th>Генерация + метод, с</th><th>CPU, с</th><th>Пик Working Set / RSS, MiB</th><th>Размер, байт</th><th>QA</th><th>Подробности</th><th>Файл</th></tr></thead><tbody><tr><td>1</td><td>0.3151</td><td>1.6537</td><td>0.3125</td><td>34.86</td><td>269064</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.31510240000352496,
+  &quot;cpu_seconds&quot;: 0.3125,
+  &quot;peak_rss_bytes&quot;: 36548608,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 0.6975920000004407,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\merge-pypdf-1.pdf&quot;,
+  &quot;output_bytes&quot;: 269064,
+  &quot;sha256&quot;: &quot;b196ceda4e69ec8062a91ef003f1939f092232639a89442ffaba7a5be74af185&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pypdf-1_af97d4d1c4\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pypdf-1_af97d4d1c4\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pypdf-1_af97d4d1c4\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.2088776999989932,
+  &quot;total_seconds&quot;: 1.6536741000054462
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\merge-pypdf-1.pdf</td></tr><tr><td>2</td><td>0.3123</td><td>1.6636</td><td>0.3125</td><td>34.96</td><td>269064</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.3123349999987113,
+  &quot;cpu_seconds&quot;: 0.3125,
+  &quot;peak_rss_bytes&quot;: 36663296,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 0.6932722000019567,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\merge-pypdf-2.pdf&quot;,
+  &quot;output_bytes&quot;: 269064,
+  &quot;sha256&quot;: &quot;b196ceda4e69ec8062a91ef003f1939f092232639a89442ffaba7a5be74af185&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pypdf-2_0737392921\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pypdf-2_0737392921\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pypdf-2_0737392921\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.2017998000010266,
+  &quot;total_seconds&quot;: 1.6635508999970625
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\merge-pypdf-2.pdf</td></tr><tr><td>3</td><td>0.3120</td><td>1.6689</td><td>0.3125</td><td>35.02</td><td>269064</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.31204369999977644,
+  &quot;cpu_seconds&quot;: 0.3125,
+  &quot;peak_rss_bytes&quot;: 36720640,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 0.6984118000000308,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\merge-pypdf-3.pdf&quot;,
+  &quot;output_bytes&quot;: 269064,
+  &quot;sha256&quot;: &quot;b196ceda4e69ec8062a91ef003f1939f092232639a89442ffaba7a5be74af185&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pypdf-3_ddf2585263\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pypdf-3_ddf2585263\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pypdf-3_ddf2585263\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.207832200001576,
+  &quot;total_seconds&quot;: 1.6689390000028652
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\merge-pypdf-3.pdf</td></tr></tbody></table></div><h3>pdfrw · PASS</h3><div class='scroll'><table><thead><tr><th>Повтор</th><th>Время метода, с</th><th>Генерация + метод, с</th><th>CPU, с</th><th>Пик Working Set / RSS, MiB</th><th>Размер, байт</th><th>QA</th><th>Подробности</th><th>Файл</th></tr></thead><tbody><tr><td>1</td><td>0.2609</td><td>1.5994</td><td>0.2656</td><td>30.11</td><td>267169</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.2608576999991783,
+  &quot;cpu_seconds&quot;: 0.265625,
+  &quot;peak_rss_bytes&quot;: 31567872,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 0.501602800002729,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\merge-pdfrw-1.pdf&quot;,
+  &quot;output_bytes&quot;: 267169,
+  &quot;sha256&quot;: &quot;22af2f285e4eae03f70b83b99d4cfdc0b5003c66b8ed2363f36ebfbe4d7c57a3&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdfrw-1_453dee09bd\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdfrw-1_453dee09bd\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdfrw-1_453dee09bd\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.1778793000012229,
+  &quot;total_seconds&quot;: 1.5994294000010996
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\merge-pdfrw-1.pdf</td></tr><tr><td>2</td><td>0.2559</td><td>1.6071</td><td>0.2500</td><td>30.16</td><td>267169</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.2559091000002809,
+  &quot;cpu_seconds&quot;: 0.25,
+  &quot;peak_rss_bytes&quot;: 31621120,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 0.49704019999990123,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\merge-pdfrw-2.pdf&quot;,
+  &quot;output_bytes&quot;: 267169,
+  &quot;sha256&quot;: &quot;22af2f285e4eae03f70b83b99d4cfdc0b5003c66b8ed2363f36ebfbe4d7c57a3&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdfrw-2_29288f2ebb\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdfrw-2_29288f2ebb\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdfrw-2_29288f2ebb\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.1818409000006795,
+  &quot;total_seconds&quot;: 1.6071249999986321
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\merge-pdfrw-2.pdf</td></tr><tr><td>3</td><td>0.2603</td><td>1.6172</td><td>0.2500</td><td>29.98</td><td>267169</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.26031940000029863,
+  &quot;cpu_seconds&quot;: 0.25,
+  &quot;peak_rss_bytes&quot;: 31432704,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 0.5078142000020307,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\merge-pdfrw-3.pdf&quot;,
+  &quot;output_bytes&quot;: 267169,
+  &quot;sha256&quot;: &quot;22af2f285e4eae03f70b83b99d4cfdc0b5003c66b8ed2363f36ebfbe4d7c57a3&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdfrw-3_0eabcbe442\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdfrw-3_0eabcbe442\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdfrw-3_0eabcbe442\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.3107458999984374,
+  &quot;total_seconds&quot;: 1.6172147000033874
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\merge-pdfrw-3.pdf</td></tr></tbody></table></div><h3>PDFium (pypdfium2) · PASS</h3><div class='scroll'><table><thead><tr><th>Повтор</th><th>Время метода, с</th><th>Генерация + метод, с</th><th>CPU, с</th><th>Пик Working Set / RSS, MiB</th><th>Размер, байт</th><th>QA</th><th>Подробности</th><th>Файл</th></tr></thead><tbody><tr><td>1</td><td>0.2463</td><td>1.5849</td><td>0.2500</td><td>28.10</td><td>263938</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.24630880000040634,
+  &quot;cpu_seconds&quot;: 0.25,
+  &quot;peak_rss_bytes&quot;: 29462528,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 0.5510459000033734,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\merge-pdfium-(pypdfium2)-1.pdf&quot;,
+  &quot;output_bytes&quot;: 263938,
+  &quot;sha256&quot;: &quot;f2532f2d414a033eb5bd26bf7eaad53ac6b66949ccdb63055143c34b87a10a46&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdfium-(pypdfium2)-1_ceb91a8d0c\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdfium-(pypdfium2)-1_ceb91a8d0c\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdfium-(pypdfium2)-1_ceb91a8d0c\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.3141983999994409,
+  &quot;total_seconds&quot;: 1.5848805000023276
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\merge-pdfium-(pypdfium2)-1.pdf</td></tr><tr><td>2</td><td>0.2433</td><td>1.5946</td><td>0.2500</td><td>28.11</td><td>263938</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.24334739999903832,
+  &quot;cpu_seconds&quot;: 0.25,
+  &quot;peak_rss_bytes&quot;: 29474816,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 0.5467514999982086,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\merge-pdfium-(pypdfium2)-2.pdf&quot;,
+  &quot;output_bytes&quot;: 263938,
+  &quot;sha256&quot;: &quot;ba6b0b1364e099c8b6ece573b70464b32955f852d760e0331768f4db95311292&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdfium-(pypdfium2)-2_95d49edbc9\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdfium-(pypdfium2)-2_95d49edbc9\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdfium-(pypdfium2)-2_95d49edbc9\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.2053580000028887,
+  &quot;total_seconds&quot;: 1.5945632999973895
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\merge-pdfium-(pypdfium2)-2.pdf</td></tr><tr><td>3</td><td>0.2461</td><td>1.6030</td><td>0.2344</td><td>27.82</td><td>263938</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.24605549999978393,
+  &quot;cpu_seconds&quot;: 0.234375,
+  &quot;peak_rss_bytes&quot;: 29171712,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA&quot;,
+  &quot;worker_wall_seconds&quot;: 0.5481306000001496,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\merge-pdfium-(pypdfium2)-3.pdf&quot;,
+  &quot;output_bytes&quot;: 263938,
+  &quot;sha256&quot;: &quot;6d70d4a48e94b235e3a21f559a6e8518330977ff47c61018bade64cdb1ff9ba7&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdfium-(pypdfium2)-3_181a05feaf\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdfium-(pypdfium2)-3_181a05feaf\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdfium-(pypdfium2)-3_181a05feaf\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.205820399998629,
+  &quot;total_seconds&quot;: 1.6029508000028727
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\merge-pdfium-(pypdfium2)-3.pdf</td></tr></tbody></table></div><h3>pdfcpu · PASS</h3><div class='scroll'><table><thead><tr><th>Повтор</th><th>Время метода, с</th><th>Генерация + метод, с</th><th>CPU, с</th><th>Пик Working Set / RSS, MiB</th><th>Размер, байт</th><th>QA</th><th>Подробности</th><th>Файл</th></tr></thead><tbody><tr><td>1</td><td>0.2850</td><td>1.6236</td><td>0.2812</td><td>42.17</td><td>269729</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.2849824999975681,
+  &quot;cpu_seconds&quot;: 0.28125,
+  &quot;peak_rss_bytes&quot;: 44216320,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA; includes external engine CPU&quot;,
+  &quot;child_cpu_seconds&quot;: 0.203125,
+  &quot;child_peak_rss_bytes&quot;: 23244800,
+  &quot;worker_wall_seconds&quot;: 0.4901730999990832,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\merge-pdfcpu-1.pdf&quot;,
+  &quot;output_bytes&quot;: 269729,
+  &quot;sha256&quot;: &quot;4a5a4c93dc9ef56493c8f514e358fedfa0f632f2fc6f0c51d9777221120e32a8&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdfcpu-1_29d3de9173\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdfcpu-1_29d3de9173\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdfcpu-1_29d3de9173\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.2278098999995564,
+  &quot;total_seconds&quot;: 1.6235541999994894
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\merge-pdfcpu-1.pdf</td></tr><tr><td>2</td><td>0.2702</td><td>1.6214</td><td>0.2656</td><td>41.62</td><td>269723</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.2701956999990216,
+  &quot;cpu_seconds&quot;: 0.265625,
+  &quot;peak_rss_bytes&quot;: 43642880,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA; includes external engine CPU&quot;,
+  &quot;child_cpu_seconds&quot;: 0.171875,
+  &quot;child_peak_rss_bytes&quot;: 22749184,
+  &quot;worker_wall_seconds&quot;: 0.4807314999998198,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\merge-pdfcpu-2.pdf&quot;,
+  &quot;output_bytes&quot;: 269723,
+  &quot;sha256&quot;: &quot;c02eaaea9b99f80aef10bb9913d6c044ca0160cdb3e8fd6810697245f9595604&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdfcpu-2_9f22dcd17d\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdfcpu-2_9f22dcd17d\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdfcpu-2_9f22dcd17d\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.2231008000017027,
+  &quot;total_seconds&quot;: 1.6214115999973728
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\merge-pdfcpu-2.pdf</td></tr><tr><td>3</td><td>0.2682</td><td>1.6251</td><td>0.2969</td><td>41.93</td><td>269718</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.2681857999996282,
+  &quot;cpu_seconds&quot;: 0.296875,
+  &quot;peak_rss_bytes&quot;: 43970560,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA; includes external engine CPU&quot;,
+  &quot;child_cpu_seconds&quot;: 0.203125,
+  &quot;child_peak_rss_bytes&quot;: 23244800,
+  &quot;worker_wall_seconds&quot;: 0.47929629999998724,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\merge-pdfcpu-3.pdf&quot;,
+  &quot;output_bytes&quot;: 269718,
+  &quot;sha256&quot;: &quot;61adb4c6699ceb31e342071303a3ce3a291720cecc1737163bc7070270c73d82&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdfcpu-3_9c91f3bc67\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdfcpu-3_9c91f3bc67\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdfcpu-3_9c91f3bc67\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.2343999999975495,
+  &quot;total_seconds&quot;: 1.625081100002717
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\merge-pdfcpu-3.pdf</td></tr></tbody></table></div><h3>Apache PDFBox · PASS</h3><div class='scroll'><table><thead><tr><th>Повтор</th><th>Время метода, с</th><th>Генерация + метод, с</th><th>CPU, с</th><th>Пик Working Set / RSS, MiB</th><th>Размер, байт</th><th>QA</th><th>Подробности</th><th>Файл</th></tr></thead><tbody><tr><td>1</td><td>1.3118</td><td>2.6503</td><td>0.2031</td><td>29.14</td><td>194403</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 1.3117533000004187,
+  &quot;cpu_seconds&quot;: 0.203125,
+  &quot;peak_rss_bytes&quot;: 30560256,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA; includes external engine CPU&quot;,
+  &quot;child_cpu_seconds&quot;: 0.109375,
+  &quot;child_peak_rss_bytes&quot;: 9822208,
+  &quot;engine_options&quot;: &quot;PDFBOX_LEGACY_MODE; temp-file-only stream cache; Java startup included&quot;,
+  &quot;worker_wall_seconds&quot;: 1.5213613999985682,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\merge-apache-pdfbox-1.pdf&quot;,
+  &quot;output_bytes&quot;: 194403,
+  &quot;sha256&quot;: &quot;e64a022aa1ee0a4fe63feb8e3e6e5a3ef2a39e0592e29161c3c2849558fcbb06&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-apache-pdfbox-1_a573843a08\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-apache-pdfbox-1_a573843a08\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-apache-pdfbox-1_a573843a08\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.22426859999905,
+  &quot;total_seconds&quot;: 2.65032500000234
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\merge-apache-pdfbox-1.pdf</td></tr><tr><td>2</td><td>1.2385</td><td>2.5897</td><td>0.2188</td><td>29.14</td><td>194403</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 1.238532799998211,
+  &quot;cpu_seconds&quot;: 0.21875,
+  &quot;peak_rss_bytes&quot;: 30560256,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA; includes external engine CPU&quot;,
+  &quot;child_cpu_seconds&quot;: 0.125,
+  &quot;child_peak_rss_bytes&quot;: 9830400,
+  &quot;engine_options&quot;: &quot;PDFBOX_LEGACY_MODE; temp-file-only stream cache; Java startup included&quot;,
+  &quot;worker_wall_seconds&quot;: 1.4463538999989396,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\merge-apache-pdfbox-2.pdf&quot;,
+  &quot;output_bytes&quot;: 194403,
+  &quot;sha256&quot;: &quot;b32dbf2f57855f8be61de7d930c3e19ca816ac5719dd4cad859d18f9a8c77d1c&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-apache-pdfbox-2_8d66a32050\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-apache-pdfbox-2_8d66a32050\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-apache-pdfbox-2_8d66a32050\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.2082904000017152,
+  &quot;total_seconds&quot;: 2.589748699996562
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\merge-apache-pdfbox-2.pdf</td></tr><tr><td>3</td><td>1.2321</td><td>2.5890</td><td>0.2031</td><td>29.17</td><td>194403</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 1.2320836999970197,
+  &quot;cpu_seconds&quot;: 0.203125,
+  &quot;peak_rss_bytes&quot;: 30588928,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA; includes external engine CPU&quot;,
+  &quot;child_cpu_seconds&quot;: 0.109375,
+  &quot;child_peak_rss_bytes&quot;: 9850880,
+  &quot;engine_options&quot;: &quot;PDFBOX_LEGACY_MODE; temp-file-only stream cache; Java startup included&quot;,
+  &quot;worker_wall_seconds&quot;: 1.4399183000023186,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\merge-apache-pdfbox-3.pdf&quot;,
+  &quot;output_bytes&quot;: 194403,
+  &quot;sha256&quot;: &quot;6a66b7a753f8298837ee504aa8af2de09bad8c42683f90677fd7e68c31605d9e&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-apache-pdfbox-3_c61ee4982b\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-apache-pdfbox-3_c61ee4982b\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-apache-pdfbox-3_c61ee4982b\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.2304043999974965,
+  &quot;total_seconds&quot;: 2.5889790000001085
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\merge-apache-pdfbox-3.pdf</td></tr></tbody></table></div><h3>pdf-lib (Node.js) · PASS</h3><div class='scroll'><table><thead><tr><th>Повтор</th><th>Время метода, с</th><th>Генерация + метод, с</th><th>CPU, с</th><th>Пик Working Set / RSS, MiB</th><th>Размер, байт</th><th>QA</th><th>Подробности</th><th>Файл</th></tr></thead><tbody><tr><td>1</td><td>1.0253</td><td>2.3638</td><td>1.0625</td><td>78.21</td><td>192856</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 1.0252512999977625,
+  &quot;cpu_seconds&quot;: 1.0625,
+  &quot;peak_rss_bytes&quot;: 82010112,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA; includes external engine CPU&quot;,
+  &quot;child_cpu_seconds&quot;: 0.96875,
+  &quot;child_peak_rss_bytes&quot;: 61198336,
+  &quot;engine_options&quot;: &quot;copyPages; object streams enabled; Node.js startup included&quot;,
+  &quot;worker_wall_seconds&quot;: 1.2363463000001502,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\merge-pdf-lib-(node.js)-1.pdf&quot;,
+  &quot;output_bytes&quot;: 192856,
+  &quot;sha256&quot;: &quot;efbdeeb8d1dccc7e912d6535273eb6e1fdc362f44c9e31dfd6eb22e609d013ec&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdf-lib-(node.js)-1_90971abd83\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdf-lib-(node.js)-1_90971abd83\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdf-lib-(node.js)-1_90971abd83\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.2099156999975094,
+  &quot;total_seconds&quot;: 2.363822999999684
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\merge-pdf-lib-(node.js)-1.pdf</td></tr><tr><td>2</td><td>1.0209</td><td>2.3721</td><td>0.8438</td><td>78.21</td><td>192856</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 1.0209273000000394,
+  &quot;cpu_seconds&quot;: 0.84375,
+  &quot;peak_rss_bytes&quot;: 82014208,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA; includes external engine CPU&quot;,
+  &quot;child_cpu_seconds&quot;: 0.75,
+  &quot;child_peak_rss_bytes&quot;: 61308928,
+  &quot;engine_options&quot;: &quot;copyPages; object streams enabled; Node.js startup included&quot;,
+  &quot;worker_wall_seconds&quot;: 1.224053099998855,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\merge-pdf-lib-(node.js)-2.pdf&quot;,
+  &quot;output_bytes&quot;: 192856,
+  &quot;sha256&quot;: &quot;efbdeeb8d1dccc7e912d6535273eb6e1fdc362f44c9e31dfd6eb22e609d013ec&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdf-lib-(node.js)-2_a41208a178\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdf-lib-(node.js)-2_a41208a178\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdf-lib-(node.js)-2_a41208a178\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.2073324999983015,
+  &quot;total_seconds&quot;: 2.3721431999983906
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\merge-pdf-lib-(node.js)-2.pdf</td></tr><tr><td>3</td><td>1.0043</td><td>2.3612</td><td>1.0000</td><td>78.33</td><td>192856</td><td>PASS</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 1.0042658999991545,
+  &quot;cpu_seconds&quot;: 1.0,
+  &quot;peak_rss_bytes&quot;: 82137088,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA; includes external engine CPU&quot;,
+  &quot;child_cpu_seconds&quot;: 0.90625,
+  &quot;child_peak_rss_bytes&quot;: 61370368,
+  &quot;engine_options&quot;: &quot;copyPages; object streams enabled; Node.js startup included&quot;,
+  &quot;worker_wall_seconds&quot;: 1.2120542999982717,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\merge-pdf-lib-(node.js)-3.pdf&quot;,
+  &quot;output_bytes&quot;: 192856,
+  &quot;sha256&quot;: &quot;efbdeeb8d1dccc7e912d6535273eb6e1fdc362f44c9e31dfd6eb22e609d013ec&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;PASS&quot;,
+    &quot;errors&quot;: [],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [
+      {
+        &quot;page&quot;: 1,
+        &quot;payload&quot;: &quot;200000000000&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdf-lib-(node.js)-3_9dab9d754d\\page_0001.png&quot;
+      },
+      {
+        &quot;page&quot;: 101,
+        &quot;payload&quot;: &quot;200000000100&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdf-lib-(node.js)-3_9dab9d754d\\page_0101.png&quot;
+      },
+      {
+        &quot;page&quot;: 200,
+        &quot;payload&quot;: &quot;200000000199&quot;,
+        &quot;png&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\qa_merge-pdf-lib-(node.js)-3_9dab9d754d\\page_0200.png&quot;
+      }
+    ],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e5575a66babdcb7a82af76fcbcfee858b4727c9693e951095582f8517442d436&quot;
+  },
+  &quot;qa_seconds&quot;: 1.2182586000017182,
+  &quot;total_seconds&quot;: 2.3611612000022433
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\merge-pdf-lib-(node.js)-3.pdf</td></tr></tbody></table></div><h3>PDFsharp (.NET) · INVALID</h3><div class='scroll'><table><thead><tr><th>Повтор</th><th>Время метода, с</th><th>Генерация + метод, с</th><th>CPU, с</th><th>Пик Working Set / RSS, MiB</th><th>Размер, байт</th><th>QA</th><th>Подробности</th><th>Файл</th></tr></thead><tbody><tr><td>1</td><td>0.4353</td><td>1.7739</td><td>0.4219</td><td>61.98</td><td>266511</td><td>FAIL</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.4353147000001627,
+  &quot;cpu_seconds&quot;: 0.421875,
+  &quot;peak_rss_bytes&quot;: 64995328,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA; includes external engine CPU&quot;,
+  &quot;child_cpu_seconds&quot;: 0.328125,
+  &quot;child_peak_rss_bytes&quot;: 44285952,
+  &quot;worker_wall_seconds&quot;: 0.6465945999989344,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\merge-pdfsharp-(.net)-1.pdf&quot;,
+  &quot;output_bytes&quot;: 266511,
+  &quot;sha256&quot;: &quot;82d2fcc73d8eb975e89eb6f8fbf9fd51a9b0b4ace39a804a88fdd11dfc010d0e&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;FAIL&quot;,
+    &quot;errors&quot;: [
+      &quot;Page 1: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 2: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 3: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 4: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 5: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 6: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 7: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 8: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 9: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 10: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 11: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 12: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 13: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 14: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 15: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 16: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 17: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 18: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 19: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 20: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 21: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 22: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 23: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 24: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 25: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 26: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 27: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 28: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 29: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 30: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 31: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 32: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 33: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 34: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 35: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 36: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 37: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 38: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 39: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 40: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 41: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 42: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 43: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 44: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 45: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 46: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 47: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 48: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 49: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 50: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 51: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 52: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 53: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 54: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 55: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 56: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 57: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 58: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 59: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 60: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 61: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 62: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 63: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 64: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 65: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 66: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 67: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 68: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 69: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 70: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 71: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 72: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 73: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 74: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 75: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 76: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 77: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 78: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 79: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 80: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 81: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 82: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 83: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 84: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 85: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 86: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 87: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 88: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 89: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 90: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 91: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 92: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 93: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 94: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 95: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 96: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 97: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 98: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 99: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 100: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 101: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 102: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 103: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 104: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 105: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 106: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 107: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 108: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 109: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 110: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 111: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 112: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 113: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 114: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 115: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 116: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 117: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 118: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 119: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 120: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 121: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 122: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 123: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 124: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 125: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 126: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 127: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 128: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 129: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 130: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 131: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 132: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 133: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 134: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 135: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 136: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 137: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 138: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 139: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 140: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 141: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 142: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 143: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 144: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 145: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 146: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 147: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 148: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 149: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 150: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 151: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 152: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 153: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 154: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 155: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 156: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 157: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 158: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 159: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 160: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 161: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 162: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 163: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 164: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 165: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 166: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 167: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 168: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 169: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 170: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 171: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 172: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 173: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 174: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 175: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 176: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 177: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 178: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 179: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 180: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 181: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 182: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 183: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 184: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 185: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 186: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 187: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 188: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 189: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 190: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 191: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 192: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 193: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 194: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 195: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 196: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 197: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 198: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 199: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 200: ValueError: mediabox is not the exact expected square&quot;
+    ],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855&quot;
+  },
+  &quot;qa_seconds&quot;: 0.03400160000092001,
+  &quot;total_seconds&quot;: 1.773886400002084
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\merge-pdfsharp-(.net)-1.pdf</td></tr><tr><td>2</td><td>0.4374</td><td>1.7886</td><td>0.4219</td><td>62.11</td><td>266511</td><td>FAIL</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.43735469999955967,
+  &quot;cpu_seconds&quot;: 0.421875,
+  &quot;peak_rss_bytes&quot;: 65126400,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA; includes external engine CPU&quot;,
+  &quot;child_cpu_seconds&quot;: 0.328125,
+  &quot;child_peak_rss_bytes&quot;: 44310528,
+  &quot;worker_wall_seconds&quot;: 0.6484135999999125,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\merge-pdfsharp-(.net)-2.pdf&quot;,
+  &quot;output_bytes&quot;: 266511,
+  &quot;sha256&quot;: &quot;2fc755de3d9259afc10bf45d1a415686147dfc292bb891a5296cdc3d5467ab7d&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;FAIL&quot;,
+    &quot;errors&quot;: [
+      &quot;Page 1: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 2: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 3: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 4: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 5: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 6: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 7: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 8: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 9: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 10: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 11: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 12: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 13: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 14: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 15: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 16: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 17: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 18: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 19: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 20: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 21: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 22: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 23: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 24: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 25: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 26: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 27: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 28: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 29: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 30: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 31: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 32: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 33: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 34: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 35: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 36: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 37: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 38: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 39: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 40: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 41: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 42: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 43: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 44: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 45: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 46: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 47: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 48: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 49: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 50: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 51: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 52: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 53: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 54: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 55: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 56: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 57: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 58: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 59: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 60: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 61: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 62: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 63: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 64: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 65: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 66: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 67: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 68: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 69: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 70: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 71: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 72: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 73: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 74: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 75: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 76: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 77: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 78: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 79: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 80: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 81: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 82: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 83: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 84: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 85: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 86: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 87: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 88: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 89: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 90: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 91: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 92: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 93: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 94: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 95: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 96: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 97: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 98: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 99: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 100: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 101: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 102: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 103: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 104: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 105: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 106: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 107: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 108: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 109: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 110: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 111: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 112: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 113: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 114: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 115: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 116: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 117: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 118: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 119: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 120: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 121: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 122: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 123: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 124: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 125: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 126: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 127: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 128: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 129: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 130: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 131: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 132: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 133: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 134: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 135: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 136: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 137: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 138: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 139: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 140: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 141: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 142: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 143: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 144: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 145: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 146: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 147: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 148: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 149: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 150: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 151: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 152: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 153: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 154: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 155: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 156: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 157: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 158: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 159: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 160: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 161: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 162: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 163: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 164: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 165: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 166: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 167: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 168: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 169: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 170: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 171: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 172: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 173: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 174: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 175: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 176: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 177: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 178: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 179: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 180: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 181: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 182: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 183: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 184: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 185: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 186: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 187: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 188: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 189: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 190: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 191: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 192: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 193: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 194: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 195: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 196: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 197: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 198: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 199: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 200: ValueError: mediabox is not the exact expected square&quot;
+    ],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855&quot;
+  },
+  &quot;qa_seconds&quot;: 0.034660400000575464,
+  &quot;total_seconds&quot;: 1.788570599997911
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\merge-pdfsharp-(.net)-2.pdf</td></tr><tr><td>3</td><td>0.4279</td><td>1.7848</td><td>0.4062</td><td>62.13</td><td>266511</td><td>FAIL</td><td><details><summary>Замер, область CPU/RAM и QA</summary><pre>{
+  &quot;seconds&quot;: 0.42788849999851664,
+  &quot;cpu_seconds&quot;: 0.40625,
+  &quot;peak_rss_bytes&quot;: 65146880,
+  &quot;ram_scope&quot;: &quot;OS process peak working set including imports and input loading; QA excluded; sum of worker/engine individual peaks (upper bound, not simultaneous RSS)&quot;,
+  &quot;cpu_scope&quot;: &quot;method process CPU; excludes imports, input loading and QA; includes external engine CPU&quot;,
+  &quot;child_cpu_seconds&quot;: 0.3125,
+  &quot;child_peak_rss_bytes&quot;: 44339200,
+  &quot;worker_wall_seconds&quot;: 0.6385917000006884,
+  &quot;path&quot;: &quot;.\\runs\\run-200-20261027-141751-97ef28c9\\merge-pdfsharp-(.net)-3.pdf&quot;,
+  &quot;output_bytes&quot;: 266511,
+  &quot;sha256&quot;: &quot;eecf5c220576222a96710e2e2ed41f21c27cce651e03851169391ca26d0e5f84&quot;,
+  &quot;qa&quot;: {
+    &quot;status&quot;: &quot;FAIL&quot;,
+    &quot;errors&quot;: [
+      &quot;Page 1: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 2: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 3: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 4: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 5: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 6: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 7: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 8: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 9: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 10: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 11: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 12: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 13: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 14: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 15: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 16: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 17: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 18: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 19: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 20: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 21: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 22: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 23: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 24: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 25: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 26: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 27: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 28: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 29: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 30: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 31: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 32: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 33: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 34: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 35: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 36: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 37: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 38: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 39: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 40: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 41: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 42: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 43: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 44: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 45: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 46: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 47: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 48: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 49: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 50: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 51: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 52: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 53: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 54: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 55: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 56: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 57: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 58: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 59: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 60: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 61: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 62: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 63: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 64: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 65: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 66: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 67: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 68: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 69: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 70: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 71: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 72: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 73: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 74: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 75: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 76: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 77: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 78: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 79: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 80: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 81: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 82: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 83: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 84: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 85: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 86: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 87: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 88: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 89: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 90: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 91: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 92: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 93: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 94: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 95: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 96: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 97: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 98: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 99: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 100: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 101: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 102: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 103: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 104: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 105: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 106: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 107: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 108: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 109: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 110: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 111: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 112: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 113: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 114: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 115: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 116: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 117: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 118: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 119: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 120: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 121: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 122: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 123: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 124: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 125: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 126: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 127: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 128: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 129: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 130: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 131: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 132: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 133: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 134: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 135: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 136: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 137: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 138: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 139: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 140: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 141: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 142: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 143: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 144: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 145: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 146: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 147: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 148: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 149: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 150: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 151: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 152: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 153: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 154: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 155: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 156: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 157: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 158: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 159: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 160: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 161: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 162: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 163: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 164: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 165: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 166: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 167: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 168: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 169: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 170: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 171: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 172: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 173: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 174: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 175: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 176: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 177: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 178: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 179: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 180: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 181: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 182: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 183: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 184: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 185: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 186: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 187: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 188: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 189: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 190: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 191: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 192: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 193: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 194: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 195: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 196: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 197: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 198: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 199: ValueError: mediabox is not the exact expected square&quot;,
+      &quot;Page 200: ValueError: mediabox is not the exact expected square&quot;
+    ],
+    &quot;pages_checked&quot;: 200,
+    &quot;decoded_samples&quot;: [],
+    &quot;render_samples&quot;: true,
+    &quot;decoder&quot;: &quot;independent pristine QR V1/M/numeric12 + BCH + RS&quot;,
+    &quot;geometry_tolerance_points&quot;: 0.0003,
+    &quot;decoded_payload_sha256&quot;: &quot;e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855&quot;
+  },
+  &quot;qa_seconds&quot;: 0.03511389999766834,
+  &quot;total_seconds&quot;: 1.7847838000016054
+}</pre></details></td><td>.\runs\run-200-20261027-141751-97ef28c9\merge-pdfsharp-(.net)-3.pdf</td></tr></tbody></table></div><h2>Условия измерений и ограничения</h2><ul><li>Acrobat 120 s is a user-provided reference, not measured in this run.</li><li>No warmup; three measured trials. QA, imports, input reads, hashes excluded from method times.</li><li>Imports above means preloaded Python libraries; external CLI/JVM/Node/.NET startup and imports are included.</li><li>Direct includes encoding plus PDF. Merge times exclude source generation; total_seconds includes it.</li><li>RAM: fresh worker OS peak working set incl. imports/input, QA excluded. External sum is upper bound.</li><li>Only QR V1-M numeric 12-digit payloads; no PDF/X certification or physical print scan.</li><li>QA independent numeric decoder rejects damage (no error correction); raster controls first/middle/last.</li></ul><p>QA выполняется вне измеряемого времени метода. CPU — процессные секунды. RAM — сохранённый ОС пик Working Set / RSS отдельного рабочего процесса; включает импорты и загрузку входов. При внешнем движке сумма индивидуальных пиков — верхняя оценка, а не одновременное потребление. Точная область CPU/RAM и дочерние процессы указаны в подробностях каждого замера.</p><h2>Окружение</h2><pre>{
+  &quot;python&quot;: &quot;3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]&quot;,
+  &quot;executable&quot;: &quot;<project>\\.venv\\Scripts\\python.exe&quot;,
+  &quot;platform&quot;: &quot;Windows-10-10.0.19045-SP0&quot;,
+  &quot;logical_processors&quot;: 28,
+  &quot;cpu&quot;: &quot;Intel(R) Xeon(R) CPU E5-2680 v4 @ 2.40GHz&quot;,
+  &quot;dependencies&quot;: {
+    &quot;reportlab&quot;: &quot;4.4.9&quot;,
+    &quot;pypdf&quot;: &quot;6.21.2&quot;,
+    &quot;Pillow&quot;: &quot;12.3.0&quot;,
+    &quot;segno&quot;: null,
+    &quot;PyMuPDF&quot;: &quot;2.0&quot;,
+    &quot;pikepdf&quot;: &quot;10.17.0&quot;,
+    &quot;pdfrw&quot;: &quot;0.4&quot;,
+    &quot;pypdfium2&quot;: &quot;5.14.0&quot;
+  },
+  &quot;pdftoppm&quot;: &quot;<user-home>\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\poppler\\Library\\bin\\pdftoppm.EXE&quot;,
+  &quot;tkinter&quot;: true,
+  &quot;physical_memory_bytes&quot;: 17079623680,
+  &quot;available_memory_bytes&quot;: 8295235584,
+  &quot;adapters&quot;: [
+    {
+      &quot;name&quot;: &quot;qpdf&quot;,
+      &quot;available&quot;: true,
+      &quot;reason&quot;: &quot;&quot;,
+      &quot;version&quot;: &quot;qpdf version 12.4.2&quot;,
+      &quot;executable&quot;: &quot;<project>\\tools\\qpdf\\qpdf-12.4.2-msvc64\\bin\\qpdf.exe&quot;
+    },
+    {
+      &quot;name&quot;: &quot;MuPDF (mutool)&quot;,
+      &quot;available&quot;: true,
+      &quot;reason&quot;: &quot;&quot;,
+      &quot;version&quot;: &quot;mutool version 1.28.5&quot;,
+      &quot;executable&quot;: &quot;<project>\\tools\\mutool\\mupdf-1.28.5-windows\\mutool.exe&quot;
+    },
+    {
+      &quot;name&quot;: &quot;PyMuPDF&quot;,
+      &quot;available&quot;: true,
+      &quot;reason&quot;: &quot;&quot;,
+      &quot;version&quot;: &quot;2.0&quot;
+    },
+    {
+      &quot;name&quot;: &quot;pikepdf&quot;,
+      &quot;available&quot;: true,
+      &quot;reason&quot;: &quot;&quot;,
+      &quot;version&quot;: &quot;10.17.0&quot;
+    },
+    {
+      &quot;name&quot;: &quot;pypdf&quot;,
+      &quot;available&quot;: true,
+      &quot;reason&quot;: &quot;&quot;,
+      &quot;version&quot;: &quot;6.21.2&quot;
+    },
+    {
+      &quot;name&quot;: &quot;pdfrw&quot;,
+      &quot;available&quot;: true,
+      &quot;reason&quot;: &quot;&quot;,
+      &quot;version&quot;: &quot;0.4&quot;
+    },
+    {
+      &quot;name&quot;: &quot;PDFium (pypdfium2)&quot;,
+      &quot;available&quot;: true,
+      &quot;reason&quot;: &quot;&quot;,
+      &quot;version&quot;: &quot;5.14.0&quot;
+    },
+    {
+      &quot;name&quot;: &quot;pdfcpu&quot;,
+      &quot;available&quot;: true,
+      &quot;reason&quot;: &quot;&quot;,
+      &quot;version&quot;: &quot;version: 0.16.3&quot;,
+      &quot;executable&quot;: &quot;<project>\\tools\\pdfcpu\\pdfcpu_0.16.3_Windows_x86_64\\pdfcpu.exe&quot;
+    },
+    {
+      &quot;name&quot;: &quot;Apache PDFBox&quot;,
+      &quot;available&quot;: true,
+      &quot;reason&quot;: &quot;&quot;,
+      &quot;version&quot;: &quot;3.0.8&quot;,
+      &quot;executable&quot;: &quot;C:\\Program Files (x86)\\Common Files\\Oracle\\Java\\java8path\\java.EXE&quot;,
+      &quot;java_version&quot;: &quot;java version \&quot;1.8.0_511\&quot;&quot;,
+      &quot;jar&quot;: &quot;<project>\\tools\\pdfbox\\pdfbox-app-3.0.8.jar&quot;,
+      &quot;classes&quot;: &quot;<project>\\tools\\pdfbox\\classes&quot;
+    },
+    {
+      &quot;name&quot;: &quot;pdf-lib (Node.js)&quot;,
+      &quot;available&quot;: true,
+      &quot;reason&quot;: &quot;&quot;,
+      &quot;version&quot;: &quot;1.17.1&quot;,
+      &quot;executable&quot;: &quot;C:\\Program Files\\nodejs\\node.EXE&quot;,
+      &quot;node_version&quot;: &quot;v22.13.0&quot;,
+      &quot;helper&quot;: &quot;<project>\\scripts\\merge-pdflib.mjs&quot;
+    },
+    {
+      &quot;name&quot;: &quot;PDFsharp (.NET)&quot;,
+      &quot;available&quot;: true,
+      &quot;reason&quot;: &quot;&quot;,
+      &quot;version&quot;: &quot;PDFsharp 6.2.4 / .NET 8 helper&quot;,
+      &quot;executable&quot;: &quot;C:\\Program Files\\dotnet\\dotnet.EXE&quot;,
+      &quot;helper&quot;: &quot;<project>\\tools\\pdfsharp\\PdfSharpMerge.dll&quot;
+    }
+  ],
+  &quot;core_ready&quot;: true
+}</pre><p class='muted'>Каталог запуска: .\runs\run-200-20261027-141751-97ef28c9</p><p><a href='report.json'>JSON с полными данными</a> · <a href='report.csv'>CSV с повторами</a></p></main></html>

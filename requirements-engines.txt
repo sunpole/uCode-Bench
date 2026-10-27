@@ -1,0 +1,8 @@
+# Versions verified from official package metadata for the expanded experiment.
+reportlab==4.4.9
+pypdf==6.21.2
+Pillow==12.3.0
+PyMuPDF==2.0
+pikepdf==10.17.0
+pdfrw==0.4
+pypdfium2==5.14.0
