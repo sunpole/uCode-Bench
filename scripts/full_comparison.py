@@ -25,8 +25,9 @@ from scripts.install_engines import PYTHON, install_all, local_environment
 
 def command(argv, *, capture=False, timeout=600):
     print("PIPELINE:", " ".join(map(str, argv)), flush=True)
+    output = {"capture_output": True} if capture else {"stdout": sys.stdout, "stderr": sys.stderr}
     return subprocess.run(list(map(str, argv)), cwd=ROOT, env=local_environment(), text=True,
-                          capture_output=capture, check=True, timeout=timeout,
+                          **output, check=True, timeout=timeout,
                           creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
 
 

@@ -91,6 +91,14 @@ Direct PDF: 233 480 байт, peak Working Set 34 729 984 байт максим�
 - Попытка долговременного запуска через Codex Process Jobs завершилась до старта payload: `Unsupported platform: win32. Use macOS or Linux.` Задача CPJ не создана; pipeline запущен обычным foreground-процессом под контролем родительского агента. Не искать CPJ id для этой попытки.
 - Первый pip install зависал до начала загрузки. Диагностика: PyPI имеет 4 IPv6 и 4 IPv4 адреса; TCP IPv6 — timeout 2 с, IPv4 — connect 0,047 с. Pipeline остановлен на установке первого пакета; зависший процесс pip только этого проекта завершён по проверенным executable/argv. Добавлен `pip_ipv4.py` для одного процесса pip; Node получает dns-result-order=ipv4first, .NET — process-local disableIPv6. Системные DNS, маршруты, IPv6 и registry не менялись. Native downloads используют curl с hard timeout и проверкой хеша.
 
+### Доставка расширенного сравнения
+
+Установка всех 11 адаптеров завершилась. 74 теста в `.venv` прошли без пропусков. Оба масштаба завершены; 10 merger methods и direct прошли QA на 200 и на 1000. PDFsharp по умолчанию INVALID на 200: MediaBox [0,0,41.102,41.102] вместо [0,0,41.10236,41.10236] и добавлена transparency Group с /CS /DeviceRGB; 1000 для него SKIPPED по неизменённому QA gate. Допуски не ослаблялись. Подробности находятся в локальном `PDFSHARP_QA.md` внутри suite/архива.
+
+Полный ZIP `output/exports/suite-200-1000-20261027-141751-154b079e-all-files.zip`: 34 621 964 байта. Первый push из автоматического pipeline вернул exit128; stderr дочернего процесса не сохранился, точная причина не установлена. Новое явное выполнение той же команды git push с тем же gh credential helper завершилось exit0. В setup/pipeline добавлена явная передача stdout/stderr для диагностики будущих запусков. Замеры после этого не перезапускались.
+
+Создан новый публичный `https://github.com/sunpole/uCode-Bench`, исходный commit отправлен в main. Старый `sunpole/uCode` не изменялся. Публикация Release и окончательная сверка следуют отдельным шагом; первичный `.local-state/.../final-status.json` сохраняет исходную ошибку pipeline, не подменяется успешным статусом.
+
 ## Expanded comparison 2026-10-27
 
 Local report: `output/comparisons/suite-200-1000-20261027-141751-154b079e/comparison.html`.

@@ -49,6 +49,7 @@ def run(argv, *, timeout=600):
     print("SETUP:", " ".join(map(str, argv)), flush=True)
     command = list(map(str, argv))
     subprocess.run(command, cwd=ROOT, env=local_environment(), check=True, timeout=timeout,
+                   stdout=sys.stdout, stderr=sys.stderr,
                    creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
 
 
@@ -65,6 +66,7 @@ def download(url, destination, expected, algorithm="sha256"):
     if curl:
         subprocess.run([curl, "--fail", "--location", "--connect-timeout", "20", "--max-time", "600",
                         "--retry", "1", "--output", str(temporary), url], check=True, timeout=650,
+                       stdout=sys.stdout, stderr=sys.stderr,
                        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         if hashlib.new(algorithm, temporary.read_bytes()).hexdigest() != expected.lower():
             raise ValueError(f"Download checksum mismatch: {destination.name}; partial preserved")
