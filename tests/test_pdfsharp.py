@@ -51,8 +51,13 @@ class PdfSharpAdapterTests(unittest.TestCase):
             self.assertEqual(len(argv), 3)
             manifest = Path(argv[2])
             request = json.loads(manifest.read_text(encoding="utf-8"))
-            self.assertEqual(request["inputs"], [str(path) for path in sources])
-            self.assertEqual(request["output"], str(output))
+            # validate_paths canonicalizes Windows short names/junctions too.
+            # Compare each entry so a regression reports its first index
+            # instead of spending minutes diffing 1000 near-identical paths.
+            self.assertEqual(len(request["inputs"]), len(sources))
+            for index, (actual, source) in enumerate(zip(request["inputs"], sources)):
+                self.assertEqual(actual, str(source.resolve()), f"Input order at index {index}")
+            self.assertEqual(request["output"], str(output.resolve()))
             output.write_bytes(b"merged")
             return {"child_cpu_seconds": 0.25, "child_peak_rss_bytes": 4096}
         with patch.object(PdfSharpAdapter, "probe", return_value=info), patch("ucode.mergers.pdfsharp.run_engine", side_effect=run):
