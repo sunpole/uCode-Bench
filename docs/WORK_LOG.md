@@ -131,3 +131,13 @@ Local complete archive: `output/exports/suite-200-1000-20261027-141751-154b079e-
 
 These are measured values from preserved local reports. Missing or failed methods are not extrapolated.
 CPU/RAM/file sizes and all repeats are in the JSON/CSV. Full suite status: COMPLETE.
+
+### TXT → PDF independent generator (feature branch, 27.10.2026)
+
+Новая независимая ветка `feature/txt-batch-print-pdf-20261027`; `main` не меняется до ревью. Добавлены `ucode/batch.py` и `ucode/batch_gui.py`, `PDF-from-TXT.cmd`, команды `template` / `generate` / `batch` в CLI и кнопка в основном GUI.
+
+- TXT 200/1000/10000 строк создаются без перезаписи, внешний UTF-8 TXT до генерации полностью проверяется (строго QR V1-M, 12 ASCII-цифр, максимум 10000 строк).
+- Два варианта экспорта: по одному PDF на код и один N-страничный PDF; вариант `both` пишет оба. Страницы 14,5 × 14,5 мм, 0,5 мм модуль, quiet zone 4, векторный DeviceCMYK C0/M0/Y0/K100.
+- Генерация и QA измеряются отдельно: `manifest.json` содержит файлы, SHA256 TXT и объединённого PDF, времена, статус и контроль. QA вызывает действующий независимый `quality.check_pdf` для всех сохранённых страниц; `pdftoppm` используется для растровых выборок. При отсутствии renderer — LIMITED, при ошибке QA — INVALID.
+- Отмена и ошибки не удаляют уже записанные PDF. Прежний gate бенчмарка 200→1000 и его результаты остаются неизменными. PDF/X не заявляется.
+- Независимая локальная smoke-проверка на двух кодах: созданы 2 одностраничных и 1 двухстраничный PDF, проверены реальные объекты PDF, MediaBox 41,102 pt и оператор CMYK K100; для smoke использовался упрощённый структурный checker. Это **не** означает, что интеграционные тесты пройдены в Windows или что проведены реальные измерения новой ветки на 200/1000/10000. Для такой проверки нужны полноценные `tests/test_batch.py` и запуск на целевой Windows.
