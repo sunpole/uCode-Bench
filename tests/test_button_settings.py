@@ -75,11 +75,14 @@ class ButtonSettingsTests(unittest.TestCase):
 
     def test_numeric_input_validity_is_updated_before_start(self):
         self.app.show_lab()
-        self.app.lab_count_control.input.set("10001")
+        self.app.lab_count_control.input.set("0")
         self.assertFalse(self.app.test_controls.valid)
         self.assertTrue(self.app.generate.instate(["disabled"]))
         self.app.lab_count_control.input.set("2000")
         self.assertTrue(self.app.test_controls.valid)
+        self.assertTrue(self.app.generate.instate(["!disabled"]))
+        self.app.lab_count_control.input.set("100001")
+        self.assertEqual(custom_config(self.app).counts,(100001,))
         self.assertTrue(self.app.generate.instate(["!disabled"]))
 
     def test_arbitrary_cpu_menu_and_warmup_worker_buttons(self):
@@ -137,6 +140,26 @@ class ButtonSettingsTests(unittest.TestCase):
         for case in cases:
             self.assertEqual(len({cpu["core"] for cpu in case["cpus"]}),len(case["cpus"]))
         self.assertIn("Ядра",self.app.lab_unit_buttons["physical"].cget("text"))
+
+    def test_large_txt_preview_and_real_streamed_pdf_from_primary(self):
+        import json
+        from unittest.mock import patch
+        from ucode.stream_data import SourceInfo
+        path=Path(self.temp.name)/"large-preview.txt"
+        path.write_text("000000000001\n200000000002\n",encoding="utf-8")
+        self.app.input_var.set(str(path))
+        with patch("ucode.stream_data.inspect_codes",return_value=SourceInfo(100001,100001,"000000000001","200000000002")):
+            self.app.inspect_input()
+        self.assertEqual(self.app.current_plan.total_codes,100001)
+        self.assertTrue(self.app.generate.instate(["!disabled"]))
+        self.app.verification_buttons["deferred"].invoke()
+        with patch("ucode.batch.STREAM_THRESHOLD",1):
+            self.app.generate.invoke(); self.app.worker.join(timeout=10)
+            self.assertFalse(self.app.worker.is_alive()); self.app.poll()
+        data=json.loads((self.app.last_output/"manifest.json").read_text(encoding="utf-8"))
+        self.assertTrue(data["streaming"])
+        self.assertEqual(data["count"],2)
+        self.assertEqual(data["status"],"UNVERIFIED",data)
 
     def test_resources_link_opens_physical_tests_without_starting_work(self):
         from unittest.mock import patch

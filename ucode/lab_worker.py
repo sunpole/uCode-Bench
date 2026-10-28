@@ -70,11 +70,15 @@ def main(request_path):
         if request.get("engine_version") and request["engine_version"] != get_engine().info().version:
             raise RuntimeError("Версия движка изменилась во время серии")
         count = request["count"]
-        if isinstance(count, bool) or not isinstance(count, int) or not 1 <= count <= 10000:
-            raise ValueError("Количество вне 1..10000")
+        if isinstance(count, bool) or not isinstance(count, int) or count<1:
+            raise ValueError("Количество должно быть положительным")
+        from .resources import check_resources
+        check_resources(folder,count,streaming=count>10000)
         source = folder / "codes.txt"
         with source.open("x", encoding="utf-8") as stream:
-            stream.write("".join(f"{200000000000+i:012d}\n" for i in range(count)))
+            for i in range(count):
+                if i%256==0 and cancel.is_set(): raise InterruptedError("Подготовка базы остановлена")
+                stream.write(f"{(200000000000+i)%10**12:012d}\n")
         last_update = [0.0]
         def progress(value):
             now = time.perf_counter()
@@ -85,7 +89,7 @@ def main(request_path):
         settings = PrintSettings(**{**request.get("print_settings", {}),"pdf_profile":request.get("pdf_profile","standard")})
         workers = request["workers"] if request["backend"] != "serial" else 1
         options=ExecutionOptions(request["backend"],workers,request["batch_size"])
-        estimated=execution_plan(options,count,inspect_cpu(),memory_info()["available_bytes"])
+        estimated=execution_plan(options,count,inspect_cpu(),memory_info()["available_bytes"],buffered=count>10000)
         if estimated["required_ram_estimate_bytes"]>budget["budget_bytes"]:
             raise ValueError("Выбранный RAM budget меньше предварительной оценки; уменьшите работников или увеличьте бюджет")
         job = run_batch(source, folder / "jobs", mode=request["output_mode"], settings=settings,

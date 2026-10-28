@@ -179,7 +179,7 @@ def _decode_image(image_path: Path, config: Experiment, size=21):
 
 
 def check_pdf(path: Path, frames: list[QRFrame], config: Experiment, *, render_samples=True,
-              on_progress=None, cancel=None) -> dict:
+              on_progress=None, cancel=None,reader_factory=None) -> dict:
     """Check every vector page and independently decode rendered control pages.
 
     Raster decoding is required for PASS by default. `render_samples=False` is
@@ -196,13 +196,13 @@ def check_pdf(path: Path, frames: list[QRFrame], config: Experiment, *, render_s
     try:
         if not frames:
             raise ValueError("Expected frames are empty")
-        reader = PdfReader(path, strict=True)
+        reader = reader_factory() if reader_factory else PdfReader(path, strict=True)
         if reader.is_encrypted:
             raise ValueError("Encrypted PDF is unsupported")
         if len(reader.pages) != len(frames):
             raise ValueError(f"Page count {len(reader.pages)} != expected {len(frames)}")
         digest = hashlib.sha256()
-        counts=Counter(_content_key(page) for page in reader.pages)
+        counts={} if getattr(reader,"bounded_pages",False) else Counter(_content_key(page) for page in reader.pages)
         shared={key for key,count in counts.items() if key is not None and count>1}; cache={}
         decoded_streams=0; cached_pages=0
         control_indices = sorted({0, len(frames) // 2, len(frames) - 1})
@@ -218,7 +218,7 @@ def check_pdf(path: Path, frames: list[QRFrame], config: Experiment, *, render_s
                 cached_pages+=int(cached); decoded_streams+=int(not cached)
                 digest.update((payload + "\n").encode("ascii"))
             except Exception as exc:
-                result["errors"].append(f"Page {index}: {type(exc).__name__}: {exc}")
+                if len(result["errors"])<20: result["errors"].append(f"Page {index}: {type(exc).__name__}: {exc}")
             result["pages_checked"] += 1
             if on_progress:
                 on_progress(index, work_total)
@@ -256,4 +256,6 @@ def check_pdf(path: Path, frames: list[QRFrame], config: Experiment, *, render_s
         raise
     except Exception as exc:
         result["errors"].append(f"{type(exc).__name__}: {exc}")
+    finally:
+        if reader_factory and "reader" in locals(): reader.close()
     return result

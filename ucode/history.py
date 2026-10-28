@@ -54,7 +54,7 @@ def _json(path,limit,cancel):
         if not isinstance(case,dict) or not isinstance(case.get("trials"),list) or len(case["trials"])>13:
             raise ValueError("Неверная структура повторов")
         count=case.get("count")
-        if isinstance(count,bool) or not isinstance(count,int) or not 1<=count<=10000:
+        if isinstance(count,bool) or not isinstance(count,int) or count<1:
             raise ValueError("Неверный тираж в отчёте")
         for field in ("id","status","backend","cpu_unit","pdf_profile","activity"):
             if field in case and not isinstance(case[field],str): raise ValueError("Неверное поле варианта: "+field)

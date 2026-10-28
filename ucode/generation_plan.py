@@ -40,13 +40,15 @@ class GenerationPlan:
 
 
 def build_plan(values, *, copies_per_value=1, duplicate_policy="preserve", types=("qr",)):
-    if isinstance(copies_per_value, bool) or not isinstance(copies_per_value, int) or not 1 <= copies_per_value <= MAX_CODES:
-        raise ValueError("Экземпляров: целое число от 1 до 10 000")
+    from .stream_data import positive_count,SourceInfo,CountPlan
+    positive_count(copies_per_value)
     if duplicate_policy not in ("preserve", "unique"):
         raise ValueError("Повторы TXT: сохранить строки или выбрать только уникальные")
     kinds = tuple(types)
     if not kinds or any(not isinstance(kind, str) or not kind for kind in kinds) or len(set(kinds)) != len(kinds):
         raise ValueError("Выберите неповторяющиеся типы кодов")
+    if isinstance(values,SourceInfo):
+        return CountPlan(values.count,values.unique,values.unique if duplicate_policy=="unique" else values.count,copies_per_value,duplicate_policy,kinds)
     source = tuple(islice(values, MAX_CODES + 1))
     if len(source) > MAX_CODES:
         raise ValueError("В текущем плане максимум 10 000 входных строк; большой поток требует другого способа обработки")
@@ -55,6 +57,4 @@ def build_plan(values, *, copies_per_value=1, duplicate_policy="preserve", types
     unique = tuple(dict.fromkeys(source))
     plan = GenerationPlan(len(source), len(unique), unique if duplicate_policy == "unique" else source,
                           copies_per_value, duplicate_policy, kinds)
-    if plan.total_codes > MAX_CODES:
-        raise ValueError(f"Итог {plan.total_codes:,} кодов превышает безопасный лимит 10 000".replace(",", " "))
     return plan

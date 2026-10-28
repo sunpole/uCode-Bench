@@ -21,8 +21,8 @@ class GenerationPreferences:
 
     def __post_init__(self):
         for value in (self.copies_per_value, self.template_count):
-            if isinstance(value, bool) or not isinstance(value, int) or not 1 <= value <= 10000:
-                raise ValueError("Количество и экземпляры: целые числа от 1 до 10 000")
+            from .stream_data import positive_count
+            positive_count(value)
         if self.duplicate_policy not in ("preserve", "unique") or not isinstance(self.output_directory, str):
             raise ValueError("Неверные параметры генерации")
         ExecutionOptions(self.execution_backend, self.workers, self.batch_size)

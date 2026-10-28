@@ -26,6 +26,7 @@ from . import __version__
 
 SIZES = (200, 1000, 10000)
 MAX_LINES = 10000
+STREAM_THRESHOLD = 10000  # Fast in-memory path boundary, not a page-count limit.
 FIRST_NUMBER = 200000000000
 FORMATS = ("both", "singles", "multipage")
 
@@ -51,19 +52,22 @@ def _check_cancel(cancel) -> None:
 
 def make_template(output_root: Path, count: int, *, start: int = FIRST_NUMBER) -> Path:
     """Create a non-overwriting TXT with ordered 12-digit identifiers."""
-    if isinstance(count, bool) or not isinstance(count, int) or not 1 <= count <= MAX_LINES:
-        raise ValueError("Количество номеров: целое число от 1 до 10 000")
+    from .stream_data import positive_count
+    positive_count(count)
+    check_resources(output_root,count,streaming=True)
     if isinstance(start, bool) or not isinstance(start, int) or start < 0 or len(str(start)) != 12 or len(str(start + count - 1)) != 12:
         raise ValueError("Начальное значение и последний номер должны содержать 12 цифр")
     target = _make_directory(output_root, f"txt-{count}") / f"codes-{count}.txt"
-    write_numbers([str(start + index) for index in range(count)], target)
+    with target.open("x",encoding="utf-8",newline="\n") as stream:
+        for index in range(count): stream.write(str(start+index)+"\n")
     return target
 
 
 def iter_codes(path: Path, *, max_lines=MAX_LINES, max_bytes=2 * 1024 * 1024, generator="qr", cancel=None):
     """Bounded line reader. None limits enable a caller-owned streaming scan.
 
-    Production still enforces 10000 total pages. No whole-file read is needed
+    The compatible list API stays bounded; large production uses inspect_codes.
+    No whole-file read is needed
     for validation; a single source line cannot exceed 4096 bytes.
     """
     code_module = get_generator(generator)
@@ -129,11 +133,18 @@ def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
     print_metadata = code_module.describe_settings(config)
     selected_engine = get_engine(engine, generator=generator, mode=mode, colorspace=print_metadata["colorspace"])
     engine_metadata = selected_engine.info().to_dict()
-    source_numbers = load_codes(input_txt, generator=generator, cancel=cancel)
+    from .stream_data import inspect_codes,SourceInfo
+    source_numbers = inspect_codes(input_txt,threshold=STREAM_THRESHOLD,generator=generator,cancel=cancel)
     plan = build_plan(source_numbers, copies_per_value=copies_per_value, duplicate_policy=duplicate_policy,
                       types=(generator,))
     progress = progress or (lambda message: None)
     _check_cancel(cancel)
+    if isinstance(source_numbers,SourceInfo) or plan.total_codes>STREAM_THRESHOLD:
+        if generator!="qr" or engine!="reportlab": raise ValueError("Потоковый большой тираж пока поддерживает QR / ReportLab encoder")
+        from .stream_batch import run_stream_batch
+        return run_stream_batch(input_txt,output_root,count_plan=plan,settings=config,mode=mode,engine=engine,
+                                execution=execution or ExecutionOptions(),qa_mode=qa_mode,activity=activity,
+                                progress=progress,cancel=cancel,events=events)
     resource_info = check_resources(output_root, plan.total_codes)
     numbers = list(plan.iter_values())
     encoding_numbers = list(dict.fromkeys(plan.selected_values))
