@@ -4,6 +4,7 @@ from pathlib import Path
 import uuid
 from dataclasses import asdict, dataclass
 from .print_settings import PrintSettings
+from .execution import ExecutionOptions
 
 
 @dataclass(frozen=True)
@@ -12,6 +13,9 @@ class GenerationPreferences:
     duplicate_policy: str = "preserve"
     template_count: int = 200
     output_directory: str = ""
+    execution_backend: str = "serial"
+    workers: int = 1
+    batch_size: int = 32
 
     def __post_init__(self):
         for value in (self.copies_per_value, self.template_count):
@@ -19,6 +23,7 @@ class GenerationPreferences:
                 raise ValueError("Количество и экземпляры: целые числа от 1 до 10 000")
         if self.duplicate_policy not in ("preserve", "unique") or not isinstance(self.output_directory, str):
             raise ValueError("Неверные параметры генерации")
+        ExecutionOptions(self.execution_backend, self.workers, self.batch_size)
 
 
 def load_user_preferences(path):

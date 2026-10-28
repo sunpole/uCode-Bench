@@ -15,8 +15,10 @@ from .batch import load_codes, make_template, run_batch
 from .print_settings import PrintSettings, format_duration
 from .app_settings import GenerationPreferences, load_user_preferences, save_preferences
 from .generation_plan import build_plan
-from .ui_layout import POLICIES, build_window
+from .ui_layout import POLICIES, EXECUTION_METHODS, build_window
 from .engines import get_engine
+from .hardware import inspect_hardware, probe_directory
+from .execution import ExecutionOptions, execution_plan
 
 PROJECT = Path(__file__).resolve().parents[1]
 HELP_TEXT = """1. База TXT → Открыть: UTF-8, одна строка — ровно 12 цифр.
@@ -45,6 +47,14 @@ HELP_TEXT = """1. База TXT → Открыть: UTF-8, одна строка 
 Производственные результаты и результаты тестов не смешиваются.
 Сейчас — наблюдаемая скорость по короткому окну (около 3 секунд).
 Средняя этапа — обработанный объём / время с начала данного этапа.
+«CPU / RAM»: физические ядра и логические CPU показаны раздельно.
+Доступные CPU учитывают ограничения процесса. SMT не удваивает число ядер.
+Процессы параллельно кодируют QR; запись PDF и QA пока последовательны.
+Размер партии определяет число кодов на задачу. Для маленького TXT запуск
+процессов может занять больше времени, чем последовательное кодирование.
+RAM проверяется предварительно с запасом, это не жёсткий лимит потребления.
+Скорость диска не определяется по названию NVMe/SATA. Проверка 32 КиБ —
+проверка возможности записи и fsync, а не тест пропускной способности.
 У стороннего объединителя без обратной связи промежуточных процентов нет:
 секундомер продолжает работать, остановка ожидает возврата этого вызова.
 """
@@ -79,12 +89,18 @@ class BatchWindow:
         self.generator_key = "qr"
         self.engine_key = "reportlab"
         self.engine_info = get_engine(self.engine_key).info()
+        self.hardware = inspect_hardware(self.output_root)
         self.input_var = tk.StringVar(master=self.root)
         self.mode_var = tk.StringVar(master=self.root, value=mode)
         self.copies_var = tk.StringVar(master=self.root, value=str(self.generation_preferences.copies_per_value))
         self.duplicates_var = tk.StringVar(master=self.root, value=next(label for label, value in POLICIES.items() if value == self.generation_preferences.duplicate_policy))
         self.custom_count_var = tk.StringVar(master=self.root, value=str(self.generation_preferences.template_count))
         self.destination_var = tk.StringVar(master=self.root, value=self.generation_preferences.output_directory or str(self.output_root / "jobs"))
+        self.backend_var = tk.StringVar(master=self.root, value=next(label for label, value in EXECUTION_METHODS.items() if value == self.generation_preferences.execution_backend))
+        self.workers_var = tk.StringVar(master=self.root, value=str(self.generation_preferences.workers))
+        self.batch_size_var = tk.StringVar(master=self.root, value=str(self.generation_preferences.batch_size))
+        self.hardware_summary = tk.StringVar(master=self.root)
+        self.execution_preview = tk.StringVar(master=self.root)
         self.plan_var = tk.StringVar(master=self.root, value="Выберите TXT, чтобы увидеть итог страниц")
         self.geometry_basis = tk.StringVar(master=self.root, value="side")
         self.geometry_value = tk.StringVar(master=self.root, value=f"{self.print_settings.side_mm:g}")
@@ -100,10 +116,11 @@ class BatchWindow:
         self.result_var = tk.StringVar(master=self.root, value="Здесь появится результат создания PDF")
         self.result_details = tk.StringVar(master=self.root, value="Данные и прежние результаты сохраняются локально")
         build_window(self, HELP_TEXT)
+        self.refresh_hardware()
         self.update_geometry()
         self.refresh_plan()
         self.update_buttons()
-        for var in (self.copies_var, self.duplicates_var):
+        for var in (self.copies_var, self.duplicates_var, self.backend_var, self.workers_var, self.batch_size_var):
             var.trace_add("write", self.refresh_plan)
         for var in (self.geometry_value, self.quiet_var, *self.ink_vars):
             var.trace_add("write", self.preview_print)
@@ -141,10 +158,11 @@ class BatchWindow:
     def read_generation_options(self):
         try:
             copies, count = int(self.copies_var.get()), int(self.custom_count_var.get())
+            workers, batch_size = int(self.workers_var.get()), int(self.batch_size_var.get())
         except ValueError as exc:
             raise ValueError("Количество и экземпляры должны быть целыми числами") from exc
         return GenerationPreferences(copies, POLICIES.get(self.duplicates_var.get(), ""), count,
-                                     self.destination_var.get())
+                                     self.destination_var.get(), EXECUTION_METHODS.get(self.backend_var.get(), ""), workers, batch_size)
 
     def refresh_plan(self, *_):
         self.plan_valid = False
@@ -158,11 +176,15 @@ class BatchWindow:
                 text = f"{len(plan.selected_values):,} {basis} × {plan.copies_per_value:,} экз. = {plan.total_codes:,} кодов".replace(",", " ")
                 if plan.duplicate_records and options.duplicate_policy == "preserve":
                     text += f" · уникальных: {plan.unique_values}"
+                execution = execution_plan(ExecutionOptions(options.execution_backend, options.workers, options.batch_size),
+                    plan.unique_values, self.hardware["cpu"], self.hardware["ram"]["available_bytes"])
+                self.execution_preview.set(f"Кодирование: {execution['backend']} · рабочих процессов: {execution['effective_workers']} · партия: {options.batch_size}")
                 self.plan_var.set(text)
                 self.current_plan = plan
                 self.plan_valid = True
             except ValueError as exc:
                 self.plan_var.set(str(exc))
+                self.execution_preview.set(str(exc))
         else:
             self.plan_var.set("Выберите TXT, чтобы увидеть итог страниц")
         if hasattr(self, "generate"):
@@ -195,6 +217,34 @@ class BatchWindow:
     def show_generation(self):
         self.notebook.select(self.pages["generation"])
         self.custom_count_entry.focus_set()
+
+    def show_resources(self):
+        self.notebook.select(self.pages["resources"])
+        self.refresh_hardware()
+
+    def refresh_hardware(self):
+        try:
+            directory = self.destination_var.get() or self.output_root
+            self.hardware = inspect_hardware(directory)
+            cpu, ram, disk = (self.hardware[key] for key in ("cpu", "ram", "disk"))
+            def gib(value): return f"{value / 1024**3:.1f} ГиБ" if value is not None else "неизвестно"
+            self.hardware_summary.set(
+                f"{cpu.get('name') or 'Модель CPU неизвестна'}\n"
+                f"Ядра / логические CPU: {cpu['physical_cores'] or '?'} / {cpu['logical_processors'] or '?'} · доступно {cpu['available_physical'] or '?'} / {cpu['available_logical']} · групп: {cpu['groups'] or '?'}\n"
+                f"RAM: {gib(ram['total_bytes'])}, свободно {gib(ram['available_bytes'])} · диск {disk['bus'] or '?'}, свободно {gib(disk['free_bytes'])}")
+            if hasattr(self, "workers_entry"):
+                self.workers_entry.configure(values=cpu["presets"])
+            self.refresh_plan()
+        except (ValueError, OSError) as exc:
+            self.hardware_summary.set(f"Ресурсы не определены: {exc}")
+            self.status_var.set(str(exc))
+
+    def probe_output(self):
+        try:
+            result = probe_directory(self.destination_var.get() or self.output_root)
+            self.status_var.set(f"Запись {result['bytes'] // 1024} КиБ + fsync: успешно; скорость диска не измерялась")
+        except (ValueError, OSError) as exc:
+            self.status_var.set(f"Проверка записи: {exc}")
 
     def choose_destination(self):
         path = filedialog.askdirectory(parent=self.root, title="Папка готовых PDF")
@@ -269,6 +319,7 @@ class BatchWindow:
         self.launch(lambda: run_batch(path, destination, mode=mode, settings=settings, cancel=self.cancel,
                     copies_per_value=options.copies_per_value, duplicate_policy=options.duplicate_policy,
                     generator=self.generator_key, engine=self.engine_key,
+                    execution=ExecutionOptions(options.execution_backend, options.workers, options.batch_size),
                     progress=lambda s: self.events.put(("status", s)), events=lambda e: self.events.put(("progress", e))))
 
     def start_test(self, count):
@@ -416,6 +467,9 @@ class BatchWindow:
         self.duplicates_var.set(next(label for label, value in POLICIES.items() if value == "preserve"))
         self.custom_count_var.set("200")
         self.destination_var.set(str(self.output_root / "jobs"))
+        self.backend_var.set("Последовательно")
+        self.workers_var.set("1")
+        self.batch_size_var.set("32")
         self.geometry_basis.set("side")
         self.geometry_value.set(f"{self.print_settings.side_mm:g}")
         self.quiet_var.set("4")

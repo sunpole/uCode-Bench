@@ -9,6 +9,7 @@ import sys
 
 
 def inspect_environment():
+    from .hardware import inspect_hardware
     dependencies = {}
     for package, module in [("reportlab", "reportlab"), ("pypdf", "pypdf"), ("Pillow", "PIL"),
                             ("segno", "segno"), ("PyMuPDF", "pymupdf"), ("pikepdf", "pikepdf"),
@@ -36,4 +37,6 @@ def inspect_environment():
     from .mergers import available_adapters
     result["adapters"] = [{"name": a.name, **a.probe()} for a in available_adapters()]
     result["core_ready"] = all(dependencies[p] for p in ("reportlab", "pypdf", "Pillow")) and bool(result["pdftoppm"])
+    from pathlib import Path
+    result["hardware"] = inspect_hardware(Path(__file__).resolve().parents[1])
     return result

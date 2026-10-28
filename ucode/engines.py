@@ -42,7 +42,8 @@ class ReportLabEngine:
         except metadata.PackageNotFoundError:
             return EngineInfo("reportlab", "ReportLab QR + PDF", None, False,
                               "ReportLab не установлен; автоматической установки нет")
-        return EngineInfo("reportlab", "ReportLab QR + PDF", version, True)
+        return EngineInfo("reportlab", "ReportLab QR + PDF", version, True,
+                          execution_modes=("serial", "process"))
 
     def prepare(self):
         # Worker invokes this before the method timer, preserving the old
