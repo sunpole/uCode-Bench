@@ -59,7 +59,7 @@ TODO; после P01, перед установкой новых библиот�
 
 ## P04 — оборудование, топология и выбор ресурсов (10 задач)
 
-Реализован первый аппаратный снимок и UI в codex/cpu-process-p04-p05: Windows CPU Sets/groups/process mask, Linux sysfs/affinity, RAM, диск/unknown и ручной write probe. Локальные малые проверки VERIFIED; Windows/Linux CI — после PR. **Ограничения:** нет полного учёта job/cgroup v1 quotas и индивидуальных thread/group masks; >64 CPU проверены моделью, не реальным сервером. Эти границы остаются LIMITATION, весь P04 не объявляется универсальным определением любых ограничений ОС. Подробности: [MODERNIZATION_CPU.md](MODERNIZATION_CPU.md). Требования 4, 5, 11.
+Реализован первый аппаратный снимок и UI в codex/cpu-process-p04-p05: Windows CPU Sets/groups/process mask, Linux sysfs/affinity, RAM, диск/unknown и ручной write probe. Малые проверки VERIFIED локально и [Windows/Linux CI](https://github.com/sunpole/uCode-Bench/actions/runs/40633332965), PR #5: 129 тестов на ОС (124 PASS / 5 необязательных SKIPPED), 12 малых PDF сценариев на двух ОС, QA PASS. **Ограничения:** нет полного учёта job/cgroup v1 quotas и индивидуальных thread/group masks; >64 CPU проверены моделью, не реальным сервером. Эти границы остаются LIMITATION, весь P04 не объявляется универсальным определением любых ограничений ОС. Подробности: [MODERNIZATION_CPU.md](MODERNIZATION_CPU.md). Требования 4, 5, 11.
 
 1. Модель аппаратного снимка с unknown/reason и источником каждого поля.
 2. Модель/производитель CPU, физические ядра, логические CPU и SMT без двойного подсчёта.

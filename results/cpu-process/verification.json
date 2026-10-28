@@ -1,0 +1,1090 @@
+{
+  "schema_version": 1,
+  "kind": "cpu-process-functional-verification",
+  "tested_source_revision": "69ff87c7a28cb47ac743ee53bd7a94ab81a9b02c",
+  "pull_request": "https://github.com/sunpole/uCode-Bench/pull/5",
+  "ci_url": "https://github.com/sunpole/uCode-Bench/actions/runs/40633332965",
+  "status": "PASS",
+  "methodology": "Small real production PDFs, not a scaling/performance ranking. Rechecked hashes, all PDF page counts, progress and copies after downloading CI evidence.",
+  "local_tests": {
+    "total": 129,
+    "passed": 128,
+    "skipped": 1
+  },
+  "ci_tests_per_platform": {
+    "total": 129,
+    "passed": 124,
+    "skipped": 5
+  },
+  "large_cpu_scaling_runs": "NOT RUN",
+  "manual_visual_check": "USER-CHECK",
+  "physical_144_cpu_server": "NOT TESTED; model only",
+  "cases": [
+    {
+      "platform": "linux",
+      "count": 2,
+      "unique_values": 2,
+      "copies_per_value": 1,
+      "mode": "both",
+      "ink": [
+        0,
+        0,
+        0,
+        100
+      ],
+      "status": "COMPLETE",
+      "qa": "PASS",
+      "execution": {
+        "backend": "serial",
+        "requested_workers": 2,
+        "effective_workers": 1,
+        "batch_size": 1,
+        "required_ram_estimate_bytes": 268515456,
+        "os_reserve_bytes": 1573628313,
+        "ram_limit_enforced": false,
+        "ram_check": "estimated",
+        "scope": "Только кодирование QR; запись PDF и QA последовательны",
+        "affinity": "OS scheduler, без закрепления CPU",
+        "start_method": null,
+        "completed_values": 2,
+        "max_in_flight_values": 0,
+        "workers_with_results": 0
+      },
+      "hardware": {
+        "schema_version": 1,
+        "cpu": {
+          "physical_cores": 2,
+          "logical_processors": 4,
+          "available_physical": 2,
+          "available_logical": 4,
+          "smt": true,
+          "groups": 1,
+          "source": "Linux sysfs + sched_getaffinity",
+          "reason": "CPU affinity учтена; квоты CPU контейнера не равны числу доступных CPU",
+          "name": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz",
+          "vendor": "GenuineIntel",
+          "presets": [
+            1,
+            2,
+            4
+          ],
+          "scope": "Текущий процесс; OS/job CPU quotas и индивидуальная thread affinity могут дополнительно ограничивать исполнение"
+        },
+        "ram": {
+          "total_bytes": 16758403072,
+          "available_bytes": 15736283136,
+          "source": "/proc/meminfo",
+          "reason": "Снимок ОС/cgroup v2; Windows job memory limits и cgroup v1 отдельно не запрашиваются"
+        },
+        "disk": {
+          "bus": null,
+          "media": "HDD / rotational",
+          "source": "Linux sysfs block queue",
+          "reason": "Шина неизвестна; RAID/virtual может скрывать физический носитель",
+          "free_bytes": 94963531776,
+          "total_bytes": 154993672192,
+          "speed_measured": false
+        }
+      },
+      "seconds": {
+        "code_encoding": 0.005679,
+        "qr_encoding": 0.005679,
+        "write_singles": 0.003666,
+        "write_multipage": 0.002398,
+        "quality_checks": 0.201575,
+        "total_including_qa": 0.213985
+      },
+      "files": [
+        {
+          "name": "all-2-pages.pdf",
+          "pages": 2,
+          "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9"
+        },
+        {
+          "name": "singles/0001_200000000000.pdf",
+          "pages": 1,
+          "sha256": "e80c7f62af276d70d805e162de39a8f34ea2bb8fbe39f10a9f7aad0579bcd4cf"
+        },
+        {
+          "name": "singles/0002_200000000001.pdf",
+          "pages": 1,
+          "sha256": "4efadc15c261b53bf0f82a920a63ccc2138609943c8532f7ffeb1d4ea14d5c91"
+        }
+      ]
+    },
+    {
+      "platform": "linux",
+      "count": 7,
+      "unique_values": 7,
+      "copies_per_value": 1,
+      "mode": "multipage",
+      "ink": [
+        0,
+        0,
+        0,
+        100
+      ],
+      "status": "COMPLETE",
+      "qa": "PASS",
+      "execution": {
+        "backend": "serial",
+        "requested_workers": 2,
+        "effective_workers": 1,
+        "batch_size": 1,
+        "required_ram_estimate_bytes": 268715456,
+        "os_reserve_bytes": 1572814028,
+        "ram_limit_enforced": false,
+        "ram_check": "estimated",
+        "scope": "Только кодирование QR; запись PDF и QA последовательны",
+        "affinity": "OS scheduler, без закрепления CPU",
+        "start_method": null,
+        "completed_values": 7,
+        "max_in_flight_values": 0,
+        "workers_with_results": 0
+      },
+      "hardware": {
+        "schema_version": 1,
+        "cpu": {
+          "physical_cores": 2,
+          "logical_processors": 4,
+          "available_physical": 2,
+          "available_logical": 4,
+          "smt": true,
+          "groups": 1,
+          "source": "Linux sysfs + sched_getaffinity",
+          "reason": "CPU affinity учтена; квоты CPU контейнера не равны числу доступных CPU",
+          "name": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz",
+          "vendor": "GenuineIntel",
+          "presets": [
+            1,
+            2,
+            4
+          ],
+          "scope": "Текущий процесс; OS/job CPU quotas и индивидуальная thread affinity могут дополнительно ограничивать исполнение"
+        },
+        "ram": {
+          "total_bytes": 16758403072,
+          "available_bytes": 15728140288,
+          "source": "/proc/meminfo",
+          "reason": "Снимок ОС/cgroup v2; Windows job memory limits и cgroup v1 отдельно не запрашиваются"
+        },
+        "disk": {
+          "bus": null,
+          "media": "HDD / rotational",
+          "source": "Linux sysfs block queue",
+          "reason": "Шина неизвестна; RAID/virtual может скрывать физический носитель",
+          "free_bytes": 94963449856,
+          "total_bytes": 154993672192,
+          "speed_measured": false
+        }
+      },
+      "seconds": {
+        "code_encoding": 0.017745,
+        "qr_encoding": 0.017745,
+        "write_multipage": 0.007674,
+        "quality_checks": 0.127098,
+        "total_including_qa": 0.152895
+      },
+      "files": [
+        {
+          "name": "all-7-pages.pdf",
+          "pages": 7,
+          "sha256": "7bfe23d2eafe57d018a925bc98d48db0c18a7e6548422b454d4a39b8094f7571"
+        }
+      ]
+    },
+    {
+      "platform": "linux",
+      "count": 2,
+      "unique_values": 2,
+      "copies_per_value": 1,
+      "mode": "singles",
+      "ink": [
+        100,
+        0,
+        0,
+        0
+      ],
+      "status": "COMPLETE",
+      "qa": "PASS",
+      "execution": {
+        "backend": "serial",
+        "requested_workers": 2,
+        "effective_workers": 1,
+        "batch_size": 1,
+        "required_ram_estimate_bytes": 268515456,
+        "os_reserve_bytes": 1572794368,
+        "ram_limit_enforced": false,
+        "ram_check": "estimated",
+        "scope": "Только кодирование QR; запись PDF и QA последовательны",
+        "affinity": "OS scheduler, без закрепления CPU",
+        "start_method": null,
+        "completed_values": 2,
+        "max_in_flight_values": 0,
+        "workers_with_results": 0
+      },
+      "hardware": {
+        "schema_version": 1,
+        "cpu": {
+          "physical_cores": 2,
+          "logical_processors": 4,
+          "available_physical": 2,
+          "available_logical": 4,
+          "smt": true,
+          "groups": 1,
+          "source": "Linux sysfs + sched_getaffinity",
+          "reason": "CPU affinity учтена; квоты CPU контейнера не равны числу доступных CPU",
+          "name": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz",
+          "vendor": "GenuineIntel",
+          "presets": [
+            1,
+            2,
+            4
+          ],
+          "scope": "Текущий процесс; OS/job CPU quotas и индивидуальная thread affinity могут дополнительно ограничивать исполнение"
+        },
+        "ram": {
+          "total_bytes": 16758403072,
+          "available_bytes": 15727943680,
+          "source": "/proc/meminfo",
+          "reason": "Снимок ОС/cgroup v2; Windows job memory limits и cgroup v1 отдельно не запрашиваются"
+        },
+        "disk": {
+          "bus": null,
+          "media": "HDD / rotational",
+          "source": "Linux sysfs block queue",
+          "reason": "Шина неизвестна; RAID/virtual может скрывать физический носитель",
+          "free_bytes": 94963412992,
+          "total_bytes": 154993672192,
+          "speed_measured": false
+        }
+      },
+      "seconds": {
+        "code_encoding": 0.00547,
+        "qr_encoding": 0.00547,
+        "write_singles": 0.003079,
+        "quality_checks": 0.072224,
+        "total_including_qa": 0.081084
+      },
+      "files": [
+        {
+          "name": "singles/0001_200000000000.pdf",
+          "pages": 1,
+          "sha256": "c2ece8af7e0b460935c280f25c5d4e5fcca2a37fe6e41fe75de602804a41535b"
+        },
+        {
+          "name": "singles/0002_200000000001.pdf",
+          "pages": 1,
+          "sha256": "922a0d8473adf2f5789732b679cd16fd7cf04037fa436e06158f0c1a962b1197"
+        }
+      ]
+    },
+    {
+      "platform": "linux",
+      "count": 6,
+      "unique_values": 2,
+      "copies_per_value": 3,
+      "mode": "multipage",
+      "ink": [
+        0,
+        0,
+        0,
+        100
+      ],
+      "status": "COMPLETE",
+      "qa": "PASS",
+      "execution": {
+        "backend": "serial",
+        "requested_workers": 2,
+        "effective_workers": 1,
+        "batch_size": 1,
+        "required_ram_estimate_bytes": 268515456,
+        "os_reserve_bytes": 1572799283,
+        "ram_limit_enforced": false,
+        "ram_check": "estimated",
+        "scope": "Только кодирование QR; запись PDF и QA последовательны",
+        "affinity": "OS scheduler, без закрепления CPU",
+        "start_method": null,
+        "completed_values": 2,
+        "max_in_flight_values": 0,
+        "workers_with_results": 0
+      },
+      "hardware": {
+        "schema_version": 1,
+        "cpu": {
+          "physical_cores": 2,
+          "logical_processors": 4,
+          "available_physical": 2,
+          "available_logical": 4,
+          "smt": true,
+          "groups": 1,
+          "source": "Linux sysfs + sched_getaffinity",
+          "reason": "CPU affinity учтена; квоты CPU контейнера не равны числу доступных CPU",
+          "name": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz",
+          "vendor": "GenuineIntel",
+          "presets": [
+            1,
+            2,
+            4
+          ],
+          "scope": "Текущий процесс; OS/job CPU quotas и индивидуальная thread affinity могут дополнительно ограничивать исполнение"
+        },
+        "ram": {
+          "total_bytes": 16758403072,
+          "available_bytes": 15727992832,
+          "source": "/proc/meminfo",
+          "reason": "Снимок ОС/cgroup v2; Windows job memory limits и cgroup v1 отдельно не запрашиваются"
+        },
+        "disk": {
+          "bus": null,
+          "media": "HDD / rotational",
+          "source": "Linux sysfs block queue",
+          "reason": "Шина неизвестна; RAID/virtual может скрывать физический носитель",
+          "free_bytes": 94963351552,
+          "total_bytes": 154993672192,
+          "speed_measured": false
+        }
+      },
+      "seconds": {
+        "code_encoding": 0.005466,
+        "qr_encoding": 0.005466,
+        "write_multipage": 0.006256,
+        "quality_checks": 0.117215,
+        "total_including_qa": 0.129297
+      },
+      "files": [
+        {
+          "name": "all-6-pages.pdf",
+          "pages": 6,
+          "sha256": "c1f65ebfa84b7b7f8e2e705ccfbcae33dbf6c7b5294dfe9bd8db15820dcc3044"
+        }
+      ]
+    },
+    {
+      "platform": "linux",
+      "count": 7,
+      "unique_values": 7,
+      "copies_per_value": 1,
+      "mode": "multipage",
+      "ink": [
+        0,
+        0,
+        0,
+        100
+      ],
+      "status": "COMPLETE",
+      "qa": "PASS",
+      "execution": {
+        "backend": "process",
+        "requested_workers": 2,
+        "effective_workers": 2,
+        "batch_size": 1,
+        "required_ram_estimate_bytes": 537150912,
+        "os_reserve_bytes": 1572807475,
+        "ram_limit_enforced": false,
+        "ram_check": "estimated",
+        "scope": "Только кодирование QR; запись PDF и QA последовательны",
+        "affinity": "OS scheduler, без закрепления CPU",
+        "start_method": "spawn",
+        "completed_values": 7,
+        "max_in_flight_values": 2,
+        "workers_with_results": 2
+      },
+      "hardware": {
+        "schema_version": 1,
+        "cpu": {
+          "physical_cores": 2,
+          "logical_processors": 4,
+          "available_physical": 2,
+          "available_logical": 4,
+          "smt": true,
+          "groups": 1,
+          "source": "Linux sysfs + sched_getaffinity",
+          "reason": "CPU affinity учтена; квоты CPU контейнера не равны числу доступных CPU",
+          "name": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz",
+          "vendor": "GenuineIntel",
+          "presets": [
+            1,
+            2,
+            4
+          ],
+          "scope": "Текущий процесс; OS/job CPU quotas и индивидуальная thread affinity могут дополнительно ограничивать исполнение"
+        },
+        "ram": {
+          "total_bytes": 16758403072,
+          "available_bytes": 15728074752,
+          "source": "/proc/meminfo",
+          "reason": "Снимок ОС/cgroup v2; Windows job memory limits и cgroup v1 отдельно не запрашиваются"
+        },
+        "disk": {
+          "bus": null,
+          "media": "HDD / rotational",
+          "source": "Linux sysfs block queue",
+          "reason": "Шина неизвестна; RAID/virtual может скрывать физический носитель",
+          "free_bytes": 94963294208,
+          "total_bytes": 154993672192,
+          "speed_measured": false
+        }
+      },
+      "seconds": {
+        "code_encoding": 0.243358,
+        "qr_encoding": 0.243358,
+        "write_multipage": 0.00793,
+        "quality_checks": 0.123978,
+        "total_including_qa": 0.375645
+      },
+      "files": [
+        {
+          "name": "all-7-pages.pdf",
+          "pages": 7,
+          "sha256": "7bfe23d2eafe57d018a925bc98d48db0c18a7e6548422b454d4a39b8094f7571"
+        }
+      ]
+    },
+    {
+      "platform": "linux",
+      "count": 6,
+      "unique_values": 2,
+      "copies_per_value": 3,
+      "mode": "both",
+      "ink": [
+        100,
+        0,
+        0,
+        0
+      ],
+      "status": "COMPLETE",
+      "qa": "PASS",
+      "execution": {
+        "backend": "process",
+        "requested_workers": 2,
+        "effective_workers": 2,
+        "batch_size": 1,
+        "required_ram_estimate_bytes": 536950912,
+        "os_reserve_bytes": 1572463001,
+        "ram_limit_enforced": false,
+        "ram_check": "estimated",
+        "scope": "Только кодирование QR; запись PDF и QA последовательны",
+        "affinity": "OS scheduler, без закрепления CPU",
+        "start_method": "spawn",
+        "completed_values": 2,
+        "max_in_flight_values": 2,
+        "workers_with_results": 2
+      },
+      "hardware": {
+        "schema_version": 1,
+        "cpu": {
+          "physical_cores": 2,
+          "logical_processors": 4,
+          "available_physical": 2,
+          "available_logical": 4,
+          "smt": true,
+          "groups": 1,
+          "source": "Linux sysfs + sched_getaffinity",
+          "reason": "CPU affinity учтена; квоты CPU контейнера не равны числу доступных CPU",
+          "name": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz",
+          "vendor": "GenuineIntel",
+          "presets": [
+            1,
+            2,
+            4
+          ],
+          "scope": "Текущий процесс; OS/job CPU quotas и индивидуальная thread affinity могут дополнительно ограничивать исполнение"
+        },
+        "ram": {
+          "total_bytes": 16758403072,
+          "available_bytes": 15724630016,
+          "source": "/proc/meminfo",
+          "reason": "Снимок ОС/cgroup v2; Windows job memory limits и cgroup v1 отдельно не запрашиваются"
+        },
+        "disk": {
+          "bus": null,
+          "media": "HDD / rotational",
+          "source": "Linux sysfs block queue",
+          "reason": "Шина неизвестна; RAID/virtual может скрывать физический носитель",
+          "free_bytes": 94963232768,
+          "total_bytes": 154993672192,
+          "speed_measured": false
+        }
+      },
+      "seconds": {
+        "code_encoding": 0.209065,
+        "qr_encoding": 0.209065,
+        "write_singles": 0.008824,
+        "write_multipage": 0.006059,
+        "quality_checks": 0.237915,
+        "total_including_qa": 0.462343
+      },
+      "files": [
+        {
+          "name": "all-6-pages.pdf",
+          "pages": 6,
+          "sha256": "fb7ff5eb33618f1912520a08962fcfc2a9434468d1487f995f72683baa96c2a8"
+        },
+        {
+          "name": "singles/0001_200000000000.pdf",
+          "pages": 1,
+          "sha256": "c2ece8af7e0b460935c280f25c5d4e5fcca2a37fe6e41fe75de602804a41535b"
+        },
+        {
+          "name": "singles/0002_200000000000.pdf",
+          "pages": 1,
+          "sha256": "c2ece8af7e0b460935c280f25c5d4e5fcca2a37fe6e41fe75de602804a41535b"
+        },
+        {
+          "name": "singles/0003_200000000000.pdf",
+          "pages": 1,
+          "sha256": "c2ece8af7e0b460935c280f25c5d4e5fcca2a37fe6e41fe75de602804a41535b"
+        },
+        {
+          "name": "singles/0004_200000000001.pdf",
+          "pages": 1,
+          "sha256": "922a0d8473adf2f5789732b679cd16fd7cf04037fa436e06158f0c1a962b1197"
+        },
+        {
+          "name": "singles/0005_200000000001.pdf",
+          "pages": 1,
+          "sha256": "922a0d8473adf2f5789732b679cd16fd7cf04037fa436e06158f0c1a962b1197"
+        },
+        {
+          "name": "singles/0006_200000000001.pdf",
+          "pages": 1,
+          "sha256": "922a0d8473adf2f5789732b679cd16fd7cf04037fa436e06158f0c1a962b1197"
+        }
+      ]
+    },
+    {
+      "platform": "windows",
+      "count": 2,
+      "unique_values": 2,
+      "copies_per_value": 1,
+      "mode": "both",
+      "ink": [
+        0,
+        0,
+        0,
+        100
+      ],
+      "status": "COMPLETE",
+      "qa": "PASS",
+      "execution": {
+        "backend": "serial",
+        "requested_workers": 2,
+        "effective_workers": 1,
+        "batch_size": 1,
+        "required_ram_estimate_bytes": 268515456,
+        "os_reserve_bytes": 1400231936,
+        "ram_limit_enforced": false,
+        "ram_check": "estimated",
+        "scope": "Только кодирование QR; запись PDF и QA последовательны",
+        "affinity": "OS scheduler, без закрепления CPU",
+        "start_method": null,
+        "completed_values": 2,
+        "max_in_flight_values": 0,
+        "workers_with_results": 0
+      },
+      "hardware": {
+        "schema_version": 1,
+        "cpu": {
+          "physical_cores": 2,
+          "logical_processors": 4,
+          "available_physical": 2,
+          "available_logical": 4,
+          "smt": true,
+          "groups": 1,
+          "source": "Windows CPU Sets + process affinity + registry CPU name/vendor",
+          "reason": "",
+          "name": "AMD EPYC 9V74 80-Core Processor",
+          "vendor": "AuthenticAMD",
+          "presets": [
+            1,
+            2,
+            4
+          ],
+          "scope": "Текущий процесс; OS/job CPU quotas и индивидуальная thread affinity могут дополнительно ограничивать исполнение"
+        },
+        "ram": {
+          "total_bytes": 17174360064,
+          "available_bytes": 14002319360,
+          "source": "GlobalMemoryStatusEx",
+          "reason": "Снимок ОС/cgroup v2; Windows job memory limits и cgroup v1 отдельно не запрашиваются"
+        },
+        "disk": {
+          "bus": "NVMe",
+          "media": "no seek penalty (SSD/virtual)",
+          "source": "IOCTL_STORAGE_QUERY_PROPERTY",
+          "reason": "",
+          "free_bytes": 236073627648,
+          "total_bytes": 236205371392,
+          "speed_measured": false
+        }
+      },
+      "seconds": {
+        "code_encoding": 0.005783,
+        "qr_encoding": 0.005783,
+        "write_singles": 0.003691,
+        "write_multipage": 0.002247,
+        "quality_checks": 0.25679,
+        "total_including_qa": 0.270798
+      },
+      "files": [
+        {
+          "name": "all-2-pages.pdf",
+          "pages": 2,
+          "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9"
+        },
+        {
+          "name": "singles/0001_200000000000.pdf",
+          "pages": 1,
+          "sha256": "e80c7f62af276d70d805e162de39a8f34ea2bb8fbe39f10a9f7aad0579bcd4cf"
+        },
+        {
+          "name": "singles/0002_200000000001.pdf",
+          "pages": 1,
+          "sha256": "4efadc15c261b53bf0f82a920a63ccc2138609943c8532f7ffeb1d4ea14d5c91"
+        }
+      ]
+    },
+    {
+      "platform": "windows",
+      "count": 7,
+      "unique_values": 7,
+      "copies_per_value": 1,
+      "mode": "multipage",
+      "ink": [
+        0,
+        0,
+        0,
+        100
+      ],
+      "status": "COMPLETE",
+      "qa": "PASS",
+      "execution": {
+        "backend": "serial",
+        "requested_workers": 2,
+        "effective_workers": 1,
+        "batch_size": 1,
+        "required_ram_estimate_bytes": 268715456,
+        "os_reserve_bytes": 1398003302,
+        "ram_limit_enforced": false,
+        "ram_check": "estimated",
+        "scope": "Только кодирование QR; запись PDF и QA последовательны",
+        "affinity": "OS scheduler, без закрепления CPU",
+        "start_method": null,
+        "completed_values": 7,
+        "max_in_flight_values": 0,
+        "workers_with_results": 0
+      },
+      "hardware": {
+        "schema_version": 1,
+        "cpu": {
+          "physical_cores": 2,
+          "logical_processors": 4,
+          "available_physical": 2,
+          "available_logical": 4,
+          "smt": true,
+          "groups": 1,
+          "source": "Windows CPU Sets + process affinity + registry CPU name/vendor",
+          "reason": "",
+          "name": "AMD EPYC 9V74 80-Core Processor",
+          "vendor": "AuthenticAMD",
+          "presets": [
+            1,
+            2,
+            4
+          ],
+          "scope": "Текущий процесс; OS/job CPU quotas и индивидуальная thread affinity могут дополнительно ограничивать исполнение"
+        },
+        "ram": {
+          "total_bytes": 17174360064,
+          "available_bytes": 13980033024,
+          "source": "GlobalMemoryStatusEx",
+          "reason": "Снимок ОС/cgroup v2; Windows job memory limits и cgroup v1 отдельно не запрашиваются"
+        },
+        "disk": {
+          "bus": "NVMe",
+          "media": "no seek penalty (SSD/virtual)",
+          "source": "IOCTL_STORAGE_QUERY_PROPERTY",
+          "reason": "",
+          "free_bytes": 236073578496,
+          "total_bytes": 236205371392,
+          "speed_measured": false
+        }
+      },
+      "seconds": {
+        "code_encoding": 0.018238,
+        "qr_encoding": 0.018238,
+        "write_multipage": 0.00686,
+        "quality_checks": 0.141016,
+        "total_including_qa": 0.168097
+      },
+      "files": [
+        {
+          "name": "all-7-pages.pdf",
+          "pages": 7,
+          "sha256": "7bfe23d2eafe57d018a925bc98d48db0c18a7e6548422b454d4a39b8094f7571"
+        }
+      ]
+    },
+    {
+      "platform": "windows",
+      "count": 2,
+      "unique_values": 2,
+      "copies_per_value": 1,
+      "mode": "singles",
+      "ink": [
+        100,
+        0,
+        0,
+        0
+      ],
+      "status": "COMPLETE",
+      "qa": "PASS",
+      "execution": {
+        "backend": "serial",
+        "requested_workers": 2,
+        "effective_workers": 1,
+        "batch_size": 1,
+        "required_ram_estimate_bytes": 268515456,
+        "os_reserve_bytes": 1397614592,
+        "ram_limit_enforced": false,
+        "ram_check": "estimated",
+        "scope": "Только кодирование QR; запись PDF и QA последовательны",
+        "affinity": "OS scheduler, без закрепления CPU",
+        "start_method": null,
+        "completed_values": 2,
+        "max_in_flight_values": 0,
+        "workers_with_results": 0
+      },
+      "hardware": {
+        "schema_version": 1,
+        "cpu": {
+          "physical_cores": 2,
+          "logical_processors": 4,
+          "available_physical": 2,
+          "available_logical": 4,
+          "smt": true,
+          "groups": 1,
+          "source": "Windows CPU Sets + process affinity + registry CPU name/vendor",
+          "reason": "",
+          "name": "AMD EPYC 9V74 80-Core Processor",
+          "vendor": "AuthenticAMD",
+          "presets": [
+            1,
+            2,
+            4
+          ],
+          "scope": "Текущий процесс; OS/job CPU quotas и индивидуальная thread affinity могут дополнительно ограничивать исполнение"
+        },
+        "ram": {
+          "total_bytes": 17174360064,
+          "available_bytes": 13976145920,
+          "source": "GlobalMemoryStatusEx",
+          "reason": "Снимок ОС/cgroup v2; Windows job memory limits и cgroup v1 отдельно не запрашиваются"
+        },
+        "disk": {
+          "bus": "NVMe",
+          "media": "no seek penalty (SSD/virtual)",
+          "source": "IOCTL_STORAGE_QUERY_PROPERTY",
+          "reason": "",
+          "free_bytes": 236073533440,
+          "total_bytes": 236205371392,
+          "speed_measured": false
+        }
+      },
+      "seconds": {
+        "code_encoding": 0.005534,
+        "qr_encoding": 0.005534,
+        "write_singles": 0.003087,
+        "quality_checks": 0.084875,
+        "total_including_qa": 0.095249
+      },
+      "files": [
+        {
+          "name": "singles/0001_200000000000.pdf",
+          "pages": 1,
+          "sha256": "c2ece8af7e0b460935c280f25c5d4e5fcca2a37fe6e41fe75de602804a41535b"
+        },
+        {
+          "name": "singles/0002_200000000001.pdf",
+          "pages": 1,
+          "sha256": "922a0d8473adf2f5789732b679cd16fd7cf04037fa436e06158f0c1a962b1197"
+        }
+      ]
+    },
+    {
+      "platform": "windows",
+      "count": 6,
+      "unique_values": 2,
+      "copies_per_value": 3,
+      "mode": "multipage",
+      "ink": [
+        0,
+        0,
+        0,
+        100
+      ],
+      "status": "COMPLETE",
+      "qa": "PASS",
+      "execution": {
+        "backend": "serial",
+        "requested_workers": 2,
+        "effective_workers": 1,
+        "batch_size": 1,
+        "required_ram_estimate_bytes": 268515456,
+        "os_reserve_bytes": 1397341798,
+        "ram_limit_enforced": false,
+        "ram_check": "estimated",
+        "scope": "Только кодирование QR; запись PDF и QA последовательны",
+        "affinity": "OS scheduler, без закрепления CPU",
+        "start_method": null,
+        "completed_values": 2,
+        "max_in_flight_values": 0,
+        "workers_with_results": 0
+      },
+      "hardware": {
+        "schema_version": 1,
+        "cpu": {
+          "physical_cores": 2,
+          "logical_processors": 4,
+          "available_physical": 2,
+          "available_logical": 4,
+          "smt": true,
+          "groups": 1,
+          "source": "Windows CPU Sets + process affinity + registry CPU name/vendor",
+          "reason": "",
+          "name": "AMD EPYC 9V74 80-Core Processor",
+          "vendor": "AuthenticAMD",
+          "presets": [
+            1,
+            2,
+            4
+          ],
+          "scope": "Текущий процесс; OS/job CPU quotas и индивидуальная thread affinity могут дополнительно ограничивать исполнение"
+        },
+        "ram": {
+          "total_bytes": 17174360064,
+          "available_bytes": 13973417984,
+          "source": "GlobalMemoryStatusEx",
+          "reason": "Снимок ОС/cgroup v2; Windows job memory limits и cgroup v1 отдельно не запрашиваются"
+        },
+        "disk": {
+          "bus": "NVMe",
+          "media": "no seek penalty (SSD/virtual)",
+          "source": "IOCTL_STORAGE_QUERY_PROPERTY",
+          "reason": "",
+          "free_bytes": 236073496576,
+          "total_bytes": 236205371392,
+          "speed_measured": false
+        }
+      },
+      "seconds": {
+        "code_encoding": 0.005401,
+        "qr_encoding": 0.005401,
+        "write_multipage": 0.005541,
+        "quality_checks": 0.144642,
+        "total_including_qa": 0.157438
+      },
+      "files": [
+        {
+          "name": "all-6-pages.pdf",
+          "pages": 6,
+          "sha256": "c1f65ebfa84b7b7f8e2e705ccfbcae33dbf6c7b5294dfe9bd8db15820dcc3044"
+        }
+      ]
+    },
+    {
+      "platform": "windows",
+      "count": 7,
+      "unique_values": 7,
+      "copies_per_value": 1,
+      "mode": "multipage",
+      "ink": [
+        0,
+        0,
+        0,
+        100
+      ],
+      "status": "COMPLETE",
+      "qa": "PASS",
+      "execution": {
+        "backend": "process",
+        "requested_workers": 2,
+        "effective_workers": 2,
+        "batch_size": 1,
+        "required_ram_estimate_bytes": 537150912,
+        "os_reserve_bytes": 1396969881,
+        "ram_limit_enforced": false,
+        "ram_check": "estimated",
+        "scope": "Только кодирование QR; запись PDF и QA последовательны",
+        "affinity": "OS scheduler, без закрепления CPU",
+        "start_method": "spawn",
+        "completed_values": 7,
+        "max_in_flight_values": 2,
+        "workers_with_results": 2
+      },
+      "hardware": {
+        "schema_version": 1,
+        "cpu": {
+          "physical_cores": 2,
+          "logical_processors": 4,
+          "available_physical": 2,
+          "available_logical": 4,
+          "smt": true,
+          "groups": 1,
+          "source": "Windows CPU Sets + process affinity + registry CPU name/vendor",
+          "reason": "",
+          "name": "AMD EPYC 9V74 80-Core Processor",
+          "vendor": "AuthenticAMD",
+          "presets": [
+            1,
+            2,
+            4
+          ],
+          "scope": "Текущий процесс; OS/job CPU quotas и индивидуальная thread affinity могут дополнительно ограничивать исполнение"
+        },
+        "ram": {
+          "total_bytes": 17174360064,
+          "available_bytes": 13969698816,
+          "source": "GlobalMemoryStatusEx",
+          "reason": "Снимок ОС/cgroup v2; Windows job memory limits и cgroup v1 отдельно не запрашиваются"
+        },
+        "disk": {
+          "bus": "NVMe",
+          "media": "no seek penalty (SSD/virtual)",
+          "source": "IOCTL_STORAGE_QUERY_PROPERTY",
+          "reason": "",
+          "free_bytes": 236073451520,
+          "total_bytes": 236205371392,
+          "speed_measured": false
+        }
+      },
+      "seconds": {
+        "code_encoding": 0.311363,
+        "qr_encoding": 0.311363,
+        "write_multipage": 0.007128,
+        "quality_checks": 0.13725,
+        "total_including_qa": 0.45797
+      },
+      "files": [
+        {
+          "name": "all-7-pages.pdf",
+          "pages": 7,
+          "sha256": "7bfe23d2eafe57d018a925bc98d48db0c18a7e6548422b454d4a39b8094f7571"
+        }
+      ]
+    },
+    {
+      "platform": "windows",
+      "count": 6,
+      "unique_values": 2,
+      "copies_per_value": 3,
+      "mode": "both",
+      "ink": [
+        100,
+        0,
+        0,
+        0
+      ],
+      "status": "COMPLETE",
+      "qa": "PASS",
+      "execution": {
+        "backend": "process",
+        "requested_workers": 2,
+        "effective_workers": 2,
+        "batch_size": 1,
+        "required_ram_estimate_bytes": 536950912,
+        "os_reserve_bytes": 1395649740,
+        "ram_limit_enforced": false,
+        "ram_check": "estimated",
+        "scope": "Только кодирование QR; запись PDF и QA последовательны",
+        "affinity": "OS scheduler, без закрепления CPU",
+        "start_method": "spawn",
+        "completed_values": 2,
+        "max_in_flight_values": 2,
+        "workers_with_results": 2
+      },
+      "hardware": {
+        "schema_version": 1,
+        "cpu": {
+          "physical_cores": 2,
+          "logical_processors": 4,
+          "available_physical": 2,
+          "available_logical": 4,
+          "smt": true,
+          "groups": 1,
+          "source": "Windows CPU Sets + process affinity + registry CPU name/vendor",
+          "reason": "",
+          "name": "AMD EPYC 9V74 80-Core Processor",
+          "vendor": "AuthenticAMD",
+          "presets": [
+            1,
+            2,
+            4
+          ],
+          "scope": "Текущий процесс; OS/job CPU quotas и индивидуальная thread affinity могут дополнительно ограничивать исполнение"
+        },
+        "ram": {
+          "total_bytes": 17174360064,
+          "available_bytes": 13956497408,
+          "source": "GlobalMemoryStatusEx",
+          "reason": "Снимок ОС/cgroup v2; Windows job memory limits и cgroup v1 отдельно не запрашиваются"
+        },
+        "disk": {
+          "bus": "NVMe",
+          "media": "no seek penalty (SSD/virtual)",
+          "source": "IOCTL_STORAGE_QUERY_PROPERTY",
+          "reason": "",
+          "free_bytes": 236073402368,
+          "total_bytes": 236205371392,
+          "speed_measured": false
+        }
+      },
+      "seconds": {
+        "code_encoding": 0.279606,
+        "qr_encoding": 0.279606,
+        "write_singles": 0.009009,
+        "write_multipage": 0.005376,
+        "quality_checks": 0.270555,
+        "total_including_qa": 0.566538
+      },
+      "files": [
+        {
+          "name": "all-6-pages.pdf",
+          "pages": 6,
+          "sha256": "fb7ff5eb33618f1912520a08962fcfc2a9434468d1487f995f72683baa96c2a8"
+        },
+        {
+          "name": "singles/0001_200000000000.pdf",
+          "pages": 1,
+          "sha256": "c2ece8af7e0b460935c280f25c5d4e5fcca2a37fe6e41fe75de602804a41535b"
+        },
+        {
+          "name": "singles/0002_200000000000.pdf",
+          "pages": 1,
+          "sha256": "c2ece8af7e0b460935c280f25c5d4e5fcca2a37fe6e41fe75de602804a41535b"
+        },
+        {
+          "name": "singles/0003_200000000000.pdf",
+          "pages": 1,
+          "sha256": "c2ece8af7e0b460935c280f25c5d4e5fcca2a37fe6e41fe75de602804a41535b"
+        },
+        {
+          "name": "singles/0004_200000000001.pdf",
+          "pages": 1,
+          "sha256": "922a0d8473adf2f5789732b679cd16fd7cf04037fa436e06158f0c1a962b1197"
+        },
+        {
+          "name": "singles/0005_200000000001.pdf",
+          "pages": 1,
+          "sha256": "922a0d8473adf2f5789732b679cd16fd7cf04037fa436e06158f0c1a962b1197"
+        },
+        {
+          "name": "singles/0006_200000000001.pdf",
+          "pages": 1,
+          "sha256": "922a0d8473adf2f5789732b679cd16fd7cf04037fa436e06158f0c1a962b1197"
+        }
+      ]
+    }
+  ]
+}
