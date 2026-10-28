@@ -41,6 +41,12 @@ HELP_TEXT = """1. База TXT → Открыть: UTF-8, одна строка 
 Лаборатория → «Сравнить PDF (первые)»: 4 варианта обычный/компактный ×
 обычные/минимальные расходы на первых выбранных CPU/RAM/количестве.
 В лаборатории QA всегда полная; скорость создания и время с QA раздельны.
+«История» читает выбранную папку лаборатории и показывает сохранённые
+замеры без новой генерации. «Замеры →» открывает варианты запуска;
+«Отчёт в браузере», PDF и папка доступны рядом. Есть поиск и фильтр.
+QA PASS* в истории — сохранённое подтверждение, не повторная проверка
+готового PDF сейчас. Неполные/ошибочные замеры не получают медиану.
+Разные запуски/компьютеры автоматически в общий рейтинг не смешиваются.
 Остановка сохраняет уже созданные файлы. Старые результаты не удаляются.
 
 Сейчас работает QR Code V1-M: 12 цифр, до 10 000 строк.
@@ -238,6 +244,7 @@ class BatchWindow:
         self.folder_button.configure(state="normal" if self.last_output and not self.busy else "disabled")
         self.report_button.configure(state="normal" if self.last_report and not self.busy else "disabled")
         self.report_button.configure(text="Отчёт в браузере" if self.last_report and self.last_report.suffix.lower() in (".html",".htm") else "Посмотреть отчёт")
+        if hasattr(self,"history_view"): self.history_view.update_controls()
 
     def show_generation(self):
         self.notebook.select(self.pages["generation"])
@@ -246,6 +253,10 @@ class BatchWindow:
     def show_lab(self):
         self.refresh_hardware()
         self.notebook.select(self.pages["lab"])
+
+    def show_history(self):
+        self.notebook.select(self.pages["history"])
+        self.history_view.own_folder()
 
     def show_resources(self):
         self.notebook.select(self.pages["resources"])
@@ -403,6 +414,11 @@ class BatchWindow:
                     text = (f"Итоговая: {average:.1f} {unit}/сек" if value["percent"] == 100 else
                             f"Сейчас: {value['speed']:.1f} · средняя этапа: {average:.1f} {unit}/сек")
                     self.speed_var.set(text.replace(".", ","))
+                elif kind in ("history","history_error"):
+                    self.busy=False
+                    if kind=="history": self.history_view.receive(*value)
+                    else: self.status_var.set("История: "+str(value))
+                    self.update_buttons()
                 else:
                     self.busy = False
                     if kind == "done":

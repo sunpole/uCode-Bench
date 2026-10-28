@@ -58,7 +58,7 @@ def build_window(app, help_text):
         tests.add_command(label=label, command=lambda n=count: app.start_test(n))
     tests.add_separator()
     tests.add_command(label="Тесты CPU / PDF — ядра и прогрев", command=app.show_lab)
-    tests.add_command(label="Результаты лаборатории", command=lambda: app.open_path(Path(app.destination_var.get()) / "laboratory"))
+    tests.add_command(label="История тестов CPU / PDF", command=app.show_history)
     tests.add_command(label="Выбрать движки объединения", command=app.performance_dialog)
     tests.add_command(label="Предыдущие результаты", command=lambda: app.open_path(app.output_root / "benchmarks"))
     ttk.Button(toolbar, text="Справка", command=app.show_help).pack(side="right")
@@ -67,7 +67,8 @@ def build_window(app, help_text):
     app.notebook.grid(row=3, column=0, sticky="nsew", pady=(0, 7))
     app.pages = {}
     for key, title in (("generation", "Генерация"), ("print", "PDF и цвет"),
-                       ("resources", "CPU / RAM"), ("lab", "Тесты CPU / PDF"), ("tests", "Объединение"), ("help", "Справка")):
+                       ("resources", "CPU / RAM"), ("lab", "Тесты CPU / PDF"), ("history","История"),
+                       ("tests", "Объединение"), ("help", "Справка")):
         page = ttk.Frame(app.notebook, padding=(8, 4))
         app.notebook.add(page, text=title)
         app.pages[key] = page
@@ -76,6 +77,8 @@ def build_window(app, help_text):
     _resources(app)
     from .lab_ui import build_lab
     build_lab(app)
+    from .history_ui import HistoryView
+    app.history_view=HistoryView(app)
     page = app.pages["tests"]
     ttk.Label(page, text="Научный профиль: 3 повтора · QR V1-M · K100\n"
               "Настройки и экземпляры обычной генерации на него не влияют.", style="Muted.TLabel").pack(anchor="w")
