@@ -9,7 +9,9 @@ from .config import Experiment
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="uCode", description="Локальный QR/PDF бенчмарк")
     parser.add_argument("command", choices=("doctor", "create", "benchmark", "suite", "gui", "batch", "template", "generate"), nargs="?", default="gui")
-    parser.add_argument("--count", type=int, choices=(2, 200, 1000, 10000), default=200)
+    parser.add_argument("--count", type=int, default=200)
+    parser.add_argument("--copies", type=int, default=1, help="Экземпляров каждого значения в обычной генерации")
+    parser.add_argument("--duplicate-policy", choices=("preserve", "unique"), default="preserve")
     parser.add_argument("--output", type=Path, default=Path(__file__).resolve().parent.parent / "output" / "runs")
     parser.add_argument("--qualifying-report", type=Path, help="Отчёт PASS этапа 200 для явного запуска 1000")
     parser.add_argument("--input", type=Path, help="Входной UTF-8 TXT: один 12-значный код на строку")
@@ -48,7 +50,8 @@ def main(argv=None):
             if not args.input:
                 parser.error("Для команды generate требуется --input path/to/codes.txt")
             root = args.output if args.output != Path(__file__).resolve().parent.parent / "output" / "runs" else Path(__file__).resolve().parent.parent / "output" / "jobs"
-            directory = run_batch(args.input, root, mode=args.mode, progress=lambda message: print(message, flush=True))
+            directory = run_batch(args.input, root, mode=args.mode, copies_per_value=args.copies,
+                                  duplicate_policy=args.duplicate_policy, progress=lambda message: print(message, flush=True))
             result = json.loads((directory / "manifest.json").read_text(encoding="utf-8"))
             print(directory / "manifest.json")
             return 0 if result["status"] == "COMPLETE" else 2 if result["status"] == "LIMITED" else 1

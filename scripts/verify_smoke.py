@@ -12,17 +12,25 @@ from ucode.print_settings import PrintSettings
 def main():
     base = _make_directory(ROOT / "output/smoke", "generation")
     summary = []
-    for index, (count, mode, ink) in enumerate(((2, "both", (0, 0, 0, 100)),
-                                               (7, "multipage", (0, 0, 0, 100)),
-                                               (2, "singles", (100, 0, 0, 0)))):
+    cases = ((2, "both", (0, 0, 0, 100), 1, False),
+             (7, "multipage", (0, 0, 0, 100), 1, False),
+             (2, "singles", (100, 0, 0, 0), 1, False),
+             (2, "multipage", (0, 0, 0, 100), 3, True))
+    for index, (count, mode, ink, copies, duplicate) in enumerate(cases):
         source = base / f"source-{index}.txt"
+        values = [f"{200000000000 + i:012d}" for i in range(count)]
+        if duplicate:
+            values.append(values[0])
         with source.open("x", encoding="utf-8") as stream:
-            stream.write("\n".join(f"{200000000000 + i:012d}" for i in range(count)) + "\n")
+            stream.write("\n".join(values) + "\n")
         samples = []
-        folder = run_batch(source, base / "jobs", mode=mode, settings=PrintSettings(ink=ink), events=samples.append)
+        folder = run_batch(source, base / "jobs", mode=mode, settings=PrintSettings(ink=ink), events=samples.append,
+                           copies_per_value=copies, duplicate_policy="unique" if duplicate else "preserve")
         data = json.loads((folder / "manifest.json").read_text(encoding="utf-8"))
         assert data["status"] == "COMPLETE", data
-        assert data["count"] == count and data["engine"]["version"]
+        assert data["count"] == count * copies and data["engine"]["version"]
+        assert data["generation"]["unique_values"] == count
+        assert data["generation"]["encoded_values"] == count
         assert samples[-1]["percent"] == 100
         assert all(a["percent"] <= b["percent"] for a, b in zip(samples, samples[1:]))
         assert all("average_speed" in event for event in samples)
@@ -31,10 +39,11 @@ def main():
             if key in data["qa"]:
                 assert data["qa"][key]["status"] == "PASS"
         (folder / "progress-evidence.json").write_text(json.dumps(samples, ensure_ascii=False, indent=2), encoding="utf-8")
-        summary.append({"count": count, "mode": mode, "ink": ink, "status": data["status"],
+        summary.append({"count": count * copies, "unique_values": count, "copies_per_value": copies,
+                        "mode": mode, "ink": ink, "status": data["status"],
                         "engine": data["engine"], "seconds": data["seconds"],
                         "folder": str(folder.relative_to(base))})
-        print(f"PASS: {count} values / {mode} / {data['engine']['name']} {data['engine']['version']}", flush=True)
+        print(f"PASS: {count} values x {copies} copies = {data['count']} codes / {mode} / {data['engine']['name']} {data['engine']['version']}", flush=True)
     (base / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
     print("Evidence:", base, flush=True)
 
