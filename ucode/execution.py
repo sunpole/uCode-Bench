@@ -29,7 +29,7 @@ class ExecutionOptions:
             raise ValueError("Размер партии: от 1 до 1000")
 
 
-def execution_plan(options, count, cpu, available_ram):
+def execution_plan(options, count, cpu, available_ram,*,buffered=False):
     if options.workers > cpu["available_logical"] and options.backend != "serial":
         raise ValueError(f"Процессов больше, чем доступных CPU: {cpu['available_logical']}")
     effective = min(options.workers, math.ceil(count / options.batch_size)) if options.backend != "serial" else 1
@@ -38,7 +38,8 @@ def execution_plan(options, count, cpu, available_ram):
     # A conservative preflight estimate, not a measured peak or a RAM quota.
     reserve = max(512 * 1024**2, (available_ram or 0) // 10)
     per_worker = 128 * 1024**2 if options.backend == "process" else 8 * 1024**2 if options.backend == "thread" else 0
-    required = 256 * 1024**2 + count * 40000 + effective * per_worker
+    buffered_count=min(count,max(1,effective)*options.batch_size) if buffered else count
+    required = 256 * 1024**2 + buffered_count * 40000 + effective * per_worker
     if available_ram is not None and available_ram < required + reserve:
         raise ValueError(f"Недостаточно свободной RAM для {effective} процессов и резерва ОС; уменьшите процессы")
     return {"backend": options.backend, "requested_workers": options.workers, "effective_workers": effective,
@@ -76,7 +77,7 @@ def _cancelled(cancel):
 
 def encode_values(values, *, engine_key="reportlab", options=None, plan=None, cancel=None,
                   on_progress=None, metadata=None, selected_engine=None, generator="qr",
-                  mode="multipage", colorspace="DeviceCMYK",encoding_only=False):
+                  mode="multipage", colorspace="DeviceCMYK",encoding_only=False,result_store=None):
     options = options or ExecutionOptions()
     engine_spec = {"generator": generator, "mode": mode, "colorspace": colorspace}
     engine = selected_engine or get_engine(engine_key, **engine_spec)
@@ -90,15 +91,25 @@ def encode_values(values, *, engine_key="reportlab", options=None, plan=None, ca
     info["encoder_only_preparation"]=encoding_only
     if options.backend == "serial":
         (getattr(engine,"prepare_encoding",engine.prepare) if encoding_only else engine.prepare)()
+        if result_store is not None:
+            for index,start in enumerate(range(0,len(values),options.batch_size)):
+                _cancelled(cancel)
+                batch=values[start:start+options.batch_size]
+                frames=engine.encode(batch,cancel=cancel)
+                if [frame.payload for frame in frames]!=batch: raise ValueError("Encoder изменил порядок кодов")
+                result_store[index]=frames; info["completed_values"]=start+len(frames)
+                info["max_in_flight_values"]=max(info["max_in_flight_values"],len(frames))
+                if on_progress: on_progress(info["completed_values"],len(values))
+            return result_store.finish(),info
         def observe(done, total):
             info["completed_values"] = done
             if on_progress: on_progress(done, total)
         frames = engine.encode(values, cancel=cancel, on_progress=observe)
         return frames, info
     if options.backend == "thread":
-        return _thread_encode(values, engine, options, info, cancel, on_progress,encoding_only), info
+        return _thread_encode(values, engine, options, info, cancel, on_progress,encoding_only,result_store), info
     context = mp.get_context("spawn"); stop = context.Event()
-    pool = []; result = {}; sent = 0; completed = 0; chunks = math.ceil(len(values) / options.batch_size)
+    pool = []; result = result_store if result_store is not None else {}; sent = 0; completed = 0; chunks = math.ceil(len(values) / options.batch_size)
     try:
         for _ in range(plan["effective_workers"]):
             _cancelled(cancel)
@@ -148,7 +159,7 @@ def encode_values(values, *, engine_key="reportlab", options=None, plan=None, ca
                 elif process.exitcode is not None:
                     raise RuntimeError(f"Рабочий процесс завершился, exitcode={process.exitcode}")
             if not changed: time.sleep(.01)
-        return [frame for i in range(chunks) for frame in result[i]], info
+        return (result_store.finish() if result_store is not None else [frame for i in range(chunks) for frame in result[i]]), info
     finally:
         stop.set()
         for process, connection in pool:
@@ -165,14 +176,14 @@ def encode_values(values, *, engine_key="reportlab", options=None, plan=None, ca
             process.close()
 
 
-def _thread_encode(values, engine, options, info, cancel, on_progress,encoding_only=False):
+def _thread_encode(values, engine, options, info, cancel, on_progress,encoding_only=False,result_store=None):
     from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
     import threading
     stop = threading.Event()
     (getattr(engine,"prepare_encoding",engine.prepare) if encoding_only else engine.prepare)()
     chunks = math.ceil(len(values) / options.batch_size)
     executor = ThreadPoolExecutor(max_workers=info["effective_workers"], thread_name_prefix="ucode-encoder")
-    pending = {}; results = {}; sent = completed = 0
+    pending = {}; results = result_store if result_store is not None else {}; sent = completed = 0
     def submit():
         nonlocal sent
         if sent < chunks:
@@ -193,7 +204,7 @@ def _thread_encode(values, engine, options, info, cancel, on_progress,encoding_o
                 info["completed_values"] = completed
                 if on_progress: on_progress(completed, len(values))
                 _cancelled(cancel); submit()
-        return [frame for index in range(chunks) for frame in results[index]]
+        return result_store.finish() if result_store is not None else [frame for index in range(chunks) for frame in results[index]]
     finally:
         stop.set()
         for future in pending: future.cancel()

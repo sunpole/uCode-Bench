@@ -53,7 +53,7 @@ class GenerationPlanTests(unittest.TestCase):
             source.write_text("200000000001\n200000000001\n", encoding="utf-8")
             out = run_batch(source, root / "out", mode="multipage")
             self.assertEqual((out / "codes.txt").read_text().splitlines(), ["200000000001"] * 2)
-            for copies in (0, True, 10001):
+            for copies in (0, True, -1):
                 with self.assertRaises(ValueError):
                     run_batch(source, root / "forbidden", copies_per_value=copies)
                 self.assertFalse((root / "forbidden").exists())

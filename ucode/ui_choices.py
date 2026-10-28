@@ -66,7 +66,7 @@ class NumberSet:
         self.input=tk.StringVar(master=app.root,value=default)
         menu_parent=menu_parent or parent
         self.picker=ChoiceMenu(app,menu_parent,variable,label,options,multiple=True)
-        self.spin=app.edit(ttk.Spinbox(parent,textvariable=self.input,from_=minimum,to=maximum,width=8,
+        self.spin=app.edit(ttk.Spinbox(parent,textvariable=self.input,from_=minimum,to=maximum if maximum is not None else 1e300,width=8,
                                      increment=.25 if factor!=1 else 1))
         self.add_button=app.edit(ttk.Button(menu_parent,text="Добавить",command=self.add))
         variable.trace_add("write",lambda *_:self.sync()); self.sync()
@@ -76,11 +76,11 @@ class NumberSet:
         extra=[]; first=None
         for value in values:
             if self.suffix and not value.endswith(self.suffix): continue
-            try: number=float(value[:-len(self.suffix)] if self.suffix else value.replace(" ",""))/self.factor
+            try: number=float(value[:-len(self.suffix)])/self.factor if self.suffix else int(value.replace(" ",""))
             except ValueError: continue
-            text=f"{number:g}"+(" ГиБ" if self.factor!=1 else "")
+            text=(f"{number:g} ГиБ" if self.factor!=1 else str(number))
             extra.append((text,value))
-            if first is None: first=f"{number:g}"
+            if first is None: first=f"{number:g}" if self.factor!=1 else str(number)
         self.picker.set_options(self.options+tuple(extra))
         if first is not None:
             self.lock=True
@@ -90,10 +90,10 @@ class NumberSet:
 
     def add(self):
         try:
-            number=float(self.input.get().replace(",",".").replace(" ",""))
-            if not self.minimum<=number<=self.maximum: raise ValueError()
-            if self.factor==1 and not number.is_integer(): raise ValueError()
-            token=str(round(number*self.factor))+self.suffix
+            raw=self.input.get().replace(" ","")
+            number=int(raw) if self.factor==1 else float(raw.replace(",","."))
+            if number<self.minimum or (self.maximum is not None and number>self.maximum): raise ValueError()
+            token=str(number if self.factor==1 else round(number*self.factor))+self.suffix
             values=self.picker.selected()
             if token not in values: values.append(token)
             entered=self.input.get()
@@ -101,4 +101,5 @@ class NumberSet:
             self.lock=True
             try: self.input.set(entered)
             finally: self.lock=False
-        except ValueError: self.app.status_var.set(f"Укажите число от {self.minimum:g} до {self.maximum:g}")
+        except (ValueError,OverflowError):
+            self.app.status_var.set(f"Укажите число от {self.minimum:g}"+(f" до {self.maximum:g}" if self.maximum is not None else " (целое)"))

@@ -44,8 +44,8 @@ class LabConfig:
         axes = (self.counts, self.cpu_counts, self.cpu_units, self.backends, self.ram_modes,self.pdf_profiles,self.activity_modes)
         if any(not isinstance(axis, tuple) or not axis or len(axis) > 64 for axis in axes):
             raise ValueError("Списки лаборатории должны содержать 1–64 значения")
-        if any(isinstance(n, bool) or not isinstance(n, int) or not 1 <= n <= 10000 for n in self.counts):
-            raise ValueError("Количество: целое от 1 до 10000")
+        if any(isinstance(n, bool) or not isinstance(n, int) or n<1 for n in self.counts):
+            raise ValueError("Количество: положительное целое")
         if any(str(n) not in ("all", "all-2") and not (str(n).isascii() and str(n).isdigit() and int(n)>0) for n in self.cpu_counts):
             raise ValueError("CPU: числа, all, all-2")
         if set(self.cpu_units) - {"logical", "physical"} or set(self.backends) - {"serial", "process", "thread"}:
@@ -104,7 +104,7 @@ def preview(config, hardware):
             "time_estimate": None}
 
 
-def _run_trial(folder, request, cancel, on_progress, timeout=3600, cancel_grace=15):
+def _run_trial(folder, request, cancel, on_progress, timeout=None, cancel_grace=15):
     folder.mkdir(parents=True, exist_ok=False)
     atomic_json(folder / "request.json", request)
     env = dict(os.environ, PYTHONUTF8="1")
@@ -117,8 +117,8 @@ def _run_trial(folder, request, cancel, on_progress, timeout=3600, cancel_grace=
             while process.poll() is None:
                 elapsed = time.perf_counter()-started
                 stopping = cancel is not None and cancel.is_set()
-                if elapsed > timeout: timed_out = True
-                if stopping or elapsed > timeout:
+                if timeout is not None and elapsed > timeout: timed_out = True
+                if stopping or timed_out:
                     if cancelling is None:
                         (folder/"cancel.flag").write_text("stop", encoding="ascii"); cancelling=time.monotonic()
                     if time.monotonic()-cancelling > cancel_grace:

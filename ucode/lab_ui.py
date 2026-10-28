@@ -132,7 +132,7 @@ def build_lab(app):
     app.lab_choice_row=ttk.Frame(app.lab_advanced); app.lab_choice_row.pack(anchor="w")
     row=ttk.Frame(page); row.pack(anchor="w")
     ttk.Label(row,text="Количество кодов:").pack(side="left")
-    app.lab_count_control=NumberSet(app,row,app.lab_counts,"Объёмы",menu_parent=app.lab_choice_row)
+    app.lab_count_control=NumberSet(app,row,app.lab_counts,"Объёмы",menu_parent=app.lab_choice_row,maximum=None)
     app.lab_count_control.spin.pack(side="left",padx=(5,10))
     def count_changed(*_):
         if not app.lab_count_control.lock and (not hasattr(app,"test_controls") or not app.test_controls.expanded):

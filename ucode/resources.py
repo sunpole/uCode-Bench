@@ -5,9 +5,10 @@ from pathlib import Path
 import shutil
 
 
-def check_resources(directory, count, *, scientific=False):
-    if count < 1 or count > 10000:
-        raise ValueError("Поддерживается от 1 до 10 000 кодов; миллионы требуют другой архитектуры")
+def check_resources(directory, count, *, scientific=False,streaming=False):
+    from .stream_data import positive_count
+    positive_count(count)
+    if scientific and count>10000: raise ValueError("Размер вне исторического научного профиля")
     ancestor = Path(directory).resolve()
     while not ancestor.exists():
         if ancestor.parent == ancestor:
@@ -31,7 +32,8 @@ def check_resources(directory, count, *, scientific=False):
             if line.startswith("MemAvailable:"):
                 available = int(line.split()[1]) * 1024
                 break
-    required_ram = 256 * 1024**2 + count * (120000 if scientific else 40000)
+    required_ram = 256 * 1024**2 + (min(count,4096) if streaming else count) * (120000 if scientific else 40000)
+    if streaming and available is None: raise ValueError("Не удалось определить свободную ОЗУ для потокового запуска")
     if available is not None and available < required_ram:
         raise ValueError(f"Недостаточно свободной RAM: нужно минимум {required_ram / 1024**2:.0f} МиБ")
     return {"free_disk_bytes": free, "available_ram_bytes": available,

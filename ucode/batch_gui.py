@@ -23,7 +23,7 @@ from .open_reports import open_html_report
 
 PROJECT = Path(__file__).resolve().parents[1]
 HELP_TEXT = """1. База TXT → Открыть: UTF-8, одна строка — ровно 12 цифр.
-2. Либо задайте любое количество до 10 000; готовые пресеты есть в меню.
+2. Либо задайте своё положительное количество; большой тираж обрабатывается порциями.
 3. Укажите экземпляры каждого значения и выберите политику повторов TXT.
    Например: 200 уникальных × 3 экземпляра = 600 кодов.
    «Сохранить строки» оставляет все повторяющиеся строки, как в исходном TXT.
@@ -53,8 +53,8 @@ QA PASS* в истории — сохранённое подтверждение
 Разные запуски/компьютеры автоматически в общий рейтинг не смешиваются.
 Остановка сохраняет уже созданные файлы. Старые результаты не удаляются.
 
-Сейчас работает QR Code V1-M: 12 цифр, до 10 000 строк.
-Безопасный итог после умножения на экземпляры — максимум 10 000 кодов.
+Сейчас работает QR Code V1-M: 12 цифр в строке.
+Фиксированного лимита страниц нет; большие тиражи и индексы обрабатываются на диске.
 Один код соответствует одной странице. «Оба» сохраняет тираж в двух видах.
 Белое поле минимум 4 модуля. По умолчанию — одна чёрная краска K100.
 Цветной CMYK проверяется по выбранным компонентам; бледные коды могут
@@ -210,7 +210,7 @@ class BatchWindow:
                 if plan.duplicate_records and options.duplicate_policy == "preserve":
                     text += f" · уникальных: {plan.unique_values}"
                 execution = execution_plan(ExecutionOptions(options.execution_backend, options.workers, options.batch_size),
-                    plan.unique_values, self.hardware["cpu"], self.hardware["ram"]["available_bytes"])
+                    plan.unique_values, self.hardware["cpu"], self.hardware["ram"]["available_bytes"],buffered=plan.total_codes>10000)
                 method={"serial":"по очереди","process":"параллельно","thread":"потоки Python (опытный режим)"}[execution['backend']]
                 self.execution_preview.set(f"Создание QR: {method} · одновременно заданий: {execution['effective_workers']} · кодов за шаг: {options.batch_size}")
                 self.plan_var.set(text)
@@ -345,7 +345,8 @@ class BatchWindow:
         name = Path(self.input_var.get()).name or "База не выбрана"
         self.filename.set(name if len(name) <= 65 else name[:30] + "…" + name[-30:])
         try:
-            values = load_codes(Path(self.input_var.get()))
+            from .stream_data import inspect_codes
+            values = inspect_codes(Path(self.input_var.get()))
             self.input_valid = True
             self.source_values = values
             self.refresh_plan()
@@ -375,7 +376,7 @@ class BatchWindow:
             self.template(count)
             self.remember()
         except ValueError:
-            self.status_var.set("Количество номеров должно быть целым числом от 1 до 10 000")
+            self.status_var.set("Количество номеров должно быть положительным целым числом")
 
     def begin(self):
         self.cancel = threading.Event()

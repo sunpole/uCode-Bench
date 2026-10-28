@@ -14,7 +14,7 @@ def custom_config(app):
     from .ui_layout import QA_MODES
     try: count=int(app.lab_count_control.input.get().replace(" ","").replace("\u00a0","")); repeats=int(app.lab_repeats.get())
     except ValueError as exc: raise ValueError("Введите одно количество кодов и число повторов") from exc
-    if not 1<=count<=10000: raise ValueError("Количество кодов: от 1 до 10 000")
+    if count<1: raise ValueError("Количество кодов должно быть положительным")
     if not 1<=repeats<=10: raise ValueError("Повторов каждого режима: от 1 до 10")
     choices=tuple(part.lower().replace(" ","").replace("−","-").replace("все","all") for part in _parts(app.lab_cpus.get()))
     if not choices: raise ValueError("Отметьте хотя бы один режим ядер")
