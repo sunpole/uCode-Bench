@@ -9,6 +9,7 @@ on:
       - "scripts/runtime_probe.ps1"
       - "scripts/verify_v02.py"
       - "scripts/verify_smoke.py"
+      - "scripts/verify_lab_smoke.py"
       - "ucode/batch.py"
       - "ucode/batch_gui.py"
       - "ucode/__main__.py"
@@ -84,9 +85,17 @@ jobs:
         run: xvfb-run -a python -c "import faulthandler,unittest; faulthandler.dump_traceback_later(120, exit=True); suite=unittest.defaultTestLoader.discover('tests'); result=unittest.TextTestRunner(verbosity=2).run(suite); raise SystemExit(not result.wasSuccessful())"
       - name: Small real PDF smoke (up to 7 pages, serial and process)
         run: python scripts/verify_smoke.py
+      - name: Tiny CPU RAM lab (two pages, three repeats)
+        run: python scripts/verify_lab_smoke.py
       - name: Preserve measured PDF verification
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: smoke-${{ runner.os }}-evidence
           path: output/smoke
+      - name: Preserve CPU RAM lab evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: resource-lab-${{ runner.os }}-evidence
+          path: output/lab-smoke

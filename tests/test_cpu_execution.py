@@ -71,7 +71,7 @@ class ExecutionTests(unittest.TestCase):
         plan = execution_plan(ExecutionOptions("process", 128, 1), 3, cpu, 64 * 1024**3)
         self.assertEqual(plan["requested_workers"], 128)
         self.assertEqual(plan["effective_workers"], 3)
-        for options in (("thread", 2, 1), ("serial", True, 1), ("process", 0, 1), ("process", 2, 0)):
+        for options in (("unknown", 2, 1), ("serial", True, 1), ("process", 0, 1), ("process", 2, 0)):
             with self.assertRaises(ValueError): ExecutionOptions(*options)
         with self.assertRaises(ValueError):
             execution_plan(ExecutionOptions("process", 145, 1), 3, cpu, None)

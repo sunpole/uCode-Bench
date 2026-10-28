@@ -233,6 +233,7 @@ def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
                                                "sha256": _sha256(combined), "pages": len(frames)}
             base += len(frames)
 
+        report["seconds"]["production_until_pdf_closed"] = round(time.perf_counter() - started, 6)
         progress("Независимая проверка всех страниц: матрицы, размеры и CMYK")
         qa_start = time.perf_counter()
         if combined is not None:
