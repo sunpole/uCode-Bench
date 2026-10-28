@@ -69,6 +69,27 @@ class OperatorWindowTests(unittest.TestCase):
         self.assertTrue(self.app.open.instate(["!disabled"]))
         self.assertEqual(float(self.app.progress["value"]) == 100, manifest["status"] == "COMPLETE")
 
+    def test_compact_deferred_generation_can_start_separate_audit(self):
+        path=self.folder/"compact.txt"
+        path.write_text("000000000001\n200000000002\n",encoding="utf-8")
+        self.app.input_var.set(str(path))
+        self.app.pdf_profile_var.set("Компактный"); self.app.apply_pdf_profile()
+        self.app.qa_mode_var.set("Отложена"); self.app.activity_var.set("minimal")
+        self.app.start(); self.app.worker.join(timeout=10); self.app.poll()
+        self.assertFalse(self.app.busy)
+        job=self.app.last_output
+        original=(job/"manifest.json").read_bytes()
+        data=json.loads(original)
+        self.assertEqual((data["status"],data["print"]["pdf_profile"]),("UNVERIFIED","compact"))
+        self.assertIn("БЕЗ QA",self.app.result_var.get())
+        self.assertTrue(self.app.audit_button.instate(["!disabled"]))
+        self.app.audit_button.invoke(); self.app.worker.join(timeout=10); self.app.poll()
+        self.assertFalse(self.app.busy)
+        self.assertEqual(self.app.last_output,job)
+        self.assertIn("ПРОВЕРКА:",self.app.result_var.get())
+        self.assertEqual((job/"manifest.json").read_bytes(),original)
+        self.assertEqual(self.app.last_report.parent.parent.name,"audits")
+
     def test_main_contains_no_scrollbars_and_request_fits_laptop(self):
         def children(widget):
             for item in widget.winfo_children():

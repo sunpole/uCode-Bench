@@ -6,7 +6,7 @@ import tkinter as tk
 from tkinter import ttk
 
 from .resource_lab import LabConfig, preview, run_lab
-from .ui_layout import EXECUTION_METHODS
+from .ui_layout import EXECUTION_METHODS,PDF_PROFILES
 
 UNITS = {"Логические CPU": ("logical",), "Физические: 1 поток/ядро": ("physical",), "Оба варианта": ("logical", "physical")}
 BACKENDS = {label: value for label, value in EXECUTION_METHODS.items()}
@@ -25,7 +25,9 @@ def read_form(app):
         return LabConfig(counts=counts, cpu_counts=cpu, cpu_units=UNITS[app.lab_units.get()], backends=backends,
                          ram_modes=ram, repeats=int(app.lab_repeats.get()), warmups=int(app.lab_warmups.get()),
                          batch_size=int(app.lab_batch.get()), workers=int(app.lab_workers.get()),
-                         output_mode=app.mode_var.get(), print_settings=asdict(app.print_settings))
+                         output_mode=app.mode_var.get(), print_settings=asdict(app.print_settings),
+                         pdf_profiles=tuple(PDF_PROFILES.get(value,value) for value in _parts(app.lab_pdf_profiles.get())),
+                         activity_modes=tuple(value.lower().replace("минимум","minimal").replace("обычный","normal") for value in _parts(app.lab_activities.get())))
     except (ValueError, KeyError) as exc:
         raise ValueError("Проверьте списки, повторы и размеры партии: " + str(exc)) from exc
 
@@ -35,7 +37,9 @@ def build_lab(app):
     path = app.preferences_path.with_name("lab-settings.json")
     try:
         value=json.loads(path.read_text(encoding="utf-8"))
-        for key in ("counts","cpu_counts","cpu_units","backends","ram_modes"): value[key]=tuple(value[key])
+        value.setdefault("pdf_profiles",["standard","compact"])
+        value.setdefault("activity_modes",["normal","minimal"])
+        for key in ("counts","cpu_counts","cpu_units","backends","ram_modes","pdf_profiles","activity_modes"): value[key]=tuple(value[key])
         saved=asdict(LabConfig(**value))
     except (OSError, ValueError, KeyError, TypeError): pass
     def var(key, default):
@@ -50,6 +54,8 @@ def build_lab(app):
     app.lab_ram=var("ram_modes",("auto",))
     app.lab_repeats=var("repeats",3); app.lab_warmups=var("warmups",0)
     app.lab_batch=var("batch_size",1); app.lab_workers=var("workers",0)
+    app.lab_pdf_profiles=var("pdf_profiles",("standard","compact"))
+    app.lab_activities=var("activity_modes",("normal","minimal"))
     app.lab_preview=tk.StringVar(master=app.root)
     page=app.pages["lab"]
     def entry(row,label,variable,width):
@@ -58,9 +64,11 @@ def build_lab(app):
     row=ttk.Frame(page); row.pack(anchor="w")
     entry(row,"Кодов:",app.lab_counts,23)
     app.edit(ttk.Button(row,text="200 / 500 / 1000 / 10000",command=lambda: app.lab_counts.set("200,500,1000,10000"))).pack(side="left")
+    entry(row,"PDF:",app.lab_pdf_profiles,17)
     row=ttk.Frame(page); row.pack(anchor="w")
     entry(row,"CPU:",app.lab_cpus,27)
     app.edit(ttk.Combobox(row,textvariable=app.lab_units,values=tuple(UNITS),state="readonly",width=25),"readonly").pack(side="left")
+    entry(row,"Расходы:",app.lab_activities,14)
     row=ttk.Frame(page); row.pack(anchor="w")
     entry(row,"Методы:",app.lab_backends,30)
     entry(row,"RAM:",app.lab_ram,16)
@@ -72,6 +80,7 @@ def build_lab(app):
     row=ttk.Frame(page); row.pack(anchor="w",pady=1)
     app.edit(ttk.Button(row,text="Первый вариант",command=lambda: start_lab(app,True))).pack(side="left")
     app.edit(ttk.Button(row,text="Вся выбранная серия",command=lambda: start_lab(app,False))).pack(side="left",padx=7)
+    app.edit(ttk.Button(row,text="Сравнить PDF (первые)",command=lambda:start_lab(app,False,True))).pack(side="left")
     ttk.Label(page,text="CPU: числа, all, all-2 · Методы: serial,process,thread · RAM: auto,50%,80%,max,4096MiB",
               style="Muted.TLabel",wraplength=850).pack(anchor="w")
     def refresh(*_):
@@ -81,19 +90,21 @@ def build_lab(app):
                                 "max RAM — полезные данные с резервом ОС. Время серии пока не оценено.")
         except ValueError as exc: app.lab_preview.set(str(exc))
         if hasattr(app,"notebook"): app.fit_window()
-    for variable in (app.lab_counts,app.lab_cpus,app.lab_units,app.lab_backends,app.lab_ram,app.lab_repeats,app.lab_warmups,app.lab_batch,app.lab_workers):
+    for variable in (app.lab_counts,app.lab_cpus,app.lab_units,app.lab_backends,app.lab_ram,app.lab_repeats,app.lab_warmups,app.lab_batch,app.lab_workers,app.lab_pdf_profiles,app.lab_activities):
         variable.trace_add("write",refresh)
     refresh()
 
 
-def start_lab(app, first=False):
+def start_lab(app, first=False,optimization=False):
     if app.busy: return
     try:
         config=read_form(app)
-        if first:
+        if first or optimization:
             from dataclasses import replace
             config=replace(config,counts=config.counts[:1],cpu_counts=config.cpu_counts[:1],cpu_units=config.cpu_units[:1],
-                           backends=config.backends[:1],ram_modes=config.ram_modes[:1])
+                           backends=config.backends[:1],ram_modes=config.ram_modes[:1],
+                           pdf_profiles=("standard","compact") if optimization else config.pdf_profiles[:1],
+                           activity_modes=("normal","minimal") if optimization else config.activity_modes[:1])
         path=app.preferences_path.with_name("lab-settings.json")
         path.parent.mkdir(parents=True,exist_ok=True)
         from .lab_worker import atomic_json

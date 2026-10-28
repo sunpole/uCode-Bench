@@ -7,9 +7,10 @@ from pathlib import Path
 import shutil
 import subprocess
 import uuid
+from collections import Counter
 
 from pypdf import PdfReader
-from pypdf.generic import ContentStream
+from pypdf.generic import ContentStream,IndirectObject,ArrayObject
 
 from .config import Experiment, QRFrame
 from .qrdecode import DecodeError, decode_numeric_v1_m
@@ -23,7 +24,15 @@ def _near(actual, expected):
     return abs(float(actual) - expected) <= PT_TOLERANCE
 
 
-def _page_matrix(page, reader, frame: QRFrame, config: Experiment):
+def _content_key(page):
+    value=page.raw_get("/Contents") if "/Contents" in page else None
+    if isinstance(value,IndirectObject): return ((value.idnum,value.generation),)
+    if isinstance(value,ArrayObject) and value and all(isinstance(item,IndirectObject) for item in value):
+        return tuple((item.idnum,item.generation) for item in value)
+    return None
+
+
+def _page_matrix(page, reader, frame: QRFrame, config: Experiment, cache=None,shared=None):
     n = frame.size
     unit = config.module_mm * PT_PER_MM
     side = (n + 2 * config.quiet_modules) * unit
@@ -43,6 +52,12 @@ def _page_matrix(page, reader, frame: QRFrame, config: Experiment):
     for key in ("/XObject", "/ExtGState", "/ColorSpace", "/Pattern", "/Shading"):
         if resources.get(key):
             raise ValueError(f"Unsupported PDF resource {key}")
+    key=_content_key(page)
+    if cache is not None and key in cache:
+        result,decoded=cache[key]
+        if result!=frame.matrix: raise ValueError("Vector QR matrix differs from the expected number/order")
+        if decoded!=frame.payload: raise ValueError("Decoded payload differs from TXT")
+        return result,decoded
     matrix = [[False] * n for _ in range(n)]
     fill = None
     saved = []
@@ -121,6 +136,8 @@ def _page_matrix(page, reader, frame: QRFrame, config: Experiment):
     decoded = decode_numeric_v1_m(result)
     if decoded != frame.payload:
         raise ValueError(f"Decoded payload {decoded!r} differs from TXT {frame.payload!r}")
+    if cache is not None and key is not None and key in shared:
+        cache[key]=(result,decoded)
     return result, decoded
 
 
@@ -185,6 +202,9 @@ def check_pdf(path: Path, frames: list[QRFrame], config: Experiment, *, render_s
         if len(reader.pages) != len(frames):
             raise ValueError(f"Page count {len(reader.pages)} != expected {len(frames)}")
         digest = hashlib.sha256()
+        counts=Counter(_content_key(page) for page in reader.pages)
+        shared={key for key,count in counts.items() if key is not None and count>1}; cache={}
+        decoded_streams=0; cached_pages=0
         control_indices = sorted({0, len(frames) // 2, len(frames) - 1})
         work_total = len(frames) + (len(control_indices) if render_samples else 0)
         for index, (page, frame) in enumerate(zip(reader.pages, frames), 1):
@@ -193,7 +213,9 @@ def check_pdf(path: Path, frames: list[QRFrame], config: Experiment, *, render_s
             try:
                 if frame.version != 1 or frame.error != "M" or frame.size != 21:
                     raise ValueError("Expected frame is outside QR V1/M contract")
-                _, payload = _page_matrix(page, reader, frame, config)
+                cached=_content_key(page) in cache
+                _, payload = _page_matrix(page, reader, frame, config,cache,shared)
+                cached_pages+=int(cached); decoded_streams+=int(not cached)
                 digest.update((payload + "\n").encode("ascii"))
             except Exception as exc:
                 result["errors"].append(f"Page {index}: {type(exc).__name__}: {exc}")
@@ -201,6 +223,9 @@ def check_pdf(path: Path, frames: list[QRFrame], config: Experiment, *, render_s
             if on_progress:
                 on_progress(index, work_total)
         result["decoded_payload_sha256"] = digest.hexdigest()
+        result["content_decodes"]=decoded_streams
+        result["cached_content_pages"]=cached_pages
+        result["cache_scope"]="Only identical indirect Contents within this reader; every page geometry/resources/expected matrix/payload checked"
         if render_samples and not result["errors"]:
             renderer = shutil.which("pdftoppm")
             if not renderer:

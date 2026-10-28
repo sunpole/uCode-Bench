@@ -49,9 +49,10 @@ def execution_plan(options, count, cpu, available_ram):
             "affinity": "OS scheduler within inherited affinity; backend does not widen CPU access", "start_method": "spawn" if options.backend == "process" else None}
 
 
-def _worker(connection, stop, engine_key, engine_spec):
+def _worker(connection, stop, engine_key, engine_spec,encoding_only=False):
     try:
-        engine = get_engine(engine_key, **engine_spec); engine.prepare()
+        engine = get_engine(engine_key, **engine_spec)
+        (getattr(engine,"prepare_encoding",engine.prepare) if encoding_only else engine.prepare)()
         cpus = inspect_cpu().get("available_cpus")
         while not stop.is_set():
             job = connection.recv()
@@ -75,7 +76,7 @@ def _cancelled(cancel):
 
 def encode_values(values, *, engine_key="reportlab", options=None, plan=None, cancel=None,
                   on_progress=None, metadata=None, selected_engine=None, generator="qr",
-                  mode="multipage", colorspace="DeviceCMYK"):
+                  mode="multipage", colorspace="DeviceCMYK",encoding_only=False):
     options = options or ExecutionOptions()
     engine_spec = {"generator": generator, "mode": mode, "colorspace": colorspace}
     engine = selected_engine or get_engine(engine_key, **engine_spec)
@@ -86,22 +87,23 @@ def encode_values(values, *, engine_key="reportlab", options=None, plan=None, ca
     info = metadata if metadata is not None else {}
     info.update(plan, worker_pids=[], completed_values=0, max_in_flight_values=0)
     info["worker_affinity"] = {}
+    info["encoder_only_preparation"]=encoding_only
     if options.backend == "serial":
-        engine.prepare()
+        (getattr(engine,"prepare_encoding",engine.prepare) if encoding_only else engine.prepare)()
         def observe(done, total):
             info["completed_values"] = done
             if on_progress: on_progress(done, total)
         frames = engine.encode(values, cancel=cancel, on_progress=observe)
         return frames, info
     if options.backend == "thread":
-        return _thread_encode(values, engine, options, info, cancel, on_progress), info
+        return _thread_encode(values, engine, options, info, cancel, on_progress,encoding_only), info
     context = mp.get_context("spawn"); stop = context.Event()
     pool = []; result = {}; sent = 0; completed = 0; chunks = math.ceil(len(values) / options.batch_size)
     try:
         for _ in range(plan["effective_workers"]):
             _cancelled(cancel)
             parent, child = context.Pipe()
-            process = context.Process(target=_worker, args=(child, stop, engine_key, engine_spec), name="ucode-encoder")
+            process = context.Process(target=_worker, args=(child, stop, engine_key, engine_spec,encoding_only), name="ucode-encoder")
             try: process.start()
             except BaseException:
                 parent.close(); child.close(); raise
@@ -163,11 +165,11 @@ def encode_values(values, *, engine_key="reportlab", options=None, plan=None, ca
             process.close()
 
 
-def _thread_encode(values, engine, options, info, cancel, on_progress):
+def _thread_encode(values, engine, options, info, cancel, on_progress,encoding_only=False):
     from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
     import threading
     stop = threading.Event()
-    engine.prepare()
+    (getattr(engine,"prepare_encoding",engine.prepare) if encoding_only else engine.prepare)()
     chunks = math.ceil(len(values) / options.batch_size)
     executor = ThreadPoolExecutor(max_workers=info["effective_workers"], thread_name_prefix="ucode-encoder")
     pending = {}; results = {}; sent = completed = 0

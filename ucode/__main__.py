@@ -8,7 +8,7 @@ from .config import Experiment
 
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="uCode", description="Локальный QR/PDF бенчмарк")
-    parser.add_argument("command", choices=("doctor", "create", "benchmark", "suite", "gui", "batch", "template", "generate", "lab"), nargs="?", default="gui")
+    parser.add_argument("command", choices=("doctor", "create", "benchmark", "suite", "gui", "batch", "template", "generate", "lab","audit"), nargs="?", default="gui")
     parser.add_argument("--count", type=int, default=200)
     parser.add_argument("--copies", type=int, default=1, help="Экземпляров каждого значения в обычной генерации")
     parser.add_argument("--duplicate-policy", choices=("preserve", "unique"), default="preserve")
@@ -22,6 +22,11 @@ def main(argv=None):
     parser.add_argument("--ram-modes", default="auto")
     parser.add_argument("--repeats", type=int, default=3)
     parser.add_argument("--warmups", type=int, default=0)
+    parser.add_argument("--pdf-profile",choices=("standard","compact"),default="standard")
+    parser.add_argument("--qa",choices=("full","vector","deferred"),default="full")
+    parser.add_argument("--activity",choices=("normal","minimal"),default="normal")
+    parser.add_argument("--pdf-profiles",default="standard")
+    parser.add_argument("--activity-modes",default="normal")
     parser.add_argument("--output", type=Path, default=Path(__file__).resolve().parent.parent / "output" / "runs")
     parser.add_argument("--qualifying-report", type=Path, help="Отчёт PASS этапа 200 для явного запуска 1000")
     parser.add_argument("--input", type=Path, help="Входной UTF-8 TXT: один 12-значный код на строку")
@@ -57,18 +62,27 @@ def main(argv=None):
             return 0
         if args.command == "generate":
             from .batch import run_batch
+            from .print_settings import PrintSettings
             from .execution import ExecutionOptions
             if not args.input:
                 parser.error("Для команды generate требуется --input path/to/codes.txt")
             root = args.output if args.output != Path(__file__).resolve().parent.parent / "output" / "runs" else Path(__file__).resolve().parent.parent / "output" / "jobs"
             directory = run_batch(args.input, root, mode=args.mode, copies_per_value=args.copies,
+                                  settings=PrintSettings(pdf_profile=args.pdf_profile),qa_mode=args.qa,activity=args.activity,
                                   duplicate_policy=args.duplicate_policy,
                                   execution=ExecutionOptions(args.backend, 1 if args.workers is None else args.workers,
                                                              32 if args.batch_size is None else args.batch_size),
                                   progress=lambda message: print(message, flush=True))
             result = json.loads((directory / "manifest.json").read_text(encoding="utf-8"))
             print(directory / "manifest.json")
-            return 0 if result["status"] == "COMPLETE" else 2 if result["status"] == "LIMITED" else 1
+            return 0 if result["status"] == "COMPLETE" else 2 if result["status"] in ("LIMITED","UNVERIFIED") else 1
+        if args.command=="audit":
+            from .audit import audit_job
+            if args.input is None: parser.error("audit --input указывает папку генерации")
+            folder=audit_job(args.input)
+            print(folder/"ОТЧЁТ.txt")
+            status=json.loads((folder/"audit.json").read_text(encoding="utf-8"))["status"]
+            return 0 if status=="COMPLETE" else 2 if status=="LIMITED" else 1
         if args.command == "lab":
             from .resource_lab import LabConfig, run_lab
             config=LabConfig(counts=tuple(int(n) for n in args.lab_counts.split(",")),
@@ -76,6 +90,8 @@ def main(argv=None):
                 backends=tuple(args.backends.split(",")),ram_modes=tuple(args.ram_modes.split(",")),
                 repeats=args.repeats,warmups=args.warmups,workers=0 if args.workers is None else args.workers,
                 batch_size=1 if args.batch_size is None else args.batch_size,output_mode=args.mode)
+            from dataclasses import replace
+            config=replace(config,pdf_profiles=tuple(args.pdf_profiles.split(",")),activity_modes=tuple(args.activity_modes.split(",")))
             default=Path(__file__).resolve().parent.parent/"output"/"runs"
             folder=run_lab(args.output if args.output!=default else default.parent/"laboratory",config,
                            progress=lambda message:print(message,flush=True))

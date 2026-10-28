@@ -92,7 +92,7 @@ Manifest `execution` различает requested/effective workers, completed_v
 
 ## Resource lab (первый P05–P08)
 
-`LabConfig` и `run_lab` создают отдельный kind resource-lab; обычная генерация и исторические scientific gates не подменяются. Counts 1–10000; повторов по умолчанию 3; прогрев исключён. Оси CPU unit/count, serial/process/thread и RAM budgets; PDF профиль текущего окна постоянен в серии. Матрица ограничена 4096 конфигурациями, не числом CPU. Preview показывает реальные eligible/skipped/runs и оценку диска; без калибровки время null. Эквивалентные CPU masks внутри одной unit сравниваются один раз.
+`LabConfig` и `run_lab` создают отдельный kind resource-lab; обычная генерация и исторические scientific gates не подменяются. Counts 1–10000; повторов по умолчанию 3; прогрев исключён. Оси CPU unit/count, serial/process/thread и RAM budgets; геометрия/цвет/формат текущего окна постоянны в серии. Добавлены оси PDF standard/compact и activity normal/minimal, defaults сохраняют прежний standard/normal. Матрица ограничена 4096 конфигурациями, не числом CPU. Preview показывает реальные eligible/skipped/runs и оценку диска; без калибровки время null. Эквивалентные CPU masks внутри одной unit/PDF/activity сравниваются один раз.
 
 Каждый повтор — новый subprocess. Affinity применяется только внутри него, подтверждается ОС и наследуется workers; GUI/чужие процессы не меняются. Physical означает один логический представитель каждого ядра. All-2 не резервирует ресурсы эксклюзивно. Windows multi-group forced affinity получает SKIPPED, Linux задаёт собственным потокам sched_setaffinity. Backend не расширяет унаследованную маску. ThreadPoolExecutor поддержан только для QR encoding, не общего PDF canvas; GIL ограничение остаётся.
 
@@ -103,3 +103,11 @@ Stop передаётся через собственный cancel.flag, зат�
 Production timer фиксируется wall clock до QA после выбранных PDF/метаданных/хешей; QA отдельно, total_including_qa отдельно, launcher_wall включает контрольную оболочку. Close/OS-cache, fsync PDF не заявляется. Python/GIL, engine version, source_digest и comparison_profile_hash защищают от несопоставимых параметров; изменившаяся сборка во время серии — ошибка. CSV содержит полный профиль/оборудование, TXT/HTML — понятную сводку.
 
 Ранжируются только полные COMPLETE/QA PASS повторы; INVALID/LIMITED/ERROR/RESOURCE_LIMIT/CANCELLED/SKIPPED не побеждают. Скорость/ускорение основаны на измеренной медиане; serial1 baseline обязателен для speedup. Рекомендация с QA выбирает быстрее всех и меньше CPU/меньший budget в пределах 5% от лучшего; 5% не является тестом статистической значимости. Результаты двух кодов не экстраполируются на большие серии или другие ПК. Визуальные проверки/большие нагрузки — пользовательские.
+
+## PDF optimization
+
+`PrintSettings.pdf_profile=standard|compact`; standard прежний Canvas, compact `ucode.compact_pdf` с общими inherited geometry/resources и Contents для одинаковых матриц. `run_batch(qa_mode=full|vector|deferred, activity=normal|minimal)` по умолчанию прежний full/normal. Deferred никогда не получает COMPLETE: UNVERIFIED, qa.status NOT_RUN, quality_checks=0. Vector или отсутствие renderer — LIMITED. Минимальный режим исключает SHA и source-codes snapshot, но codes.txt/manifest/отчёт, input/resource/cancel guards сохраняет. 100% в явно ограниченном режиме означает завершение выбранной операции, качество отображается отдельно.
+
+`audit.audit_job(job)` заново получает ожидаемые матрицы из codes.txt и независимо проверяет PDF, пишет новый audits/qa-…; исходные manifest/PDF не изменяются. QA-кэш содержит только общие indirect Contents в одном reader; каждая страница всё равно проходит geometry/resources/expected-payload checks. Кэширование уникальных потоков отсутствует. Список операторов/допуски QA сохранены.
+
+Lab worker принудительно full QA; сравнения PDF/activity допускают только одинаковые остальные case-параметры и PASS всех повторов. PDF bytes — сумма реальных размеров выбранных PDF; время создания и с QA раздельны, baseline serial1 разделён по PDF/activity. Исторические scientific gates не используют compact по умолчанию. Границы и проверенные команды: PDF_OPTIMIZATION.md.

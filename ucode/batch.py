@@ -111,7 +111,8 @@ def _sha256(path: Path) -> str:
 def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
               settings=None,
               progress: Callable[[str], None] | None = None, cancel=None, events=None,
-              generator="qr", engine="reportlab", copies_per_value=1, duplicate_policy="preserve", execution=None) -> Path:
+              generator="qr", engine="reportlab", copies_per_value=1, duplicate_policy="preserve", execution=None,
+              qa_mode="full",activity="normal") -> Path:
     """Create actual PDF files and QA evidence, without overwriting old runs.
 
     Encoding and PDF writing are measured separately from quality checks.
@@ -120,6 +121,8 @@ def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
     """
     if mode not in FORMATS:
         raise ValueError(f"Формат должен быть одним из: {', '.join(FORMATS)}")
+    if qa_mode not in ("full","vector","deferred") or activity not in ("normal","minimal"):
+        raise ValueError("Неверные режимы проверки/активности")
     code_module = get_generator(generator)
     config = settings if settings is not None else code_module.default_settings()
     code_module.validate_settings(config)
@@ -139,12 +142,16 @@ def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
     if execution.backend not in selected_engine.info().execution_modes:
         raise ValueError("Движок не поддерживает выбранный способ выполнения")
     execution_info = execution_plan(execution, len(encoding_numbers), hardware["cpu"], hardware["ram"]["available_bytes"])
-    selected_engine.prepare()
+    if getattr(config,"pdf_profile","standard")=="compact":
+        getattr(selected_engine,"prepare_encoding",selected_engine.prepare)()
+    else: selected_engine.prepare()
     directory = _make_directory(output_root, f"pdf-{len(numbers)}")
-    raster = shutil.which("pdftoppm") is not None
+    raster = qa_mode=="full" and shutil.which("pdftoppm") is not None
     copies = 2 if mode == "both" else 1
     samples = len({0, len(numbers) // 2, len(numbers) - 1}) if raster else 0
-    tracker = ProgressTracker(len(encoding_numbers) + len(numbers) * 2 * copies + samples * copies + 1, events)
+    qa_units=0 if qa_mode=="deferred" else (len(numbers)+samples)*copies
+    tracker = ProgressTracker(len(encoding_numbers) + len(numbers)*copies + qa_units + 1, events,
+                              min_interval=.5 if activity=="minimal" else .05,emit_every=64 if activity=="minimal" else 1)
     base = 0
     report = {
         "schema_version": 1, "kind": "txt-batch-pdf", "status": "RUNNING",
@@ -155,6 +162,7 @@ def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
         "first_code": numbers[0], "last_code": numbers[-1],
         "print": print_metadata,
         "resources": resource_info,
+        "qa_mode":qa_mode,"activity":activity,"hash_policy":"normal" if activity=="normal" else "omitted from production",
         "hardware": hardware, "execution": execution_info,
         "files": {}, "seconds": {}, "qa": {}, "errors": [],
     }
@@ -174,14 +182,17 @@ def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
         _check_cancel(cancel)
         txt_path = directory / "codes.txt"
         original = directory / "source-codes.txt"
-        write_numbers(source_numbers, original)
-        report["files"]["source_txt"] = {"name": original.name, "sha256": _sha256(original)}
+        if activity=="normal":
+            write_numbers(source_numbers, original)
+            report["files"]["source_txt"] = {"name": original.name, "sha256": _sha256(original)}
         write_numbers(numbers, txt_path)
-        report["files"]["txt"] = {"name": txt_path.name, "sha256": _sha256(txt_path)}
+        report["files"]["txt"] = {"name": txt_path.name}
+        if activity=="normal": report["files"]["txt"]["sha256"]=_sha256(txt_path)
         progress(f"Читаем {len(numbers)} строк TXT и создаём {code_module.name}")
         tracker.step(f"Кодирование {code_module.progress_name}", 0, len(encoding_numbers), base, force=True)
         t = time.perf_counter()
         encoded, _ = encode_values(encoding_numbers, engine_key=engine, options=execution,
+            encoding_only=activity=="minimal" or getattr(config,"pdf_profile","standard")=="compact",
             selected_engine=selected_engine, generator=generator, mode=mode, colorspace=print_metadata["colorspace"],
             plan=execution_info.copy(), metadata=report["execution"], cancel=cancel,
             on_progress=lambda done, total: tracker.step(f"Кодирование {code_module.progress_name}", done, total, base))
@@ -229,45 +240,26 @@ def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
             selected_engine.write_pdf(frames, combined, config, cancel=cancel,
                       on_progress=lambda done, total: tracker.step("Создание PDF", done, total, base))
             report["seconds"]["write_multipage"] = round(time.perf_counter() - t, 6)
-            report["files"]["multipage"] = {"name": combined.name, "bytes": combined.stat().st_size,
-                                               "sha256": _sha256(combined), "pages": len(frames)}
+            report["files"]["multipage"] = {"name": combined.name, "bytes": combined.stat().st_size,"pages":len(frames)}
+            if activity=="normal": report["files"]["multipage"]["sha256"]=_sha256(combined)
             base += len(frames)
 
         report["seconds"]["production_until_pdf_closed"] = round(time.perf_counter() - started, 6)
-        progress("Независимая проверка всех страниц: матрицы, размеры и CMYK")
-        qa_start = time.perf_counter()
-        if combined is not None:
-            _check_cancel(cancel)
-            tracker.step("Проверка PDF", 0, len(frames) + samples, base, force=True, unit="проверок")
-            report["qa"]["multipage"] = code_module.verify(combined, frames, config, render_samples=raster, cancel=cancel,
-                on_progress=lambda done, total: tracker.step("Проверка PDF", done, total, base, unit="проверок"))
-            base += len(frames) + samples
-        if singles:
-            tracker.step("Проверка отдельных PDF", 0, len(singles), base, force=True, unit="проверок")
-            sample_indices = sorted({0, len(frames) // 2, len(frames) - 1})
-            failures = []
-            failed_count = 0
-            for i, (path, frame) in enumerate(zip(singles, frames), 1):
-                _check_cancel(cancel)
-                # All files structural; only 3 independently rendered samples.
-                result = code_module.verify(path, [frame], config, render_samples=raster and (i - 1 in sample_indices), cancel=cancel)
-                tracker.step("Проверка отдельных PDF", i, len(singles), base, unit="проверок")
-                if result["status"] != "PASS":
-                    failed_count += 1
-                    if len(failures) < 20:
-                        failures.append({"index": i, "file": path.name, "errors": result["errors"]})
-                if i % 250 == 0 or i == len(singles):
-                    progress(f"QA отдельных PDF: {i}/{len(singles)}")
-            report["qa"]["singles"] = {"status": "FAIL" if failed_count else "PASS",
-                                           "checked": len(singles), "rendered_samples": len(sample_indices) if raster else 0,
-                                           "first_failures": failures, "failed_count": failed_count}
-        report["seconds"]["quality_checks"] = round(time.perf_counter() - qa_start, 6)
-        check_statuses = [v["status"] for v in report["qa"].values()]
-        report["status"] = ("INVALID" if "FAIL" in check_statuses else
-                            "COMPLETE" if raster else "LIMITED")
-        report["qa"]["raster_available"] = raster
-        report["qa"]["scope"] = ("Every saved PDF page structurally validated and independently decoded. "
-                                  "Raster first/middle/last on multipage and sampled singles, if available.")
+        if qa_mode=="deferred":
+            report["qa"]={"status":"NOT_RUN","scope":"Explicitly deferred; no quality PASS claimed"}
+            report["status"]="UNVERIFIED"
+            report["seconds"]["quality_checks"]=0.0
+        else:
+            from .audit import verify_outputs,qa_status
+            progress("Независимая проверка всех страниц: матрицы, размеры и CMYK")
+            qa_start=time.perf_counter(); previous=[None,0,base]
+            def observe(stage,done,total):
+                if previous[0] is not None and stage!=previous[0]: previous[2]+=previous[1]
+                previous[0],previous[1]=stage,total
+                tracker.step(stage,done,total,previous[2],unit="проверок")
+            report["qa"]=verify_outputs(directory,frames,config,mode,code_module=code_module,render_samples=raster,cancel=cancel,on_progress=observe)
+            report["seconds"]["quality_checks"]=round(time.perf_counter()-qa_start,6)
+            report["status"]=qa_status(report["qa"],raster)
         progress(f"Результат: {report['status']}; каталог: {directory}")
     except (Exception, KeyboardInterrupt) as exc:
         report["status"] = "CANCELLED" if isinstance(exc, (InterruptedError, KeyboardInterrupt)) else "ERROR"
@@ -275,6 +267,6 @@ def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
         progress(f"{report['status']}: {exc}; файлы сохранены: {directory}")
     finally:
         save_report()
-    if report["status"] == "COMPLETE":
-        tracker.finish(len(numbers))
+    if report["status"]=="COMPLETE" or (qa_mode in ("vector","deferred") and report["status"] in ("LIMITED","UNVERIFIED")):
+        tracker.finish(len(numbers),"Создано без QA" if qa_mode=="deferred" else "Готово")
     return directory
