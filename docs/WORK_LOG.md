@@ -18,6 +18,8 @@
 
 Далее пользователь запускает крупные сравнения и оценивает видимое окно/просмотрщик. Restart Start-uCode.cmd тестовой копии; обновлять другие папки через отдельную чистую ветку/каталог, сохранив TXT/output/.local-state, без reset/clean поверх своих правок. Публикация отдельным draft PR; CI/коммит/локальный ZIP фиксируются после фактического создания.
 
+Публикация: код633eff7eada200319a94e5c03db5243f03f55e2e отправлен в origin/codex/pc-performance-search; draft PR https://github.com/sunpole/uCode-Bench/pull/15 создан и прикреплён, база PR14, mergeable MERGEABLE. Git readback подтвердил main06fa1e88cb4c04bd2bc822de8d2e6b59a8620fb7 без изменений. Снимок output/pc-search-pr15-snapshot.json: CI40756551779 Windows QUEUED, Linux IN_PROGRESS, успешный результат пока не заявляется. Следующий коммит меняет только ссылки/доказательства; ZIP исходников output/uCode-PCSearch-<finalsha>.zip и delivery JSON создаются из окончательного дерева и проверяются отдельно.
+
 ## 2026-10-28 — снятие пользовательского предела10000 страниц (13 задач)
 
 Основа8cfac92, отдельная codex/streaming-page-counts. Пользователь подтвердил сравнение1/14 ядер и попросил снять максимум кодов/страниц. Лимит снят в обычной генерации, copies, TXT templates, GUI/preferences, custom lab и history. Научный200→1000→10000/gates/3 повтора сохранён. Вместо замены константы внедрён отдельный потоковый путь;13 задач/приёмка в docs/STREAMING_PAGES.md.
