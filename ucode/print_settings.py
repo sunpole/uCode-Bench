@@ -114,7 +114,7 @@ def human_report(report: dict) -> str:
         "; " + cfg.get("description", "векторный QR V1-M") + "; PDF/X не сертифицирован",
         "",
         "ФАКТИЧЕСКОЕ ВРЕМЯ",
-        f"Вся операция ({'QA отложена' if report.get('qa_mode')=='deferred' else 'с QA'}): {format_duration(values.get('total_including_qa'))}",
+        f"Вся операция ({'без проверки' if report.get('qa_mode')=='deferred' else 'с QA'}): {format_duration(values.get('total_including_qa'))}",
         f"Кодирование {cfg.get('symbology', 'QR')}: {format_duration(values.get('code_encoding', values.get('qr_encoding')))}",
         f"Запись отдельных PDF: {format_duration(values.get('write_singles'))}",
         f"Запись общего PDF: {format_duration(values.get('write_multipage'))}",
@@ -123,7 +123,7 @@ def human_report(report: dict) -> str:
     elapsed = values.get("total_including_qa")
     rows.extend(["",f"PDF writer: {cfg.get('pdf_writer','ReportLab Canvas')}",
                  f"Накладные расходы: {report.get('activity','normal')}; QA: {report.get('qa_mode','full')}",
-                 "UNVERIFIED = PDF создан, проверка явно отложена; это не QA PASS."])
+                 "UNVERIFIED = PDF создан без проверки; это не QA PASS."])
     hardware = report.get("hardware")
     if hardware:
         cpu, ram, disk = (hardware[key] for key in ("cpu", "ram", "disk"))
@@ -154,7 +154,7 @@ def human_report(report: dict) -> str:
     if elapsed and elapsed > 0:
         rows.append(f"Средняя скорость всей операции: {report.get('count', 0)/elapsed:.2f} кодов/сек".replace(".", ","))
     def quality_label(kind,unselected):
-        if report.get("qa_mode")=="deferred" and kind in report.get("files",{}): return "NOT_RUN — проверка отложена"
+        if report.get("qa_mode")=="deferred" and kind in report.get("files",{}): return "NOT_RUN — проверка выключена"
         return qa.get(kind,{}).get("status",unselected)
     rows.extend(["", "ПРОВЕРКА",
                  f"Многостраничный PDF: {quality_label('multipage','не выбран')}",

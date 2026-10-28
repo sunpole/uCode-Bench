@@ -37,8 +37,10 @@ class LabConfig:
     print_settings: dict = field(default_factory=dict)
     pdf_profiles: tuple = ("standard",)
     activity_modes: tuple = ("normal",)
+    qa_mode: str = "full"
 
     def __post_init__(self):
+        if self.qa_mode not in ("full","vector","deferred"): raise ValueError("Неверный режим проверки PDF")
         axes = (self.counts, self.cpu_counts, self.cpu_units, self.backends, self.ram_modes,self.pdf_profiles,self.activity_modes)
         if any(not isinstance(axis, tuple) or not axis or len(axis) > 64 for axis in axes):
             raise ValueError("Списки лаборатории должны содержать 1–64 значения")
@@ -74,7 +76,7 @@ def build_cases(config, cpu):
     for count, choice, unit, backend, ram,pdf_profile,activity in itertools.product(config.counts, config.cpu_counts, config.cpu_units, config.backends, config.ram_modes,config.pdf_profiles,config.activity_modes):
         row = {"id": f"C{len(rows)+1:04d}", "count": count, "cpu_choice": str(choice), "cpu_unit": unit,
                "backend": backend, "ram_mode": ram,"pdf_profile":pdf_profile,"activity":activity, "cpus": [], "workers": 1,
-               "status": "PENDING", "reason": "", "trials": []}
+               "status": "PENDING", "reason": "", "trials": [],"qa_mode":config.qa_mode}
         try:
             row["cpus"] = select_cpus(cpu, unit, choice)
             row["workers"] = 1 if backend == "serial" else config.workers or len(row["cpus"])
@@ -145,7 +147,7 @@ def _run_trial(folder, request, cancel, on_progress, timeout=3600, cancel_grace=
     result["seconds"]["launcher_wall"] = time.perf_counter()-started
     if timed_out:
         result.update(status="ERROR",errors=[f"Превышен таймаут варианта {timeout} с"])
-    if process.returncode != 0 and result["status"]=="COMPLETE":
+    if process.returncode != 0 and result["status"] in ("COMPLETE","UNVERIFIED","LIMITED"):
         result.update(status="ERROR", errors=["Успешный JSON при ненулевом exitcode рабочего процесса"])
     result["folder"] = folder.name
     return result
@@ -163,8 +165,8 @@ def run_lab(output_root, config, *, cancel=None, events=None, progress=None):
     from .print_settings import PrintSettings
     profile={"output_mode":config.output_mode,"print_settings":asdict(PrintSettings(**config.print_settings)),
              "source_digest":data["source_digest"],"python":data["python"],"engine":data["engine"],"gil_enabled":data["gil_enabled"],
-             "timing":"production before QA; full batch includes QA; wrapper separately", "metrics_interval_seconds":.05,
-             "pdf_profiles":config.pdf_profiles,"activity_modes":config.activity_modes,"qa_mode":"full"}
+             "timing":"production before QA; operation includes selected QA mode; wrapper separately", "metrics_interval_seconds":.05,
+             "pdf_profiles":config.pdf_profiles,"activity_modes":config.activity_modes,"qa_mode":config.qa_mode}
     data["comparison_profile"]=profile
     data["comparison_profile_hash"]=hashlib.sha256(json.dumps(profile,sort_keys=True).encode()).hexdigest()
     started=time.perf_counter(); completed=0; total=max(1,plan["runs"])
@@ -180,6 +182,7 @@ def run_lab(output_root, config, *, cancel=None, events=None, progress=None):
                 warmup=repeat<config.warmups
                 if progress: progress(f"{case['id']} · {case['count']} кодов · CPU {case['cpu_choice']} {case['cpu_unit']} · {case['backend']} · {case['pdf_profile']}/{case['activity']} · {'прогрев' if warmup else 'повтор'} {repeat+1}")
                 request={"count": case["count"], "cpus": case["cpus"], "backend": case["backend"],
+                         "qa_mode":config.qa_mode,
                          "workers": case["workers"], "batch_size": config.batch_size, "ram_mode": case["ram_mode"],
                          "output_mode": config.output_mode, "print_settings": config.print_settings, "warmup": warmup,
                          "pdf_profile":case["pdf_profile"],"activity":case["activity"],
@@ -196,14 +199,15 @@ def run_lab(output_root, config, *, cancel=None, events=None, progress=None):
                 trial["relative_folder"] = "trials/"+trial["folder"]
                 case["trials"].append(trial); completed+=1
                 if trial["status"]=="CANCELLED": raise InterruptedError("Серия остановлена")
-                if warmup and trial["status"]!="COMPLETE": break
+                if warmup and trial["status"]!={"full":"COMPLETE","deferred":"UNVERIFIED","vector":"LIMITED"}[config.qa_mode]: break
                 write_reports(folder,data)
-            case["summary"]=summarize_trials(case["trials"],config.repeats,case["count"])
+            case["summary"]=summarize_trials(case["trials"],config.repeats,case["count"],qa_mode=config.qa_mode)
             case["status"]=case["summary"]["status"]
             case["reason"]="; ".join(str(message) for trial in case["trials"] for message in trial.get("errors",[]))
             write_reports(folder,data)
         statuses={case["status"] for case in cases}
-        data["status"]="COMPLETE" if "PASS" in statuses and statuses <= {"PASS","SKIPPED"} else "SKIPPED" if statuses=={"SKIPPED"} else "INVALID"
+        expected={"full":"PASS","deferred":"UNVERIFIED","vector":"LIMITED"}[config.qa_mode]
+        data["status"]=("COMPLETE" if config.qa_mode=="full" else expected) if expected in statuses and statuses<={expected,"SKIPPED"} else "SKIPPED" if statuses=={"SKIPPED"} else "INVALID"
     except (InterruptedError,KeyboardInterrupt) as exc:
         data.update(status="CANCELLED",errors=[str(exc)])
     except Exception as exc:
@@ -212,12 +216,12 @@ def run_lab(output_root, config, *, cancel=None, events=None, progress=None):
         for case in cases:
             if case["status"] in ("PENDING","RUNNING"):
                 case["status"]="CANCELLED" if data["status"]=="CANCELLED" else "NOT_RUN"
-                case["summary"]=summarize_trials(case["trials"],config.repeats,case["count"])
+                case["summary"]=summarize_trials(case["trials"],config.repeats,case["count"],qa_mode=config.qa_mode)
         data["elapsed_seconds"]=time.perf_counter()-started
         from .trial_results import write_trial_results
         write_trial_results(folder,data)
         write_reports(folder,data)
-    if events and data["status"]=="COMPLETE":
-        events({"stage":"Серия завершена", "done":completed,"total":total,"percent":100,
+    if events and data["status"] in ("COMPLETE","UNVERIFIED","LIMITED"):
+        events({"stage":"Серия создана без проверки" if data["status"]=="UNVERIFIED" else "Серия завершена", "done":completed,"total":total,"percent":100,
                 "elapsed":data["elapsed_seconds"],"speed":0,"average_speed":0,"unit":"прогонов"})
     return folder

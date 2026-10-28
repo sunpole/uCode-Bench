@@ -33,14 +33,18 @@ HELP_TEXT = """1. База TXT → Открыть: UTF-8, одна строка 
 
 Процент учитывает фактически обработанные коды, страницы и QA.
 100% означает завершение выбранного режима; статус качества указан отдельно.
-По умолчанию QA полная. «Без растра» = LIMITED, «Отложена» = UNVERIFIED.
+Рядом с запуском: «С проверкой», «Без проверки» или «Частично».
+Выбор действует и на генерацию, и на пользовательские тесты.
+«Без проверки» пропускает QA готовых PDF: UNVERIFIED, это не QA PASS.
+«Частично» проверяет структуру без растровых образцов: LIMITED.
 «Проверить PDF» запускает полную проверку готового тиража с отдельным отчётом.
 «Компактный» PDF: общие данные документа, без шрифтов, объединённые контуры.
 «Минимум расходов»: реже обновлять прогресс, без хешей и второй копии TXT.
 Коды, размеры, CMYK, контроль ввода, RAM и отмена при этом сохраняются.
-Лаборатория → «Сравнить PDF (первые)»: 4 варианта обычный/компактный ×
-обычные/минимальные расходы на первых выбранных CPU/RAM/количестве.
-В лаборатории QA всегда полная; скорость создания и время с QA раздельны.
+В лаборатории проверка соответствует кнопке рядом с запуском.
+Скорость без QA показана отдельно и не участвует в проверенном рейтинге.
+Научный профиль объединения всегда с полной QA; для запуска без проверки
+используйте вкладку «Тесты».
 «История» читает выбранную папку лаборатории и показывает сохранённые
 замеры без новой генерации. «Замеры →» открывает варианты запуска;
 «Отчёт в браузере», PDF и папка доступны рядом. Есть поиск и фильтр.
@@ -147,8 +151,9 @@ class BatchWindow:
         self.update_geometry()
         self.refresh_plan()
         self.update_buttons()
-        for var in (self.copies_var, self.duplicates_var, self.backend_var, self.workers_var, self.batch_size_var,self.qa_mode_var,self.activity_var):
+        for var in (self.copies_var, self.duplicates_var, self.backend_var, self.workers_var, self.batch_size_var,self.activity_var):
             var.trace_add("write", self.refresh_plan)
+        self.qa_mode_var.trace_add("write",self.verification_changed)
         for var in (self.geometry_value, self.quiet_var, *self.ink_vars):
             var.trace_add("write", self.preview_print)
         self.preview_print()
@@ -239,11 +244,12 @@ class BatchWindow:
         is_test=self.notebook.select()==str(self.pages["lab"])
         if is_test:
             allowed=self.lab_plan_valid if self.test_controls.expanded else self.test_controls.valid
-            self.generate.configure(text="ЗАПУСТИТЬ ТЕСТЫ",command=self.test_controls.start,
+            self.generate.configure(text="ТЕСТЫ БЕЗ ПРОВЕРКИ" if self.qa_mode_var.get()=="Отложена" else "ЗАПУСТИТЬ ТЕСТЫ",command=self.test_controls.start,
                                     state="normal" if allowed and not self.busy else "disabled")
         else:
             self.generate.configure(state="normal" if self.input_valid and self.plan_valid and not self.busy else "disabled",
-                                    command=self.start,text="СОЗДАТЬ PDF (БЕЗ QA)" if self.qa_mode_var.get()=="Отложена" else "СОЗДАТЬ PDF")
+                                    command=self.start,text="PDF БЕЗ ПРОВЕРКИ" if self.qa_mode_var.get()=="Отложена" else "СОЗДАТЬ PDF")
+        self.root.title("uCode — QR / PDF · "+{"Полная":"С ПРОВЕРКОЙ","Отложена":"БЕЗ ПРОВЕРКИ","Без растра":"ЧАСТИЧНАЯ ПРОВЕРКА"}.get(self.qa_mode_var.get(),"Проверка"))
         self.audit_button.configure(state="normal" if self.last_output and (self.last_output/"manifest.json").is_file() and not self.busy else "disabled")
         self.stop.configure(state="normal" if self.busy and not self.cancel.is_set() else "disabled")
         self.open.configure(state="normal" if self.last_pdf and not self.busy else "disabled")
@@ -253,6 +259,10 @@ class BatchWindow:
         if self.last_report and self.last_report.name=="all-results.html": self.report_button.configure(text=f"Все результаты ({len(self.test_controls.rows)})")
         self.test_controls.update_buttons()
         if hasattr(self,"history_view"): self.history_view.update_controls()
+
+    def verification_changed(self,*_):
+        self.refresh_plan()
+        if hasattr(self,"lab_refresh"): self.lab_refresh()
 
     def show_generation(self):
         self.notebook.select(self.pages["generation"])
@@ -390,6 +400,9 @@ class BatchWindow:
     def start_test(self, count):
         if self.busy:
             return
+        if self.qa_mode_var.get()!="Полная":
+            self.status_var.set("Тесты без проверки запускаются во вкладке «Тесты». Научный профиль всегда с полной проверкой.")
+            return
         self.begin()
         self.status_var.set("Проверка ресурсов и допуска к тесту…")
         def task():
@@ -464,9 +477,11 @@ class BatchWindow:
             result=json.loads((folder/"lab.json").read_text(encoding="utf-8"))
             self.last_report=folder/"comparison.html"
             self.last_pdf=next(folder.glob("trials/*/jobs/*/all-*-pages.pdf"),None)
-            self.result_var.set("ЛАБОРАТОРИЯ: " + result["status"])
-            self.result_details.set(f"Вариантов: {len(result['cases'])} · рекомендации только по полным успешным повторам; откройте отчёт")
-            if result["status"]=="COMPLETE": self.progress["value"]=100
+            label={"UNVERIFIED":"СОЗДАНО БЕЗ ПРОВЕРКИ","LIMITED":"ПРОВЕРЕНО ЧАСТИЧНО"}.get(result["status"],"ЛАБОРАТОРИЯ: "+result["status"])
+            self.result_var.set(label)
+            scope="качество не проверялось" if result["config"].get("qa_mode")=="deferred" else "подробности проверки в отчёте"
+            self.result_details.set(f"Вариантов: {len(result['cases'])} · {scope}; откройте отчёт")
+            if result["status"] in ("COMPLETE","UNVERIFIED","LIMITED"): self.progress["value"]=100
             self.elapsed_var.set("Прошло: "+clock_text(result["elapsed_seconds"]))
             if getattr(self,"lab_simple_run",False):
                 self.last_report=folder/"all-results.html"
@@ -493,7 +508,7 @@ class BatchWindow:
         if self.last_pdf is None and status in ("COMPLETE", "LIMITED","UNVERIFIED"):
             self.last_pdf = next((folder / "singles").glob("*.pdf"), None)
         label = {"COMPLETE": "ГОТОВО", "LIMITED": "ПРОВЕРЕНО ЧАСТИЧНО", "CANCELLED": "ОСТАНОВЛЕНО", "INVALID": "ОШИБКА КАЧЕСТВА", "ERROR": "ОШИБКА"}.get(status, status)
-        if status=="UNVERIFIED": label="СОЗДАНО БЕЗ QA"
+        if status=="UNVERIFIED": label="СОЗДАНО БЕЗ ПРОВЕРКИ"
         self.result_var.set(f"{label} · {count:,} кодов · {format_duration(seconds)}".replace(",", " "))
         files = list(folder.glob("*.pdf")) + list((folder / "singles").glob("*.pdf"))
         size = sum(p.stat().st_size for p in files)
@@ -502,7 +517,7 @@ class BatchWindow:
         self.result_details.set(f"PDF: {len(files):,} · {size / 1024**2:.2f} МиБ · {count / max(seconds, .001):.1f} кодов/сек · {quality}".replace(",", " "))
         if status == "COMPLETE":
             self.progress["value"] = 100
-        self.status_var.set("PDF и отчёт сохранены" if status == "COMPLETE" else "Подробности проверки — в отчёте")
+        self.status_var.set("PDF и отчёт сохранены · проверка выключена" if status=="UNVERIFIED" else "PDF и отчёт сохранены" if status == "COMPLETE" else "Подробности проверки — в отчёте")
 
     def request_cancel(self):
         self.cancel.set()

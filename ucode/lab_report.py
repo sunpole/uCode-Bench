@@ -4,15 +4,18 @@ import html
 import json
 from pathlib import Path
 import statistics
+from .qa_policy import LIMITED_STATUS,limited_trial
 
 
-def summarize_trials(trials, repeats, count):
+def summarize_trials(trials, repeats, count, *,qa_mode="full"):
     rows = [row for row in trials if not row.get("warmup")]
-    valid = len(rows) == repeats and all(row["status"] == "COMPLETE" and
+    expected=LIMITED_STATUS.get(qa_mode,"COMPLETE")
+    valid = len(rows) == repeats and all(row["status"] == expected and
             isinstance(row.get("seconds", {}).get("production"), (float, int)) and row["seconds"]["production"] > 0 for row in rows)
+    if qa_mode!="full": valid=valid and all(limited_trial(row,count,qa_mode) for row in trials)
     if not valid:
         status = "CANCELLED" if any(row["status"] == "CANCELLED" for row in trials) else "SKIPPED" if trials and all(row["status"] == "SKIPPED" for row in trials) else "INVALID"
-        return {"status": status, "median_seconds": None, "codes_per_second": None, "completed_repeats": sum(row["status"] == "COMPLETE" for row in rows)}
+        return {"status": status, "median_seconds": None, "codes_per_second": None, "completed_repeats": sum(row["status"] == expected for row in rows)}
     values = [row["seconds"]["production"] for row in rows]
     median = statistics.median(values)
     totals = [row["seconds"].get("total_including_qa") for row in rows]
@@ -22,10 +25,12 @@ def summarize_trials(trials, repeats, count):
     launcher=statistics.median(launchers) if all(isinstance(v,(int,float)) and v>0 for v in launchers) else None
     sizes=[row.get("pdf_bytes") for row in rows]
     size=statistics.median(sizes) if all(isinstance(v,(int,float)) and v>0 for v in sizes) else None
-    return {"status": "PASS", "median_seconds": median, "codes_per_second": count / median,
+    with_qa=total if qa_mode=="full" else None
+    return {"status": "PASS" if qa_mode=="full" else expected, "median_seconds": median, "codes_per_second": count / median,
             "min_seconds": min(values), "max_seconds": max(values), "mean_seconds": statistics.mean(values),
-            "spread_seconds": max(values)-min(values), "median_with_qa_seconds": total,
-            "codes_per_second_with_qa": count / total if total else None,
+            "spread_seconds": max(values)-min(values), "median_with_qa_seconds": with_qa,
+            "codes_per_second_with_qa": count / with_qa if with_qa else None,
+            "median_operation_seconds":total,"qa_mode":qa_mode,"quality_verified":qa_mode=="full",
             "median_launcher_wall_seconds": launcher,
             "median_pdf_bytes":size,
             "peak_observed_tree_rss_bytes": max((v for v in peaks if v is not None), default=None),
@@ -77,6 +82,10 @@ def optimization_pairs(cases,axis="pdf_profile"):
 
 def write_reports(folder, data):
     folder = Path(folder)
+    qa_mode=data["config"].get("qa_mode","full")
+    scope={"full":"Полная проверка PDF; рекомендации включают QA.",
+           "deferred":"БЕЗ ПРОВЕРКИ PDF. QA отключена, качество не подтверждено (UNVERIFIED).",
+           "vector":"Частичная проверка PDF: структуры и матрицы, без растровых образцов (LIMITED)."}[qa_mode]
     data["recommendations"] = recommendations(data["cases"])
     data["overall_recommendations"] = recommendations(data["cases"],False)
     data["pdf_optimization_pairs"]=optimization_pairs(data["cases"])
@@ -86,7 +95,7 @@ def write_reports(folder, data):
     fields = ("case", "codes", "cpu_unit", "cpu_choice", "allowed_cpu", "backend", "workers", "batch_size", "ram_mode",
               "status", "median_pdf_s", "median_with_qa_s", "codes_s", "codes_s_with_qa", "min_s", "max_s", "mean_s",
               "spread_s", "rss_peak_mib", "budget_mib", "effective_workers", "encoding_s", "pdf_write_s", "qa_s", "speedup_vs_serial_one_cpu_with_qa",
-              "cpu_model", "physical_cores", "logical_cpus", "total_ram_bytes", "os", "python", "engine_version", "source_digest", "median_launcher_wall_s", "comparison_profile_sha256", "pdf_output_mode", "pdf_profile","activity","median_pdf_bytes","reason")
+              "cpu_model", "physical_cores", "logical_cpus", "total_ram_bytes", "os", "python", "engine_version", "source_digest", "median_launcher_wall_s", "comparison_profile_sha256", "pdf_output_mode", "pdf_profile","activity","median_pdf_bytes","qa_mode","median_operation_s","reason")
     baselines={}
     for case in data["cases"]:
         summary=case.get("summary",{})
@@ -96,7 +105,9 @@ def write_reports(folder, data):
     for case in data["cases"]:
         summary = case.get("summary", {})
         peak = summary.get("peak_observed_tree_rss_bytes")
-        successful = [trial for trial in case["trials"] if trial["status"]=="COMPLETE" and not trial.get("warmup")]
+        expected=LIMITED_STATUS.get(qa_mode,"COMPLETE")
+        successful = [trial for trial in case["trials"] if trial["status"]==expected and not trial.get("warmup") and
+                      (qa_mode=="full" or limited_trial(trial,case["count"],qa_mode,data["config"]["output_mode"]))]
         def median_of(getter):
             values = [getter(trial) for trial in successful]
             return statistics.median(values) if values and all(v is not None for v in values) else None
@@ -119,12 +130,13 @@ def write_reports(folder, data):
                       data.get("os"),data.get("python"),data.get("engine",{}).get("version"),data["source_digest"],summary.get("median_launcher_wall_seconds"),
                       data.get("comparison_profile_hash"),data["config"]["output_mode"],
                       case.get("pdf_profile","standard"),case.get("activity","normal"),summary.get("median_pdf_bytes"),
-                      case.get("reason", "")))
+                      qa_mode,summary.get("median_operation_seconds",summary.get("median_with_qa_seconds")),case.get("reason", "")))
     with (folder / "comparison.csv").open("w", encoding="utf-8-sig", newline="") as stream:
         writer = csv.writer(stream); writer.writerow(fields); writer.writerows(table)
     rows = ["uCode — ЛАБОРАТОРИЯ CPU / RAM", "Статус: " + data["status"],
+            scope,
             f"Повторы: {data['config']['repeats']}; прогрев: {data['config']['warmups']} (исключён). Ошибка QA исключает вариант из рейтинга.",
-            "Производство PDF измерено до закрытия файлов; рекомендация включает QA. Старт изолированной оболочки отдельно в launcher_wall.",
+            "Производство PDF измерено до закрытия файлов; итог включает только выбранные этапы. Старт изолированной оболочки отдельно в launcher_wall.",
             "Параллельно кодируется QR; PDF/QA последовательны. Affinity ограничивает тест, не резервирует CPU для Windows.",
             "RAM budget — разрешение для полезных данных; память не заполняется искусственно.",
             "RSS — наблюдаемый одновременный RSS дерева, shared pages могут дублироваться; короткие пики могут быть пропущены.",
@@ -139,7 +151,7 @@ def write_reports(folder, data):
     for row in table:
         rows.append(f"{row[0]}: {row[1]} кодов · CPU {row[2]} {row[3]} ({row[4]} разрешено) · {row[5]} · RAM {row[8]} · {row[9]}")
         rows.append(f"  PDF: {row[36]} / {row[37]} · {row[38]} байт")
-        rows.append(f"  PDF медиана: {display(row[10])} с; с QA: {display(row[11])} с; скорость с QA: {display(row[13])} кодов/с; RSS пик: {display(row[18])} МиБ")
+        rows.append(f"  PDF медиана: {display(row[10])} с; всего: {display(row[40])} с; PDF: {display(row[12])} кодов/с; RSS пик: {display(row[18])} МиБ")
         rows.append(f"  RAM budget: {display(row[19])} МиБ; фактических работников: {display(row[20])}; QR / запись / QA: {display(row[21])} / {display(row[22])} / {display(row[23])} с")
         rows.append(f"  Ускорение полного времени против serial на 1 CPU: {display(row[24])}× (если такая база измерена)")
         if row[-1]: rows.append("  Причина: " + row[-1])
@@ -149,6 +161,9 @@ def write_reports(folder, data):
     for rec in data["recommendations"]:
         rows.append(f"{rec['count']} кодов, RAM {rec['ram_mode']}: быстрее всего {rec['fastest_case']}; меньше CPU в пределах 5% от лучшего — {rec['near_best_fewer_cpus_case']}")
     if not data["recommendations"]: rows.append("Нет полного успешного набора повторов с QA; победитель не назначен.")
+    if qa_mode!="full":
+        from .trial_results import recommendation
+        rows.append(recommendation(data))
     rows += ["", "СРАВНЕНИЕ PDF И НАКЛАДНЫХ РАСХОДОВ"]
     for pair in data["pdf_optimization_pairs"]+data["overhead_pairs"]:
         rows.append(f"{pair['baseline']} → {pair['candidate']} ({pair['axis']}): создание ×{pair['generation_speedup']:.3f}; с QA ×{pair['speedup_with_qa']:.3f}; PDF {pair['baseline_pdf_bytes']} → {pair['candidate_pdf_bytes']} байт; экономия {display(pair['size_saved_percent'])}%")
@@ -158,10 +173,10 @@ def write_reports(folder, data):
     (folder / "ОТЧЁТ.txt").write_text("\n".join(rows)+"\n", encoding="utf-8")
     headings = ("Вариант", "Кодов", "CPU тип", "CPU выбор", "CPU доступ", "Метод", "Работников", "Партия", "RAM режим",
                 "Статус", "PDF медиана, с", "С QA, с", "PDF кодов/с", "С QA кодов/с", "min, с", "max, с", "mean, с", "Разброс, с", "RSS пик, МиБ", "RAM budget, МиБ", "Работники факт", "QR, с", "Запись, с", "QA, с", "Ускорение / serial1, ×",
-                "CPU модель","Ядра","Логические CPU","RAM всего, байт","ОС","Python","Версия движка","Исходники SHA256","Вся оболочка, с","PDF-профиль SHA256","Режим PDF","Профиль PDF","Расходы","PDF байт","Причина")
+                "CPU модель","Ядра","Логические CPU","RAM всего, байт","ОС","Python","Версия движка","Исходники SHA256","Вся оболочка, с","PDF-профиль SHA256","Режим PDF","Профиль PDF","Расходы","PDF байт","Проверка","Всего, с","Причина")
     header = "".join("<th>"+html.escape(title)+"</th>" for title in headings)
     body = "".join("<tr>"+"".join("<td>"+html.escape(display(value))+"</td>" for value in row)+"</tr>" for row in table)
-    essential=(0,1,36,37,38,10,11,13,4,5,20,9,18,24)
+    essential=(0,1,36,37,38,10,40,12,4,5,20,9,39,18,24)
     short_header="".join("<th>"+html.escape(headings[index])+"</th>" for index in essential)
     fastest={rec["fastest_case"] for rec in data["overall_recommendations"]}
     short_body="".join(('<tr style="background:#173a32">' if row[0] in fastest else '<tr>')+"".join("<td>"+html.escape(display(row[index]))+"</td>" for index in essential)+"</tr>" for row in table)

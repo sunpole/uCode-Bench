@@ -32,6 +32,8 @@ def main(argv=None):
     parser.add_argument("--input", type=Path, help="Входной UTF-8 TXT: один 12-значный код на строку")
     parser.add_argument("--mode", choices=("both", "singles", "multipage"), default="both")
     args = parser.parse_args(argv)
+    if args.qa!="full" and args.command not in ("generate","lab"):
+        parser.error("--qa vector/deferred доступен в generate и lab; исторический научный тест всегда с полной проверкой")
     try:
         if args.command == "doctor":
             from .environment import inspect_environment
@@ -89,14 +91,15 @@ def main(argv=None):
                 cpu_counts=tuple(args.cpu_counts.split(",")),cpu_units=("logical","physical") if args.cpu_unit=="both" else (args.cpu_unit,),
                 backends=tuple(args.backends.split(",")),ram_modes=tuple(args.ram_modes.split(",")),
                 repeats=args.repeats,warmups=args.warmups,workers=0 if args.workers is None else args.workers,
-                batch_size=1 if args.batch_size is None else args.batch_size,output_mode=args.mode)
+                batch_size=1 if args.batch_size is None else args.batch_size,output_mode=args.mode,qa_mode=args.qa)
             from dataclasses import replace
             config=replace(config,pdf_profiles=tuple(args.pdf_profiles.split(",")),activity_modes=tuple(args.activity_modes.split(",")))
             default=Path(__file__).resolve().parent.parent/"output"/"runs"
             folder=run_lab(args.output if args.output!=default else default.parent/"laboratory",config,
                            progress=lambda message:print(message,flush=True))
             print(folder/"comparison.html")
-            return 0 if json.loads((folder/"lab.json").read_text(encoding="utf-8"))["status"]=="COMPLETE" else 1
+            status=json.loads((folder/"lab.json").read_text(encoding="utf-8"))["status"]
+            return 0 if status=="COMPLETE" else 2 if status in ("UNVERIFIED","LIMITED") else 1
         from .benchmark import create_inputs, load_qualifying_methods, run_experiment
         config = Experiment(count=args.count)
         if args.command == "create":
