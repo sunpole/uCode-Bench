@@ -8,7 +8,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 
-def crash_worker(connection, stop, engine_key, engine_spec):
+def crash_worker(connection, stop, engine_key, engine_spec,encoding_only=False):
     import os
     os._exit(7)
 

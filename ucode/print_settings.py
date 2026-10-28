@@ -9,8 +9,11 @@ class PrintSettings:
     module_mm: float = 0.5
     quiet_modules: int = 4
     ink: tuple = (0, 0, 0, 100)
+    pdf_profile: str = "standard"
 
     def __post_init__(self):
+        if self.pdf_profile not in ("standard","compact"):
+            raise ValueError("PDF-профиль: обычный или компактный")
         if isinstance(self.module_mm, bool):
             raise ValueError("Размер модуля должен быть числом в миллиметрах")
         if isinstance(self.quiet_modules, bool) or not isinstance(self.quiet_modules, int) or not 4 <= self.quiet_modules <= 20:
@@ -33,7 +36,7 @@ class PrintSettings:
         return self.ink == (0, 0, 0, 100)
 
     @classmethod
-    def from_total_side(cls, total_mm: float, quiet_modules: int = 4, ink=(0, 0, 0, 100)):
+    def from_total_side(cls, total_mm: float, quiet_modules: int = 4, ink=(0, 0, 0, 100), *,pdf_profile="standard"):
         if isinstance(quiet_modules, bool) or not isinstance(quiet_modules, int) or not 4 <= quiet_modules <= 20:
             raise ValueError("Белое поле: целое число от 4 до 20 модулей")
         try:
@@ -42,7 +45,7 @@ class PrintSettings:
             raise ValueError("Общий размер должен быть числом в миллиметрах") from exc
         if not math.isfinite(total) or total <= 0:
             raise ValueError("Общий размер должен быть положительным числом")
-        return cls(module_mm=total / (21 + 2 * quiet_modules), quiet_modules=quiet_modules, ink=ink)
+        return cls(module_mm=total / (21 + 2 * quiet_modules), quiet_modules=quiet_modules, ink=ink,pdf_profile=pdf_profile)
 
     @property
     def side_mm(self) -> float:
@@ -64,6 +67,8 @@ class PrintSettings:
             "dark_matrix_mm": self.dark_matrix_mm,
             "white_margin_mm": self.white_margin_mm,
             "ink": list(self.ink), "k100": self.is_k100,
+            "pdf_profile":self.pdf_profile,
+            "pdf_writer":"uCode CompactPDF/1" if self.pdf_profile=="compact" else "ReportLab Canvas",
         }
 
 
@@ -109,13 +114,16 @@ def human_report(report: dict) -> str:
         "; " + cfg.get("description", "векторный QR V1-M") + "; PDF/X не сертифицирован",
         "",
         "ФАКТИЧЕСКОЕ ВРЕМЯ",
-        f"Вся операция с QA: {format_duration(values.get('total_including_qa'))}",
+        f"Вся операция ({'QA отложена' if report.get('qa_mode')=='deferred' else 'с QA'}): {format_duration(values.get('total_including_qa'))}",
         f"Кодирование {cfg.get('symbology', 'QR')}: {format_duration(values.get('code_encoding', values.get('qr_encoding')))}",
         f"Запись отдельных PDF: {format_duration(values.get('write_singles'))}",
         f"Запись общего PDF: {format_duration(values.get('write_multipage'))}",
         f"Проверка качества: {format_duration(values.get('quality_checks'))}",
     ]
     elapsed = values.get("total_including_qa")
+    rows.extend(["",f"PDF writer: {cfg.get('pdf_writer','ReportLab Canvas')}",
+                 f"Накладные расходы: {report.get('activity','normal')}; QA: {report.get('qa_mode','full')}",
+                 "UNVERIFIED = PDF создан, проверка явно отложена; это не QA PASS."])
     hardware = report.get("hardware")
     if hardware:
         cpu, ram, disk = (hardware[key] for key in ("cpu", "ram", "disk"))
@@ -145,11 +153,14 @@ def human_report(report: dict) -> str:
                      "Режим «оба» сохраняет один тираж в двух видах PDF; число кодов не удваивается.", ""])
     if elapsed and elapsed > 0:
         rows.append(f"Средняя скорость всей операции: {report.get('count', 0)/elapsed:.2f} кодов/сек".replace(".", ","))
+    def quality_label(kind,unselected):
+        if report.get("qa_mode")=="deferred" and kind in report.get("files",{}): return "NOT_RUN — проверка отложена"
+        return qa.get(kind,{}).get("status",unselected)
     rows.extend(["", "ПРОВЕРКА",
-                 f"Многостраничный PDF: {qa.get('multipage', {}).get('status', 'не выбран')}",
-                 f"Отдельные PDF: {qa.get('singles', {}).get('status', 'не выбраны')}",
+                 f"Многостраничный PDF: {quality_label('multipage','не выбран')}",
+                 f"Отдельные PDF: {quality_label('singles','не выбраны')}",
                  "COMPLETE = проверены структуры и растровые образцы.",
-                 "LIMITED = структурная проверка пройдена, растровая недоступна.",
+                 "LIMITED = структурная проверка пройдена, растровая отключена или недоступна.",
                  "INVALID/ERROR = есть ошибки; причины перечислены ниже.",
                  "",
                  "Времена измерены на машине, где выполнялась эта задача.",

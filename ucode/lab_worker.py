@@ -82,18 +82,19 @@ def main(request_path):
                 try: atomic_json(folder / "progress.json", value)
                 except PermissionError: pass  # optional live observation; final trial/report writes remain mandatory
                 last_update[0] = now
-        settings = PrintSettings(**request.get("print_settings", {}))
+        settings = PrintSettings(**{**request.get("print_settings", {}),"pdf_profile":request.get("pdf_profile","standard")})
         workers = request["workers"] if request["backend"] != "serial" else 1
         options=ExecutionOptions(request["backend"],workers,request["batch_size"])
         estimated=execution_plan(options,count,inspect_cpu(),memory_info()["available_bytes"])
         if estimated["required_ram_estimate_bytes"]>budget["budget_bytes"]:
             raise ValueError("Выбранный RAM budget меньше предварительной оценки; уменьшите работников или увеличьте бюджет")
         job = run_batch(source, folder / "jobs", mode=request["output_mode"], settings=settings,
-                        execution=options,
+                        execution=options,qa_mode="full",activity=request.get("activity","normal"),
                         events=progress, cancel=cancel)
         manifest = json.loads((job / "manifest.json").read_text(encoding="utf-8"))
         result["manifest"] = manifest
         result["job"] = job.relative_to(folder).as_posix()
+        result["pdf_bytes"]=manifest["files"].get("multipage",{}).get("bytes",0)+manifest["files"].get("singles",{}).get("bytes",0)
         result["status"] = manifest["status"]
         result["errors"].extend(manifest.get("errors", []))
         if manifest["status"] == "LIMITED": result["errors"].append("Нет растрового QA; этот вариант не участвует в рейтинге")

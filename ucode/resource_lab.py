@@ -35,9 +35,11 @@ class LabConfig:
     workers: int = 0
     output_mode: str = "multipage"
     print_settings: dict = field(default_factory=dict)
+    pdf_profiles: tuple = ("standard",)
+    activity_modes: tuple = ("normal",)
 
     def __post_init__(self):
-        axes = (self.counts, self.cpu_counts, self.cpu_units, self.backends, self.ram_modes)
+        axes = (self.counts, self.cpu_counts, self.cpu_units, self.backends, self.ram_modes,self.pdf_profiles,self.activity_modes)
         if any(not isinstance(axis, tuple) or not axis or len(axis) > 64 for axis in axes):
             raise ValueError("Списки лаборатории должны содержать 1–64 значения")
         if any(isinstance(n, bool) or not isinstance(n, int) or not 1 <= n <= 10000 for n in self.counts):
@@ -46,6 +48,8 @@ class LabConfig:
             raise ValueError("CPU: числа, all, all-2")
         if set(self.cpu_units) - {"logical", "physical"} or set(self.backends) - {"serial", "process", "thread"}:
             raise ValueError("Неизвестные CPU units/backend")
+        if set(self.pdf_profiles)-{"standard","compact"} or set(self.activity_modes)-{"normal","minimal"}:
+            raise ValueError("Неизвестные PDF/overhead профили")
         if any(mode not in ("auto", "50%", "80%", "max") and not (isinstance(mode,str) and mode.endswith("MiB") and mode[:-3].isdigit()) for mode in self.ram_modes):
             raise ValueError("RAM: auto, 50%, 80%, max, число с MiB")
         for value, minimum, maximum in ((self.repeats,1,10),(self.warmups,0,3),(self.batch_size,1,1000)):
@@ -67,9 +71,9 @@ class LabConfig:
 
 def build_cases(config, cpu):
     rows = []; equivalent = {}
-    for count, choice, unit, backend, ram in itertools.product(config.counts, config.cpu_counts, config.cpu_units, config.backends, config.ram_modes):
+    for count, choice, unit, backend, ram,pdf_profile,activity in itertools.product(config.counts, config.cpu_counts, config.cpu_units, config.backends, config.ram_modes,config.pdf_profiles,config.activity_modes):
         row = {"id": f"C{len(rows)+1:04d}", "count": count, "cpu_choice": str(choice), "cpu_unit": unit,
-               "backend": backend, "ram_mode": ram, "cpus": [], "workers": 1,
+               "backend": backend, "ram_mode": ram,"pdf_profile":pdf_profile,"activity":activity, "cpus": [], "workers": 1,
                "status": "PENDING", "reason": "", "trials": []}
         try:
             row["cpus"] = select_cpus(cpu, unit, choice)
@@ -77,7 +81,7 @@ def build_cases(config, cpu):
             if row["workers"] > len(row["cpus"]): raise ValueError("Работников больше выбранных CPU")
             if os.name == "nt" and len({item["group"] for item in row["cpus"]}) > 1:
                 raise ValueError("Windows multi-group forced affinity пока не поддерживается")
-            identity=(count,unit,tuple((item["group"],item["logical"]) for item in row["cpus"]),backend,ram,row["workers"])
+            identity=(count,unit,tuple((item["group"],item["logical"]) for item in row["cpus"]),backend,ram,row["workers"],pdf_profile,activity)
             if identity in equivalent:
                 row["equivalent_case"]=equivalent[identity]
                 raise ValueError("Эквивалентный CPU-набор уже проверяется в "+equivalent[identity])
@@ -159,7 +163,8 @@ def run_lab(output_root, config, *, cancel=None, events=None, progress=None):
     from .print_settings import PrintSettings
     profile={"output_mode":config.output_mode,"print_settings":asdict(PrintSettings(**config.print_settings)),
              "source_digest":data["source_digest"],"python":data["python"],"engine":data["engine"],"gil_enabled":data["gil_enabled"],
-             "timing":"production before QA; full batch includes QA; wrapper separately", "metrics_interval_seconds":.05}
+             "timing":"production before QA; full batch includes QA; wrapper separately", "metrics_interval_seconds":.05,
+             "pdf_profiles":config.pdf_profiles,"activity_modes":config.activity_modes,"qa_mode":"full"}
     data["comparison_profile"]=profile
     data["comparison_profile_hash"]=hashlib.sha256(json.dumps(profile,sort_keys=True).encode()).hexdigest()
     started=time.perf_counter(); completed=0; total=max(1,plan["runs"])
@@ -173,10 +178,11 @@ def run_lab(output_root, config, *, cancel=None, events=None, progress=None):
             for repeat in range(config.warmups+config.repeats):
                 if cancel is not None and cancel.is_set(): raise InterruptedError("Серия остановлена")
                 warmup=repeat<config.warmups
-                if progress: progress(f"{case['id']} · {case['count']} кодов · CPU {case['cpu_choice']} {case['cpu_unit']} · {case['backend']} · RAM {case['ram_mode']} · {'прогрев' if warmup else 'повтор'} {repeat+1}")
+                if progress: progress(f"{case['id']} · {case['count']} кодов · CPU {case['cpu_choice']} {case['cpu_unit']} · {case['backend']} · {case['pdf_profile']}/{case['activity']} · {'прогрев' if warmup else 'повтор'} {repeat+1}")
                 request={"count": case["count"], "cpus": case["cpus"], "backend": case["backend"],
                          "workers": case["workers"], "batch_size": config.batch_size, "ram_mode": case["ram_mode"],
                          "output_mode": config.output_mode, "print_settings": config.print_settings, "warmup": warmup,
+                         "pdf_profile":case["pdf_profile"],"activity":case["activity"],
                          "source_digest": data["source_digest"], "engine_version": data["engine"]["version"]}
                 def update(value):
                     if events:

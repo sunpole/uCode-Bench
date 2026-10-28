@@ -16,6 +16,8 @@ class GenerationPreferences:
     execution_backend: str = "serial"
     workers: int = 1
     batch_size: int = 32
+    qa_mode: str = "full"
+    activity: str = "normal"
 
     def __post_init__(self):
         for value in (self.copies_per_value, self.template_count):
@@ -24,6 +26,8 @@ class GenerationPreferences:
         if self.duplicate_policy not in ("preserve", "unique") or not isinstance(self.output_directory, str):
             raise ValueError("Неверные параметры генерации")
         ExecutionOptions(self.execution_backend, self.workers, self.batch_size)
+        if self.qa_mode not in ("full","vector","deferred") or self.activity not in ("normal","minimal"):
+            raise ValueError("Неверные режимы QA/накладных расходов")
 
 
 def load_user_preferences(path):
@@ -37,7 +41,7 @@ def load_user_preferences(path):
         if not isinstance(fields, dict):
             raise ValueError("Неверная структура настроек печати")
         settings = PrintSettings(module_mm=fields["module_mm"], quiet_modules=fields["quiet_modules"],
-                                 ink=tuple(fields.get("ink", [0, 0, 0, 100])))
+                                 ink=tuple(fields.get("ink", [0, 0, 0, 100])),pdf_profile=fields.get("pdf_profile","standard"))
         fields = value.get("generation", {})
         if not isinstance(fields, dict):
             raise ValueError("Неверные параметры генерации")
@@ -66,6 +70,6 @@ def save_preferences(path, settings, mode, *, generation=None):
     temporary = path.with_name(path.name + ".tmp-" + uuid.uuid4().hex)
     with temporary.open("x", encoding="utf-8") as stream:
         json.dump({"schema_version": 2, "settings": {"module_mm": settings.module_mm,
-                  "quiet_modules": settings.quiet_modules, "ink": settings.ink}, "mode": mode,
+                  "quiet_modules": settings.quiet_modules, "ink": settings.ink,"pdf_profile":settings.pdf_profile}, "mode": mode,
                   "generation": asdict(generation)}, stream)
     temporary.replace(path)

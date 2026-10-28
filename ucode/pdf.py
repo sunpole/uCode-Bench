@@ -7,6 +7,9 @@ from . import __version__
 
 
 def write_pdf(frames: list[QRFrame], path: Path, config: Experiment, *, on_progress=None, cancel=None) -> None:
+    if getattr(config,"pdf_profile","standard")=="compact":
+        from .compact_pdf import write_pdf as compact_write
+        return compact_write(frames,path,config,on_progress=on_progress,cancel=cancel)
     path = Path(path)
     if path.exists():
         raise FileExistsError(path)

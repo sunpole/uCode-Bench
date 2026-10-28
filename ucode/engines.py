@@ -36,6 +36,10 @@ class GenerationEngine(Protocol):
 
 
 class ReportLabEngine:
+    def prepare_encoding(self):
+        from .qr import encode_numbers
+        self._encode=encode_numbers
+
     def info(self):
         try:
             version = metadata.version("reportlab")
@@ -48,9 +52,8 @@ class ReportLabEngine:
     def prepare(self):
         # Worker invokes this before the method timer, preserving the old
         # scientific profile's import boundary. It is not a benchmark warmup.
-        from .qr import encode_numbers
+        self.prepare_encoding()
         from .pdf import write_pdf, write_single_files
-        self._encode = encode_numbers
         self._write = write_pdf
         self._singles = write_single_files
 
@@ -60,6 +63,9 @@ class ReportLabEngine:
         return self._encode(values, **kwargs)
 
     def write_pdf(self, frames, path, settings, **kwargs):
+        if getattr(settings,"pdf_profile","standard")=="compact":
+            from .compact_pdf import write_pdf
+            return write_pdf(frames,path,settings,**kwargs)
         if not hasattr(self, "_write"):
             self.prepare()
         return self._write(frames, path, settings, **kwargs)

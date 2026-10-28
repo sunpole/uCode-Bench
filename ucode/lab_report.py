@@ -20,11 +20,14 @@ def summarize_trials(trials, repeats, count):
     peaks = [row.get("memory", {}).get("peak_tree_rss_bytes") for row in rows]
     launchers=[row["seconds"].get("launcher_wall") for row in rows]
     launcher=statistics.median(launchers) if all(isinstance(v,(int,float)) and v>0 for v in launchers) else None
+    sizes=[row.get("pdf_bytes") for row in rows]
+    size=statistics.median(sizes) if all(isinstance(v,(int,float)) and v>0 for v in sizes) else None
     return {"status": "PASS", "median_seconds": median, "codes_per_second": count / median,
             "min_seconds": min(values), "max_seconds": max(values), "mean_seconds": statistics.mean(values),
             "spread_seconds": max(values)-min(values), "median_with_qa_seconds": total,
             "codes_per_second_with_qa": count / total if total else None,
             "median_launcher_wall_seconds": launcher,
+            "median_pdf_bytes":size,
             "peak_observed_tree_rss_bytes": max((v for v in peaks if v is not None), default=None),
             "completed_repeats": repeats}
 
@@ -49,21 +52,46 @@ def recommendations(cases,group_by_ram=True):
     return result
 
 
+def optimization_pairs(cases,axis="pdf_profile"):
+    groups={}; first,second=("standard","compact") if axis=="pdf_profile" else ("normal","minimal")
+    for case in cases:
+        if case.get("status")!="PASS" or case.get("summary",{}).get("status")!="PASS": continue
+        if not case["summary"].get("median_seconds") or not case["summary"].get("median_with_qa_seconds"): continue
+        other=case.get("activity","normal") if axis=="pdf_profile" else case.get("pdf_profile","standard")
+        key=(case["count"],case["cpu_unit"],tuple((cpu["group"],cpu["logical"]) for cpu in case["cpus"]),
+             case["backend"],case["ram_mode"],case["workers"],other)
+        groups.setdefault(key,{})[case.get(axis,first)]=case
+    result=[]
+    for group in groups.values():
+        if first not in group or second not in group: continue
+        before,after=group[first],group[second]
+        a,b=before["summary"],after["summary"]
+        size_a,size_b=a.get("median_pdf_bytes"),b.get("median_pdf_bytes")
+        result.append({"baseline":before["id"],"candidate":after["id"],"axis":axis,"count":before["count"],
+                       "generation_speedup":a["median_seconds"]/b["median_seconds"],
+                       "speedup_with_qa":a["median_with_qa_seconds"]/b["median_with_qa_seconds"],
+                       "baseline_pdf_bytes":size_a,"candidate_pdf_bytes":size_b,
+                       "size_saved_percent":100*(1-size_b/size_a) if size_a and size_b else None})
+    return result
+
+
 def write_reports(folder, data):
     folder = Path(folder)
     data["recommendations"] = recommendations(data["cases"])
     data["overall_recommendations"] = recommendations(data["cases"],False)
+    data["pdf_optimization_pairs"]=optimization_pairs(data["cases"])
+    data["overhead_pairs"]=optimization_pairs(data["cases"],"activity")
     from .lab_worker import atomic_json
     atomic_json(folder / "lab.json", data)
     fields = ("case", "codes", "cpu_unit", "cpu_choice", "allowed_cpu", "backend", "workers", "batch_size", "ram_mode",
               "status", "median_pdf_s", "median_with_qa_s", "codes_s", "codes_s_with_qa", "min_s", "max_s", "mean_s",
               "spread_s", "rss_peak_mib", "budget_mib", "effective_workers", "encoding_s", "pdf_write_s", "qa_s", "speedup_vs_serial_one_cpu_with_qa",
-              "cpu_model", "physical_cores", "logical_cpus", "total_ram_bytes", "os", "python", "engine_version", "source_digest", "median_launcher_wall_s", "comparison_profile_sha256", "pdf_output_mode", "reason")
+              "cpu_model", "physical_cores", "logical_cpus", "total_ram_bytes", "os", "python", "engine_version", "source_digest", "median_launcher_wall_s", "comparison_profile_sha256", "pdf_output_mode", "pdf_profile","activity","median_pdf_bytes","reason")
     baselines={}
     for case in data["cases"]:
         summary=case.get("summary",{})
         if case["backend"]=="serial" and len(case["cpus"])==1 and summary.get("status")=="PASS" and summary.get("median_with_qa_seconds"):
-            baselines.setdefault((case["count"],case["ram_mode"],case["cpu_unit"]),summary["median_with_qa_seconds"])
+            baselines.setdefault((case["count"],case["ram_mode"],case["cpu_unit"],case.get("pdf_profile","standard"),case.get("activity","normal")),summary["median_with_qa_seconds"])
     table = []
     for case in data["cases"]:
         summary = case.get("summary", {})
@@ -77,7 +105,7 @@ def write_reports(folder, data):
         encoding = median_of(lambda trial: trial["seconds"].get("code_encoding"))
         write = median_of(lambda trial: sum(trial["seconds"].get(key,0) for key in ("write_singles","write_multipage")))
         qa = median_of(lambda trial: trial["seconds"].get("quality_checks"))
-        baseline=baselines.get((case["count"],case["ram_mode"],case["cpu_unit"]))
+        baseline=baselines.get((case["count"],case["ram_mode"],case["cpu_unit"],case.get("pdf_profile","standard"),case.get("activity","normal")))
         total=summary.get("median_with_qa_seconds")
         speedup=baseline/total if baseline and total and summary.get("status")=="PASS" else None
         table.append((case["id"], case["count"], case["cpu_unit"], case["cpu_choice"], len(case["cpus"]), case["backend"],
@@ -90,6 +118,7 @@ def write_reports(folder, data):
                       data["hardware"]["cpu"]["logical_processors"],data["hardware"]["ram"]["total_bytes"],
                       data.get("os"),data.get("python"),data.get("engine",{}).get("version"),data["source_digest"],summary.get("median_launcher_wall_seconds"),
                       data.get("comparison_profile_hash"),data["config"]["output_mode"],
+                      case.get("pdf_profile","standard"),case.get("activity","normal"),summary.get("median_pdf_bytes"),
                       case.get("reason", "")))
     with (folder / "comparison.csv").open("w", encoding="utf-8-sig", newline="") as stream:
         writer = csv.writer(stream); writer.writerow(fields); writer.writerows(table)
@@ -109,6 +138,7 @@ def write_reports(folder, data):
     def display(value): return "—" if value is None else f"{value:.4f}" if isinstance(value, float) else str(value)
     for row in table:
         rows.append(f"{row[0]}: {row[1]} кодов · CPU {row[2]} {row[3]} ({row[4]} разрешено) · {row[5]} · RAM {row[8]} · {row[9]}")
+        rows.append(f"  PDF: {row[36]} / {row[37]} · {row[38]} байт")
         rows.append(f"  PDF медиана: {display(row[10])} с; с QA: {display(row[11])} с; скорость с QA: {display(row[13])} кодов/с; RSS пик: {display(row[18])} МиБ")
         rows.append(f"  RAM budget: {display(row[19])} МиБ; фактических работников: {display(row[20])}; QR / запись / QA: {display(row[21])} / {display(row[22])} / {display(row[23])} с")
         rows.append(f"  Ускорение полного времени против serial на 1 CPU: {display(row[24])}× (если такая база измерена)")
@@ -119,16 +149,19 @@ def write_reports(folder, data):
     for rec in data["recommendations"]:
         rows.append(f"{rec['count']} кодов, RAM {rec['ram_mode']}: быстрее всего {rec['fastest_case']}; меньше CPU в пределах 5% от лучшего — {rec['near_best_fewer_cpus_case']}")
     if not data["recommendations"]: rows.append("Нет полного успешного набора повторов с QA; победитель не назначен.")
+    rows += ["", "СРАВНЕНИЕ PDF И НАКЛАДНЫХ РАСХОДОВ"]
+    for pair in data["pdf_optimization_pairs"]+data["overhead_pairs"]:
+        rows.append(f"{pair['baseline']} → {pair['candidate']} ({pair['axis']}): создание ×{pair['generation_speedup']:.3f}; с QA ×{pair['speedup_with_qa']:.3f}; PDF {pair['baseline_pdf_bytes']} → {pair['candidate_pdf_bytes']} байт; экономия {display(pair['size_saved_percent'])}%")
     rows += ["", "Разница до 5% — эвристика удобства, не доказательство статистической значимости.",
              "Результаты относятся к этому ПК/сборке/параметрам. Проценты ускорения не экстраполируются на другие размеры.",
              "Сырые повторы, RAM budget/фактическая память, CPU affinity, фазовые времена и реальные PDF — lab.json / trials/."]
     (folder / "ОТЧЁТ.txt").write_text("\n".join(rows)+"\n", encoding="utf-8")
     headings = ("Вариант", "Кодов", "CPU тип", "CPU выбор", "CPU доступ", "Метод", "Работников", "Партия", "RAM режим",
                 "Статус", "PDF медиана, с", "С QA, с", "PDF кодов/с", "С QA кодов/с", "min, с", "max, с", "mean, с", "Разброс, с", "RSS пик, МиБ", "RAM budget, МиБ", "Работники факт", "QR, с", "Запись, с", "QA, с", "Ускорение / serial1, ×",
-                "CPU модель","Ядра","Логические CPU","RAM всего, байт","ОС","Python","Версия движка","Исходники SHA256","Вся оболочка, с","PDF-профиль SHA256","Режим PDF","Причина")
+                "CPU модель","Ядра","Логические CPU","RAM всего, байт","ОС","Python","Версия движка","Исходники SHA256","Вся оболочка, с","PDF-профиль SHA256","Режим PDF","Профиль PDF","Расходы","PDF байт","Причина")
     header = "".join("<th>"+html.escape(title)+"</th>" for title in headings)
     body = "".join("<tr>"+"".join("<td>"+html.escape(display(value))+"</td>" for value in row)+"</tr>" for row in table)
-    essential=(0,1,2,4,5,20,19,9,11,13,18,24)
+    essential=(0,1,36,37,38,10,11,13,4,5,20,9,18,24)
     short_header="".join("<th>"+html.escape(headings[index])+"</th>" for index in essential)
     fastest={rec["fastest_case"] for rec in data["overall_recommendations"]}
     short_body="".join(('<tr style="background:#173a32">' if row[0] in fastest else '<tr>')+"".join("<td>"+html.escape(display(row[index]))+"</td>" for index in essential)+"</tr>" for row in table)

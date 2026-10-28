@@ -6,6 +6,8 @@ from .ui_theme import COLORS, apply_dark_theme
 
 POLICIES = {"Сохранить строки": "preserve", "Только уникальные": "unique"}
 EXECUTION_METHODS = {"Последовательно": "serial", "Процессы": "process", "Потоки (GIL)": "thread"}
+PDF_PROFILES={"Обычный":"standard","Компактный":"compact"}
+QA_MODES={"Полная":"full","Без растра":"vector","Отложена":"deferred"}
 
 
 def build_window(app, help_text):
@@ -118,6 +120,8 @@ def build_window(app, help_text):
     app.folder_button.pack(side="left", padx=7)
     app.report_button = ttk.Button(actions, text="Посмотреть отчёт", command=app.open_report)
     app.report_button.pack(side="left")
+    app.audit_button=ttk.Button(actions,text="Проверить PDF",command=app.start_audit)
+    app.audit_button.pack(side="left",padx=7)
 
 
 def _generation(app):
@@ -172,10 +176,16 @@ def _print(app):
         ttk.Label(ink, text=name).pack(side="left")
         app.edit(ttk.Entry(ink, textvariable=var, width=5)).pack(side="left", padx=(3, 10))
     app.edit(ttk.Button(ink, text="K100", command=app.use_k100)).pack(side="left")
+    ttk.Label(ink,text="QA:").pack(side="left",padx=(12,4))
+    qa=app.edit(ttk.Combobox(ink,values=tuple(QA_MODES),textvariable=app.qa_mode_var,state="readonly",width=12),"readonly")
+    qa.pack(side="left"); qa.bind("<<ComboboxSelected>>",lambda event:app.remember())
     mode = ttk.Frame(page)
     mode.pack(anchor="w", pady=5)
     for text, value in (("Один PDF", "multipage"), ("Отдельные PDF", "singles"), ("Оба варианта", "both")):
         app.edit(ttk.Radiobutton(mode, text=text, value=value, variable=app.mode_var, command=app.remember)).pack(side="left", padx=(0, 14))
+    profile=app.edit(ttk.Combobox(mode,values=tuple(PDF_PROFILES),textvariable=app.pdf_profile_var,state="readonly",width=12),"readonly")
+    profile.pack(side="left"); profile.bind("<<ComboboxSelected>>",lambda event:app.apply_pdf_profile())
+    app.edit(ttk.Checkbutton(mode,text="Минимум расходов",variable=app.activity_var,onvalue="minimal",offvalue="normal",command=app.remember)).pack(side="left",padx=8)
     ttk.Label(page, textvariable=app.print_preview, style="Accent.TLabel", wraplength=850).pack(anchor="w", pady=5)
     ttk.Label(page, text="Изменения размера и цвета применяются кнопкой ниже. Поле QR — минимум 4 модуля.",
               style="Muted.TLabel", wraplength=850).pack(anchor="w")

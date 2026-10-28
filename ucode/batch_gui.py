@@ -15,7 +15,7 @@ from .batch import load_codes, make_template, run_batch
 from .print_settings import PrintSettings, format_duration
 from .app_settings import GenerationPreferences, load_user_preferences, save_preferences
 from .generation_plan import build_plan
-from .ui_layout import POLICIES, EXECUTION_METHODS, build_window
+from .ui_layout import POLICIES, EXECUTION_METHODS, PDF_PROFILES,QA_MODES,build_window
 from .engines import get_engine
 from .hardware import inspect_hardware, probe_directory
 from .execution import ExecutionOptions, execution_plan
@@ -31,7 +31,15 @@ HELP_TEXT = """1. База TXT → Открыть: UTF-8, одна строка 
 6. Откройте PDF, папку или понятный ОТЧЁТ.txt.
 
 Процент учитывает фактически обработанные коды, страницы и QA.
-100% означает завершённую операцию и полную проверку.
+100% означает завершение выбранного режима; статус качества указан отдельно.
+По умолчанию QA полная. «Без растра» = LIMITED, «Отложена» = UNVERIFIED.
+«Проверить PDF» запускает полную проверку готового тиража с отдельным отчётом.
+«Компактный» PDF: общие данные документа, без шрифтов, объединённые контуры.
+«Минимум расходов»: реже обновлять прогресс, без хешей и второй копии TXT.
+Коды, размеры, CMYK, контроль ввода, RAM и отмена при этом сохраняются.
+Лаборатория → «Сравнить PDF (первые)»: 4 варианта обычный/компактный ×
+обычные/минимальные расходы на первых выбранных CPU/RAM/количестве.
+В лаборатории QA всегда полная; скорость создания и время с QA раздельны.
 Остановка сохраняет уже созданные файлы. Старые результаты не удаляются.
 
 Сейчас работает QR Code V1-M: 12 цифр, до 10 000 строк.
@@ -92,6 +100,9 @@ class BatchWindow:
         self.hardware = inspect_hardware(self.output_root)
         self.input_var = tk.StringVar(master=self.root)
         self.mode_var = tk.StringVar(master=self.root, value=mode)
+        self.pdf_profile_var=tk.StringVar(master=self.root,value=next(label for label,key in PDF_PROFILES.items() if key==self.print_settings.pdf_profile))
+        self.qa_mode_var=tk.StringVar(master=self.root,value=next(label for label,key in QA_MODES.items() if key==self.generation_preferences.qa_mode))
+        self.activity_var=tk.StringVar(master=self.root,value=self.generation_preferences.activity)
         self.copies_var = tk.StringVar(master=self.root, value=str(self.generation_preferences.copies_per_value))
         self.duplicates_var = tk.StringVar(master=self.root, value=next(label for label, value in POLICIES.items() if value == self.generation_preferences.duplicate_policy))
         self.custom_count_var = tk.StringVar(master=self.root, value=str(self.generation_preferences.template_count))
@@ -120,7 +131,7 @@ class BatchWindow:
         self.update_geometry()
         self.refresh_plan()
         self.update_buttons()
-        for var in (self.copies_var, self.duplicates_var, self.backend_var, self.workers_var, self.batch_size_var):
+        for var in (self.copies_var, self.duplicates_var, self.backend_var, self.workers_var, self.batch_size_var,self.qa_mode_var,self.activity_var):
             var.trace_add("write", self.refresh_plan)
         for var in (self.geometry_value, self.quiet_var, *self.ink_vars):
             var.trace_add("write", self.preview_print)
@@ -162,7 +173,8 @@ class BatchWindow:
         except ValueError as exc:
             raise ValueError("Количество и экземпляры должны быть целыми числами") from exc
         return GenerationPreferences(copies, POLICIES.get(self.duplicates_var.get(), ""), count,
-                                     self.destination_var.get(), EXECUTION_METHODS.get(self.backend_var.get(), ""), workers, batch_size)
+                                     self.destination_var.get(), EXECUTION_METHODS.get(self.backend_var.get(), ""), workers, batch_size,
+                                     QA_MODES.get(self.qa_mode_var.get(),""),self.activity_var.get())
 
     def refresh_plan(self, *_):
         self.plan_valid = False
@@ -209,6 +221,8 @@ class BatchWindow:
             if widget.winfo_exists():
                 widget.configure(state="disabled" if self.busy else idle_state)
         self.generate.configure(state="normal" if self.input_valid and self.plan_valid and not self.busy else "disabled")
+        self.generate.configure(text="СОЗДАТЬ PDF (БЕЗ QA)" if self.qa_mode_var.get()=="Отложена" else "СОЗДАТЬ PDF")
+        self.audit_button.configure(state="normal" if self.last_output and (self.last_output/"manifest.json").is_file() and not self.busy else "disabled")
         self.stop.configure(state="normal" if self.busy and not self.cancel.is_set() else "disabled")
         self.open.configure(state="normal" if self.last_pdf and not self.busy else "disabled")
         self.folder_button.configure(state="normal" if self.last_output and not self.busy else "disabled")
@@ -323,7 +337,20 @@ class BatchWindow:
                     copies_per_value=options.copies_per_value, duplicate_policy=options.duplicate_policy,
                     generator=self.generator_key, engine=self.engine_key,
                     execution=ExecutionOptions(options.execution_backend, options.workers, options.batch_size),
+                    qa_mode=options.qa_mode,activity=options.activity,
                     progress=lambda s: self.events.put(("status", s)), events=lambda e: self.events.put(("progress", e))))
+
+    def start_audit(self):
+        if self.busy or self.last_output is None: return
+        source=self.last_output
+        self.begin()
+        from .audit import audit_job
+        self.launch(lambda:audit_job(source,cancel=self.cancel,events=lambda value:self.events.put(("progress",value)),
+                                     progress=lambda value:self.events.put(("status",value))))
+
+    def apply_pdf_profile(self):
+        self.print_settings=dataclasses.replace(self.print_settings,pdf_profile=PDF_PROFILES[self.pdf_profile_var.get()])
+        self.remember(); self.preview_print()
 
     def start_test(self, count):
         if self.busy:
@@ -383,6 +410,16 @@ class BatchWindow:
 
     def complete(self, folder):
         self.last_output = folder
+        if (folder/"audit.json").is_file():
+            data=json.loads((folder/"audit.json").read_text(encoding="utf-8"))
+            self.last_output=folder.parent.parent
+            self.last_report=folder/"ОТЧЁТ.txt"
+            self.last_pdf=next(self.last_output.glob("all-*-pages.pdf"),None)
+            if self.last_pdf is None: self.last_pdf=next((self.last_output/"singles").glob("*.pdf"),None)
+            self.result_var.set("ПРОВЕРКА: "+data["status"])
+            self.result_details.set("Исходный PDF и manifest сохранены; QA записан отдельно")
+            if data["status"]=="COMPLETE": self.progress["value"]=100
+            return
         if (folder / "lab.json").exists():
             result=json.loads((folder/"lab.json").read_text(encoding="utf-8"))
             self.last_report=folder/"comparison.html"
@@ -408,15 +445,16 @@ class BatchWindow:
         self.elapsed_var.set("Прошло: " + clock_text(seconds))
         self.last_report = folder / "ОТЧЁТ.txt"
         output = report.get("files", {}).get("multipage", {}).get("name")
-        self.last_pdf = folder / output if output and status in ("COMPLETE", "LIMITED") else None
-        if self.last_pdf is None and status in ("COMPLETE", "LIMITED"):
+        self.last_pdf = folder / output if output and status in ("COMPLETE", "LIMITED","UNVERIFIED") else None
+        if self.last_pdf is None and status in ("COMPLETE", "LIMITED","UNVERIFIED"):
             self.last_pdf = next((folder / "singles").glob("*.pdf"), None)
         label = {"COMPLETE": "ГОТОВО", "LIMITED": "ПРОВЕРЕНО ЧАСТИЧНО", "CANCELLED": "ОСТАНОВЛЕНО", "INVALID": "ОШИБКА КАЧЕСТВА", "ERROR": "ОШИБКА"}.get(status, status)
+        if status=="UNVERIFIED": label="СОЗДАНО БЕЗ QA"
         self.result_var.set(f"{label} · {count:,} кодов · {format_duration(seconds)}".replace(",", " "))
         files = list(folder.glob("*.pdf")) + list((folder / "singles").glob("*.pdf"))
         size = sum(p.stat().st_size for p in files)
         quality = {"COMPLETE": "проверка пройдена", "LIMITED": "без растрового контроля", "INVALID": "ошибка качества",
-                   "CANCELLED": "проверка не завершена", "ERROR": "ошибка"}.get(status, status)
+                   "CANCELLED": "проверка не завершена", "ERROR": "ошибка","UNVERIFIED":"качество не проверялось"}.get(status, status)
         self.result_details.set(f"PDF: {len(files):,} · {size / 1024**2:.2f} МиБ · {count / max(seconds, .001):.1f} кодов/сек · {quality}".replace(",", " "))
         if status == "COMPLETE":
             self.progress["value"] = 100
@@ -452,8 +490,9 @@ class BatchWindow:
                 ink = tuple(float(v.get().replace(",", ".")) for v in self.ink_vars)
             except ValueError as exc:
                 raise ValueError("Размер, поле и CMYK должны быть числами") from exc
-            cfg = (PrintSettings(value, quiet, ink) if self.geometry_basis.get() == "module" else
-                   PrintSettings.from_total_side(value, quiet, ink))
+            profile=PDF_PROFILES[self.pdf_profile_var.get()]
+            cfg = (PrintSettings(value, quiet, ink,pdf_profile=profile) if self.geometry_basis.get() == "module" else
+                   PrintSettings.from_total_side(value, quiet, ink,pdf_profile=profile))
             self.print_preview.set(f"PDF {cfg.side_mm:.2f} × {cfg.side_mm:.2f} мм · модуль {cfg.module_mm:.3f} мм · поле {cfg.white_margin_mm:.2f} мм")
             return cfg
         except ValueError as exc:
@@ -474,6 +513,8 @@ class BatchWindow:
         if self.busy:
             return
         self.print_settings = PrintSettings()
+        self.pdf_profile_var.set("Обычный")
+        self.qa_mode_var.set("Полная"); self.activity_var.set("normal")
         self.mode_var.set("multipage")
         self.copies_var.set("1")
         self.duplicates_var.set(next(label for label, value in POLICIES.items() if value == "preserve"))
