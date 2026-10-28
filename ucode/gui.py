@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 import queue
 import threading
-import webbrowser
+from .open_reports import open_html_report
 
 from .config import Experiment
 
@@ -199,7 +199,8 @@ class Application:
             return
         report = self.latest_directory / "report.html"
         if report.exists():
-            webbrowser.open(report.resolve().as_uri())
+            try: open_html_report(report)
+            except (OSError,ValueError) as exc: self.status.set(str(exc))
         elif hasattr(os, "startfile"):
             os.startfile(str(self.latest_directory.resolve()))
 

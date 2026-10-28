@@ -1,5 +1,11 @@
 # Внутренние контракты
 
+## Test interface (28.10.2026)
+
+`lab_ui.refresh_cpu_buttons` получает текущие hardware/UNITS и тот же `select_cpus`, что runner. Кнопки — варианты серии, не сумма; all/all-2 раскрываются по unit. Недоступные кнопки остаются disabled после busy/idle, предпочтения не урезаются скрытно. Новый GUI default physical/1, если топология известна, старые saved prefs сохранены. `show_lab` обновляет hardware из ОС; fallback не выдумывает физические ядра/CPU IDs. Preview считает repeats+warmups, статистика по-прежнему исключает warmup.
+
+`open_reports.open_html_report(path)` для Windows читает executable HTTPS/HTTP association через AssocQueryStringW и запускает с отдельным file URI аргументом без shell. Нет изменения registry/ассоциаций и fallback к .html editor. Ошибки показывает контроллер, TXT/PDF/папки остаются в обычных приложениях. Оба GUI используют helper. На других ОС — webbrowser.open_new_tab. Физическое окно браузера/визуальная приёмка пользовательские; TEST_INTERFACE.md содержит свежие проверки и ограничения.
+
 Актуальные изменения интерфейса и API v0.2 описаны в последнем разделе; ранние разделы сохранены как история методики.
 
 Проект называется uCode; приложенное ТЗ uBarcodeBench задаёт первый эксперимент.

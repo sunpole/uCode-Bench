@@ -1,5 +1,15 @@
 # Журнал uCode
 
+## 2026-10-28 — интерфейс тестов CPU и открытие HTML (10 задач)
+
+Основа928704c, ветка codex/test-lab-interface, текущая тестовая копия. Вкладка Тесты CPU / PDF (прежний lab key), объединители — Объединение. Фактические/доступные ядра и потоки ОС, physical/logical/both, галочки1/2/4/6/8/12 +16/32/фактический максимум по доступности +all-2/all с числом; адаптация к текущему ПК и busy, ручной совместимый список. Новые defaults physical/1 при известной топологии; saved prefs сохранены. Числовые warmup/repeats, пояснение реальных пробных PDF вне медианы, preview общего количества прогонов. Backend/affinity/QA/gates сохранены. 10 задач, команды и границы: docs/TEST_INTERFACE.md.
+
+HTML root cause: os.startfile и file-URI WindowsDefault могут использовать редактор .html. Новый open_reports читает AssocQueryStringW HTTPS/HTTP → executable → subprocess argv без shell; ошибка выводится без fallback в HTML-editor. Ассоциации/registry не меняются. Реальный Windows query нашёл назначенный Chrome; окно физически для приёмки не запускалось. Helper подключён к обоим GUI, HTML-кнопка Отчёт в браузере. TXT/PDF/папки сохранили обычные приложения.
+
+Red: output/test-lab-interface-red.log, четыре ожидаемых ошибки до UI. Первые focused выявили layout150%; уплотнение без ослабления668px/1326px ограничений. Финально24 PASS за8,927с, output/test-lab-interface-final-2.log (lab_interface/ui_window/gui), модели2/14ядер/unknown, browserargv/не-editor, реальные малые PDF/GUI→lab/process/cancel, DPI100/125/150. Промежуточный неправильный stdin launcher несовместим со spawn Windows; корректный -c прошёл, исходный лог сохранён. CI предыдущего PR7: Linux SUCCESS, Windows FAIL только из-за сравнения RUNNER~1 и длинного пути одной папки после audit. Тест заменён на samefile реальной папки; других ослаблений нет.
+
+Полный текущий CI до результата не объявляется пройденным. Большие200/500/1000/10000, установки и ручные мышиные обходы/скриншоты не выполнялись. README/контракты/инструкция обновлены; отдельный PR поверх PDF optimization, main и старые результаты сохранены. Перезапуск Start-uCode.cmd тестовой копии; безопасное обновление/откат описаны в TEST_INTERFACE.md. Следующее — пользовательская оценка интерфейса/браузера и свои серии.
+
 ## 2026-10-28 — отдельный слой PDF optimization (15 задач)
 
 Основа 5da7689, ветка codex/pdf-optimization-layer, тестовая копия 016_uCode_PDF_test. Запрос: уменьшить служебные расходы и повторяющиеся данные PDF, сохранить качество, дать производственный переключатель и A/B по времени/размеру. Реализация/контракты/15 задач/команды — docs/PDF_OPTIMIZATION.md. Новых зависимостей нет; main, старый scientific и результаты сохранены.
