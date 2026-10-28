@@ -1,5 +1,13 @@
 # Внутренние контракты
 
+## Custom test controls (28.10.2026)
+
+`test_controls.custom_config(app)` — одно quantity1–10000, selected CPU modes, repeats1–10; один process/backend, auto RAM, multipage с текущими print_settings/profile, normal activity, warmups0. Не использует скрытые advanced lists, одинаковые/недоступные CPU отклоняются до запуска. Numeric CPU сортируются, all-2/all следуют за ними; повторы каждого case последовательны. `read_form/start_lab` остаются для явной расширенной матрицы. LabConfig/scientific defaults3 не изменены, GUI без saved prefs defaults1.
+
+`trial_results.trial_rows(data)` возвращает все непрогревочные planned slots и записанные warmup rows с флагом; неисполненные имеют NOT_RUN/SKIPPED и None timings. `write_trial_results` вызывается один раз в finally run_lab до конечной comparison, вне измерения PDF; сохраняет all-results.html/csv и rawlink. Новые exports не перезаписывают существующие файлы. Рекомендации используют history.case_result QA gates, одинаковые case-параметры и median_with_qa; при близости5% меньше CPU без заявления о статистической значимости.
+
+Primary button в lab означает запуск custom/явной advanced матрицы, на других вкладках — прежнюю генерацию. Simple completion открывает all-results, advanced — comparison; оба сохраняют прежние lab.json/trials. Progress events дополнены run_index/runs_total/repeat_index/cpu_count/cpu_unit; старые поля/таймеры сохранены. CUSTOM_TESTS.md содержит свежие проверки/пределы и два пользовательских примера только как конфигурации, не измеренные большие результаты.
+
 ## Resource-lab history (28.10.2026)
 
 `history.scan_history(root)` — ограниченный read-only индекс одного lab-root или папки lab.json; `read_run` валидирует kind/schema/структуру и восстанавливает summary из непрогревочных trials. Только COMPLETE + сохранённая полная QA PASS + ожидаемые count/mode/число повторов дают успешные медианы; время конечное, total>=production. История не доказывает неизменность PDF после QA и не ранжирует разные запуски/ПК. Ошибочные файлы видны отдельно, размер/количество записей ограничены; HISTORY_P07.md задаёт пределы.

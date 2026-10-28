@@ -187,7 +187,10 @@ def run_lab(output_root, config, *, cancel=None, events=None, progress=None):
                 def update(value):
                     if events:
                         event=dict(value); event["percent"]=min(99.9,100*(completed+value["percent"]/100)/total)
-                        event["stage"]=case["id"]+" · "+value["stage"]; events(event)
+                        event["stage"]=case["id"]+" · "+value["stage"]
+                        event.update(run_index=completed+1,runs_total=plan["runs"],repeat_index=repeat+1,
+                                     cpu_count=len(case["cpus"]),cpu_unit=case["cpu_unit"])
+                        events(event)
                 if cancel is not None and cancel.is_set(): raise InterruptedError("Серия остановлена")
                 trial = _run_trial(folder/"trials"/f"{case['id']}-{repeat+1:02d}", request, cancel, update)
                 trial["relative_folder"] = "trials/"+trial["folder"]
@@ -211,6 +214,8 @@ def run_lab(output_root, config, *, cancel=None, events=None, progress=None):
                 case["status"]="CANCELLED" if data["status"]=="CANCELLED" else "NOT_RUN"
                 case["summary"]=summarize_trials(case["trials"],config.repeats,case["count"])
         data["elapsed_seconds"]=time.perf_counter()-started
+        from .trial_results import write_trial_results
+        write_trial_results(folder,data)
         write_reports(folder,data)
     if events and data["status"]=="COMPLETE":
         events({"stage":"Серия завершена", "done":completed,"total":total,"percent":100,
