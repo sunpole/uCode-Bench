@@ -49,6 +49,11 @@ def apply_dark_theme(root):
         style.configure(name, background=c["background"], foreground=c["text"])
         style.map(name, background=[("active", c["background"])],
                   foreground=[("disabled", c["muted"])], indicatorbackground=[("selected", c["accent"])])
+    for name in ("Choice.TCheckbutton","Choice.TRadiobutton"):
+        style.layout(name,style.layout("TButton"))
+        style.configure(name,padding=(7,3),background=c["surface"],foreground=c["text"])
+        style.map(name,background=[("disabled",c["surface"]),("selected",c["accent"]),("active",c["raised"])],
+                  foreground=[("disabled",c["muted"]),("selected",c["accent_text"])])
     style.configure("TNotebook", background=c["background"], borderwidth=0, tabmargins=(0, 0, 0, 2))
     style.configure("TNotebook.Tab", background=c["surface"], padding=(12, 3))
     style.map("TNotebook.Tab", background=[("selected", c["raised"])],

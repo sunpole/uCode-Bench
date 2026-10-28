@@ -6,6 +6,7 @@ import tkinter as tk
 from tkinter import filedialog,ttk
 
 from .history import scan_history,read_run,artifact_path,pdf_for_case
+from .ui_choices import ChoiceMenu
 
 PAGE_SIZE=4
 STATUSES={"PASS":"QA PASS*","COMPLETE":"Завершён","SKIPPED":"Пропущен","UNVERIFIED":"Не подтверждён",
@@ -30,7 +31,8 @@ class HistoryView:
         row=ttk.Frame(page); row.pack(fill="x")
         for text,command in (("Мои тесты",self.own_folder),("Другая папка…",self.choose_folder),("Обновить",self.refresh)):
             app.edit(ttk.Button(row,text=text,command=command)).pack(side="left",padx=(0,6))
-        app.edit(ttk.Combobox(row,values=("Все","Успешные","С проблемами"),textvariable=self.filter,state="readonly",width=13),"readonly").pack(side="left",padx=6)
+        self.filter_picker=ChoiceMenu(app,row,self.filter,"Показать",[(value,value) for value in ("Все","Успешные","С проблемами")])
+        self.filter_picker.button.pack(side="left",padx=6)
         ttk.Label(row,text="Поиск:").pack(side="left")
         app.edit(ttk.Entry(row,textvariable=self.search,width=14)).pack(side="left",padx=5)
         self.table=ttk.Treeview(page,columns=("a","b","c","d","e","f"),show="headings",height=self.rows_per_page,style="History.Treeview",selectmode="browse")

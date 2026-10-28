@@ -3,6 +3,7 @@ from tkinter import ttk
 import tkinter as tk
 from pathlib import Path
 from .ui_theme import COLORS, apply_dark_theme
+from .ui_choices import ChoiceMenu
 
 POLICIES = {"Сохранить строки": "preserve", "Только уникальные": "unique"}
 EXECUTION_METHODS = {"Последовательно": "serial", "Процессы": "process", "Потоки (GIL)": "thread"}
@@ -13,7 +14,7 @@ QA_MODES={"Полная":"full","Без растра":"vector","Отложена
 def build_window(app, help_text):
     root = app.root
     app.style = apply_dark_theme(root)
-    root.title("uCode — QR / PDF · тёмная панель")
+    root.title("uCode — QR / PDF · кнопочные настройки")
     root.protocol("WM_DELETE_WINDOW", app.close)
     app.edit_controls = []
     body = ttk.Frame(root, padding=(14, 8))
@@ -27,7 +28,7 @@ def build_window(app, help_text):
     ttk.Label(header, text=f"{app.engine_info.name} {app.engine_info.version}",
               style="Muted.TLabel").pack(side="right")
     toolbar = ttk.Frame(body)
-    toolbar.grid(row=2, column=0, sticky="ew", pady=(5, 7))
+    toolbar.grid(row=2, column=0, sticky="ew", pady=(5, 5))
     app.menus = []
     base = app.menu(toolbar, "База TXT")
     base.add_command(label="Открыть TXT…", command=app.choose)
@@ -145,9 +146,8 @@ def _generation(app):
     ttk.Label(options, text="Экземпляров каждого:").pack(side="left")
     app.copies_entry = app.edit(ttk.Spinbox(options, from_=1, to=10000, width=6, textvariable=app.copies_var))
     app.copies_entry.pack(side="left", padx=(6, 18))
-    ttk.Label(options, text="Повторы TXT:").pack(side="left")
-    app.edit(ttk.Combobox(options, values=tuple(POLICIES), textvariable=app.duplicates_var,
-                         state="readonly", width=19), "readonly").pack(side="left", padx=6)
+    app.duplicate_picker=ChoiceMenu(app,options,app.duplicates_var,"Повторы TXT",[(label,label) for label in POLICIES],command=app.remember)
+    app.duplicate_picker.button.pack(side="left",padx=6)
     numbers = ttk.Frame(page)
     numbers.grid(row=3, column=0, sticky="w", pady=4)
     ttk.Label(numbers, text="Новая база:").pack(side="left")
@@ -170,29 +170,28 @@ def _print(app):
     row = ttk.Frame(page)
     row.pack(anchor="w", pady=(0, 5))
     for text, value in (("Сторона PDF, мм", "side"), ("Модуль, мм", "module")):
-        app.edit(ttk.Radiobutton(row, text=text, value=value, variable=app.geometry_basis,
+        app.edit(ttk.Radiobutton(row, text=text, value=value, variable=app.geometry_basis,style="Choice.TRadiobutton",
                                 command=app.change_geometry_basis)).pack(side="left", padx=(0, 8))
-    app.geometry_entry = app.edit(ttk.Entry(row, textvariable=app.geometry_value, width=10))
+    app.geometry_entry = app.edit(ttk.Spinbox(row, textvariable=app.geometry_value, width=10,from_=.25,to=122,increment=.05))
     app.geometry_entry.pack(side="left", padx=(0, 16))
     ttk.Label(row, text="Поле, модулей:").pack(side="left")
     app.edit(ttk.Spinbox(row, from_=4, to=20, width=5, textvariable=app.quiet_var)).pack(side="left", padx=7)
     ink = ttk.Frame(page)
-    ink.pack(anchor="w", pady=4)
+    ink.pack(anchor="w", pady=2)
     ttk.Label(ink, text="CMYK, %:").pack(side="left", padx=(0, 6))
     for name, var in zip("CMYK", app.ink_vars):
         ttk.Label(ink, text=name).pack(side="left")
-        app.edit(ttk.Entry(ink, textvariable=var, width=5)).pack(side="left", padx=(3, 10))
+        app.edit(ttk.Spinbox(ink,textvariable=var,width=5,from_=0,to=100,increment=1)).pack(side="left",padx=(3,10))
     app.edit(ttk.Button(ink, text="K100", command=app.use_k100)).pack(side="left")
-    ttk.Label(ink,text="QA:").pack(side="left",padx=(12,4))
-    qa=app.edit(ttk.Combobox(ink,values=tuple(QA_MODES),textvariable=app.qa_mode_var,state="readonly",width=12),"readonly")
-    qa.pack(side="left"); qa.bind("<<ComboboxSelected>>",lambda event:app.remember())
+    app.qa_picker=ChoiceMenu(app,ink,app.qa_mode_var,"Проверка",[("Полная","Полная"),("Без растровых образцов","Без растра"),("Проверить позже","Отложена")],command=app.remember)
+    app.qa_picker.button.pack(side="left",padx=(10,0))
     mode = ttk.Frame(page)
-    mode.pack(anchor="w", pady=5)
+    mode.pack(anchor="w", pady=3)
     for text, value in (("Один PDF", "multipage"), ("Отдельные PDF", "singles"), ("Оба варианта", "both")):
-        app.edit(ttk.Radiobutton(mode, text=text, value=value, variable=app.mode_var, command=app.remember)).pack(side="left", padx=(0, 14))
-    profile=app.edit(ttk.Combobox(mode,values=tuple(PDF_PROFILES),textvariable=app.pdf_profile_var,state="readonly",width=12),"readonly")
-    profile.pack(side="left"); profile.bind("<<ComboboxSelected>>",lambda event:app.apply_pdf_profile())
-    app.edit(ttk.Checkbutton(mode,text="Минимум расходов",variable=app.activity_var,onvalue="minimal",offvalue="normal",command=app.remember)).pack(side="left",padx=8)
+        app.edit(ttk.Radiobutton(mode,text=text,value=value,variable=app.mode_var,command=app.remember,style="Choice.TRadiobutton")).pack(side="left",padx=(0,10))
+    app.pdf_picker=ChoiceMenu(app,mode,app.pdf_profile_var,"PDF",[(label,label) for label in PDF_PROFILES],command=app.apply_pdf_profile)
+    app.pdf_picker.button.pack(side="left")
+    app.edit(ttk.Checkbutton(mode,text="Минимум расходов",variable=app.activity_var,onvalue="minimal",offvalue="normal",command=app.remember,style="Choice.TCheckbutton")).pack(side="left",padx=8)
     ttk.Label(page, textvariable=app.print_preview, style="Accent.TLabel", wraplength=850).pack(anchor="w", pady=5)
     ttk.Label(page, text="Изменения размера и цвета применяются кнопкой ниже. Поле QR — минимум 4 модуля.",
               style="Muted.TLabel", wraplength=850).pack(anchor="w")
@@ -207,12 +206,11 @@ def _resources(app):
     ttk.Label(page, textvariable=app.hardware_summary, style="Muted.TLabel", wraplength=850).pack(anchor="w")
     controls = ttk.Frame(page)
     controls.pack(anchor="w", pady=3)
-    app.edit(ttk.Combobox(controls, values=tuple(EXECUTION_METHODS), textvariable=app.backend_var,
-                         state="readonly", width=19), "readonly").pack(side="left")
-    ttk.Label(controls, text="Процессов:").pack(side="left", padx=(10, 5))
-    app.workers_entry = app.edit(ttk.Combobox(controls, values=app.hardware["cpu"]["presets"],
-                                             textvariable=app.workers_var, width=7))
-    app.workers_entry.pack(side="left")
+    app.execution_picker=ChoiceMenu(app,controls,app.backend_var,"Выполнение",[("Один процесс","Последовательно"),("Несколько процессов","Процессы"),("Потоки","Потоки (GIL)")],command=app.remember)
+    app.execution_picker.button.pack(side="left")
+    app.worker_picker=ChoiceMenu(app,controls,app.workers_var,"Параллельно",[(str(n),str(n)) for n in range(1,app.hardware["cpu"]["available_logical"]+1)],command=app.remember)
+    app.workers_entry=app.worker_picker.button
+    app.workers_entry.pack(side="left",padx=7)
     ttk.Label(controls, text="Кодов в партии:").pack(side="left", padx=(10, 5))
     app.edit(ttk.Spinbox(controls, from_=1, to=1000, width=6, textvariable=app.batch_size_var)).pack(side="left")
     ttk.Label(page, textvariable=app.execution_preview, style="Accent.TLabel", wraplength=850).pack(anchor="w", pady=1)

@@ -8,6 +8,7 @@ from tkinter import ttk
 from .resource_lab import LabConfig, preview, run_lab
 from .ui_layout import EXECUTION_METHODS,PDF_PROFILES
 from .affinity import select_cpus
+from .ui_choices import ChoiceMenu,NumberSet
 
 UNITS = {"Логические CPU": ("logical",), "Физические: 1 поток/ядро": ("physical",), "Оба варианта": ("logical", "physical")}
 BACKENDS = {label: value for label, value in EXECUTION_METHODS.items()}
@@ -51,6 +52,7 @@ def refresh_cpu_buttons(app):
         for choice in choices:
             var=tk.BooleanVar(master=app.root)
             button=app.edit(ttk.Checkbutton(app.lab_cpu_row,variable=var,
+                style="Choice.TCheckbutton",
                 command=lambda key=choice:toggle_cpu(app,key)))
             button.pack(side="left",padx=(0,5))
             app.lab_cpu_buttons[choice]=button; app.lab_cpu_vars[choice]=var
@@ -64,6 +66,13 @@ def refresh_cpu_buttons(app):
         button.configure(text=text)
         app.lab_cpu_vars[choice].set(choice in selected)
         _idle_state(app,button,"normal" if allowed else "disabled")
+    if hasattr(app,"lab_cpu_picker"):
+        numbers=range(1,cap+1) if cap else ()
+        special=([("Все −2","all-2")] if cap and cap>2 else [])+[("Все","all")]
+        app.lab_cpu_picker.set_options([(str(n),str(n)) for n in numbers if cap and n<=cap]+special)
+        if cap is None: app.lab_cpu_picker.set_options(())
+    if hasattr(app,"lab_workers_picker"):
+        app.lab_workers_picker.set_options([("Автоматически","0")]+[(str(n),str(n)) for n in range(1,cpu["available_logical"]+1)])
 
 
 def toggle_cpu(app,choice):
@@ -75,7 +84,7 @@ def toggle_cpu(app,choice):
 
 def read_form(app):
     try:
-        counts = tuple(int(value) for value in _parts(app.lab_counts.get()))
+        counts = tuple(int(value.replace(" ","").replace("\u00a0","")) for value in _parts(app.lab_counts.get()))
         cpu = tuple(value.lower().replace(" ", "").replace("−", "-").replace("все", "all") for value in _parts(app.lab_cpus.get()))
         backends = tuple(BACKENDS.get(value,value) for value in _parts(app.lab_backends.get()))
         ram = tuple(value.lower().replace("авто","auto").replace("макс","max").replace("mib","MiB") for value in _parts(app.lab_ram.get()))
@@ -116,45 +125,55 @@ def build_lab(app):
     app.lab_preview=tk.StringVar(master=app.root)
     app.lab_hardware=tk.StringVar(master=app.root)
     page=app.pages["lab"]
-    def entry(row,label,variable,width):
-        ttk.Label(row,text=label).pack(side="left")
-        app.edit(ttk.Entry(row,textvariable=variable,width=width)).pack(side="left",padx=(5,10))
+    app.lab_advanced=ttk.Frame(page)
+    app.lab_choice_row=ttk.Frame(app.lab_advanced); app.lab_choice_row.pack(anchor="w")
     row=ttk.Frame(page); row.pack(anchor="w")
-    entry(row,"Количество кодов:",app.lab_counts,10)
+    ttk.Label(row,text="Количество кодов:").pack(side="left")
+    app.lab_count_control=NumberSet(app,row,app.lab_counts,"Объёмы",menu_parent=app.lab_choice_row)
+    app.lab_count_control.spin.pack(side="left",padx=(5,10))
+    def count_changed(*_):
+        if not app.lab_count_control.lock and (not hasattr(app,"test_controls") or not app.test_controls.expanded):
+            app.lab_counts.set(app.lab_count_control.input.get())
+    app.lab_count_control.input.trace_add("write",count_changed)
     ttk.Label(row,text="Повторов каждого режима:").pack(side="left")
     app.edit(ttk.Spinbox(row,textvariable=app.lab_repeats,width=4,from_=1,to=10)).pack(side="left",padx=7)
     app.lab_options_button=app.edit(ttk.Button(row,text="Все параметры…",command=lambda:app.test_controls.toggle()))
     app.lab_options_button.pack(side="left",padx=7)
     row=ttk.Frame(page); row.pack(anchor="w")
-    app.edit(ttk.Combobox(row,textvariable=app.lab_units,values=tuple(UNITS),state="readonly",width=25),"readonly").pack(side="left",padx=(0,8))
+    app.lab_units_picker=ChoiceMenu(app,row,app.lab_units,"Считать",[("Ядра","Физические: 1 поток/ядро"),("Потоки","Логические CPU"),("Ядра и потоки","Оба варианта")])
+    app.lab_units_picker.button.pack(side="left",padx=(0,8))
     ttk.Label(row,textvariable=app.lab_hardware,style="Muted.TLabel",wraplength=400).pack(side="left",padx=(0,8))
+    app.lab_cpu_picker=ChoiceMenu(app,row,app.lab_cpus,"Выбор",(),multiple=True)
+    app.lab_cpu_picker.button.pack(side="left",padx=(0,6))
     app.lab_cpu_row=row
     app.lab_cpu_buttons={}; app.lab_cpu_vars={}
-    app.lab_advanced=ttk.Frame(page)
+    row=app.lab_choice_row
+    app.lab_pdf_picker=ChoiceMenu(app,row,app.lab_pdf_profiles,"PDF",[("Обычный","standard"),("Компактный","compact")],multiple=True)
+    app.lab_activity_picker=ChoiceMenu(app,row,app.lab_activities,"Контроль",[("Обычный","normal"),("Минимум расходов","minimal")],multiple=True)
+    app.lab_backend_picker=ChoiceMenu(app,row,app.lab_backends,"Выполнение",[("Последовательно","serial"),("Процессы","process"),("Потоки","thread")],multiple=True)
+    for picker in (app.lab_pdf_picker,app.lab_activity_picker,app.lab_backend_picker): picker.button.pack(side="left",padx=(0,7))
+    app.lab_count_control.picker.button.pack(side="left",padx=(0,6))
+    app.lab_count_control.add_button.configure(text="Добавить объём")
+    app.lab_count_control.add_button.pack(side="left")
     row=ttk.Frame(app.lab_advanced); row.pack(anchor="w")
-    entry(row,"PDF:",app.lab_pdf_profiles,15)
-    entry(row,"Расходы:",app.lab_activities,13)
-    entry(row,"Методы:",app.lab_backends,19)
-    entry(row,"Свой CPU-набор:",app.lab_cpus,14)
+    total_gib=(app.hardware["ram"].get("total_bytes") or 128*1024**3)/1024**3
+    app.lab_ram_control=NumberSet(app,row,app.lab_ram,"Память",minimum=.25,maximum=max(.25,total_gib),default="2",suffix="MiB",factor=1024,
+        options=[("Автоматически","auto"),("Половина безопасного","50%"),("80% безопасного","80%"),("Максимум с резервом","max")])
+    app.lab_ram_control.picker.button.pack(side="left",padx=(0,8))
+    ttk.Label(row,text="Свой лимит, ГиБ:").pack(side="left")
+    app.lab_ram_control.spin.pack(side="left",padx=5); app.lab_ram_control.add_button.pack(side="left")
     row=ttk.Frame(app.lab_advanced); row.pack(anchor="w")
-    entry(row,"RAM:",app.lab_ram,12)
-    for label,variable,width in (("Прогрев (раз):",app.lab_warmups,3),
-                                 ("Партия:",app.lab_batch,5),("Работники (0=CPU):",app.lab_workers,5)):
-        if variable is app.lab_warmups:
-            ttk.Label(row,text=label).pack(side="left")
-            app.edit(ttk.Spinbox(row,textvariable=variable,width=width,from_=0 if variable is app.lab_warmups else 1,
-                                to=3 if variable is app.lab_warmups else 10)).pack(side="left",padx=(5,10))
-        else: entry(row,label,variable,width)
+    app.lab_warmup_picker=ChoiceMenu(app,row,app.lab_warmups,"Прогрев",[("Выключен","0"),("1 пробный запуск","1"),("2 пробных запуска","2"),("3 пробных запуска","3")])
+    app.lab_warmup_picker.button.pack(side="left",padx=(0,8))
+    app.lab_workers_picker=ChoiceMenu(app,row,app.lab_workers,"Параллельно",[("Автоматически","0")])
+    app.lab_workers_picker.button.pack(side="left",padx=(0,8))
+    ttk.Label(row,text="Кодов в задаче:").pack(side="left")
+    app.edit(ttk.Spinbox(row,textvariable=app.lab_batch,from_=1,to=1000,width=6)).pack(side="left",padx=5)
     app.lab_warmup_help=ttk.Label(app.lab_advanced,text="Прогрев: пробные PDF перед замерами; в итог не входят. 0 = выключен. Галочки CPU = варианты серии.",
                                 style="Muted.TLabel",wraplength=850)
     app.lab_warmup_help.pack(anchor="w")
     ttk.Label(app.lab_advanced,textvariable=app.lab_preview,style="Accent.TLabel",wraplength=850).pack(anchor="w")
-    row=ttk.Frame(app.lab_advanced); row.pack(anchor="w",pady=1)
     app.lab_start_buttons=[]
-    for text,command in (("Только первый вариант",lambda:start_lab(app,True)),
-                         ("Сравнить PDF (первые)",lambda:start_lab(app,False,True))):
-        button=app.edit(ttk.Button(row,text=text,command=command)); button.pack(side="left",padx=(0,7))
-        app.lab_start_buttons.append(button)
     from .test_controls import TestControls
     app.test_controls=TestControls(app,page)
     def refresh(*_):
@@ -171,7 +190,8 @@ def build_lab(app):
         if hasattr(app,"generate"): app.update_buttons()
         if hasattr(app,"notebook"): app.fit_window()
     app.lab_refresh=refresh
-    for variable in (app.lab_counts,app.lab_cpus,app.lab_units,app.lab_backends,app.lab_ram,app.lab_repeats,app.lab_warmups,app.lab_batch,app.lab_workers,app.lab_pdf_profiles,app.lab_activities):
+    app.lab_count_control.after_sync=refresh
+    for variable in (app.lab_cpus,app.lab_units,app.lab_backends,app.lab_ram,app.lab_repeats,app.lab_warmups,app.lab_batch,app.lab_workers,app.lab_pdf_profiles,app.lab_activities):
         variable.trace_add("write",refresh)
     refresh()
 

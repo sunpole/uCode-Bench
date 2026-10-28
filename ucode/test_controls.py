@@ -1,5 +1,5 @@
 """Custom count x chosen CPU modes x repeats; no hidden matrix axes."""
-from dataclasses import asdict
+from dataclasses import asdict,replace
 from pathlib import Path
 import tkinter as tk
 from tkinter import ttk
@@ -11,7 +11,7 @@ from .trial_results import trial_rows,cpu_name,seconds_text,recommendation
 
 def custom_config(app):
     from .lab_ui import UNITS,_parts
-    try: count=int(app.lab_counts.get().replace(" ","").replace("\u00a0","")); repeats=int(app.lab_repeats.get())
+    try: count=int(app.lab_count_control.input.get().replace(" ","").replace("\u00a0","")); repeats=int(app.lab_repeats.get())
     except ValueError as exc: raise ValueError("Введите одно количество кодов и число повторов") from exc
     if not 1<=count<=10000: raise ValueError("Количество кодов: от 1 до 10 000")
     if not 1<=repeats<=10: raise ValueError("Повторов каждого режима: от 1 до 10")
@@ -80,7 +80,7 @@ class TestControls:
             config=custom_config(self.app)
             from .lab_ui import read_form
             from .lab_worker import atomic_json
-            try: saved=read_form(self.app)
+            try: saved=replace(read_form(self.app),counts=config.counts)
             except ValueError: saved=config
             path=self.app.preferences_path.with_name("lab-settings.json")
             path.parent.mkdir(parents=True,exist_ok=True)
