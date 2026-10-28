@@ -26,6 +26,7 @@ def worker_presets(available):
 def cpu_model(cpus, *, allowed_ids=None, fallback_count=None, source="model", reason=""):
     if not cpus:
         return {"physical_cores": None, "logical_processors": fallback_count,
+                "available_cpus": None,
                 "available_physical": None, "available_logical": fallback_count or 1,
                 "smt": None, "groups": None, "source": source,
                 "reason": reason or "Топология неизвестна; физические ядра не вычисляются из потоков"}
@@ -34,6 +35,7 @@ def cpu_model(cpus, *, allowed_ids=None, fallback_count=None, source="model", re
         raise ValueError("ОС не сообщает доступных CPU для процесса")
     cores = {(cpu["group"], cpu["core"]) for cpu in cpus}
     return {"physical_cores": len(cores), "logical_processors": len(cpus),
+            "available_cpus": sorted(available, key=lambda cpu: (cpu["group"], cpu["logical"])),
             "available_physical": len({(cpu["group"], cpu["core"]) for cpu in available}),
             "available_logical": len(available), "smt": len(cpus) > len(cores),
             "groups": len({cpu["group"] for cpu in cpus}), "source": source, "reason": reason}

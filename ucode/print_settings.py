@@ -130,9 +130,9 @@ def human_report(report: dict) -> str:
                      f"RAM всего / доступно: {gib(ram['total_bytes'])} / {gib(ram['available_bytes'])}",
                      f"Диск: {disk.get('bus') or 'шина неизвестна'}; {disk.get('media') or 'носитель неизвестен'}; свободно {gib(disk['free_bytes'])}",
                      "Скорость диска этим запуском не измерялась.",
-                     f"Режим кодирования: {execution.get('backend')}; процессы запрошены / использованы: {execution.get('requested_workers')} / {execution.get('effective_workers')}",
+                     f"Режим кодирования: {execution.get('backend')}; работники запрошены / использованы: {execution.get('requested_workers')} / {execution.get('effective_workers')}",
                      f"Партия: {execution.get('batch_size')}; завершено значений: {execution.get('completed_values', 0)}",
-                     "Запись PDF и QA последовательны. Affinity: планировщик ОС, закрепление не выполняется.",
+                     "Запись PDF и QA последовательны. CPU scope/affinity — в manifest или отчёте лаборатории.",
                      f"Предварительная оценка RAM (не измеренный пик/не квота): {gib(execution.get('required_ram_estimate_bytes'))}; резерв {gib(execution.get('os_reserve_bytes'))}", ""])
     generation = report.get("generation")
     if generation:

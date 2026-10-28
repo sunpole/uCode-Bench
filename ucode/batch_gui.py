@@ -218,6 +218,9 @@ class BatchWindow:
         self.notebook.select(self.pages["generation"])
         self.custom_count_entry.focus_set()
 
+    def show_lab(self):
+        self.notebook.select(self.pages["lab"])
+
     def show_resources(self):
         self.notebook.select(self.pages["resources"])
         self.refresh_hardware()
@@ -380,6 +383,15 @@ class BatchWindow:
 
     def complete(self, folder):
         self.last_output = folder
+        if (folder / "lab.json").exists():
+            result=json.loads((folder/"lab.json").read_text(encoding="utf-8"))
+            self.last_report=folder/"comparison.html"
+            self.last_pdf=next(folder.glob("trials/*/jobs/*/all-*-pages.pdf"),None)
+            self.result_var.set("ЛАБОРАТОРИЯ: " + result["status"])
+            self.result_details.set(f"Вариантов: {len(result['cases'])} · рекомендации только по полным успешным повторам; откройте отчёт")
+            if result["status"]=="COMPLETE": self.progress["value"]=100
+            self.elapsed_var.set("Прошло: "+clock_text(result["elapsed_seconds"]))
+            return
         manifest = folder / "manifest.json"
         if not manifest.exists():
             self.last_report = folder / "ОТЧЁТ.txt"

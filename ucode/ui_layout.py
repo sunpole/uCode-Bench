@@ -1,10 +1,11 @@
 """Compact Tk layout; business operations remain in BatchWindow."""
 from tkinter import ttk
 import tkinter as tk
+from pathlib import Path
 from .ui_theme import COLORS, apply_dark_theme
 
 POLICIES = {"Сохранить строки": "preserve", "Только уникальные": "unique"}
-EXECUTION_METHODS = {"Последовательно": "serial", "Процессы": "process"}
+EXECUTION_METHODS = {"Последовательно": "serial", "Процессы": "process", "Потоки (GIL)": "thread"}
 
 
 def build_window(app, help_text):
@@ -54,6 +55,8 @@ def build_window(app, help_text):
                          ("Большой — 10 000", 10000), ("Полный — 200 → 1 000 → 10 000", "all")):
         tests.add_command(label=label, command=lambda n=count: app.start_test(n))
     tests.add_separator()
+    tests.add_command(label="Лаборатория CPU / RAM", command=app.show_lab)
+    tests.add_command(label="Результаты лаборатории", command=lambda: app.open_path(Path(app.destination_var.get()) / "laboratory"))
     tests.add_command(label="Выбрать движки объединения", command=app.performance_dialog)
     tests.add_command(label="Предыдущие результаты", command=lambda: app.open_path(app.output_root / "benchmarks"))
     ttk.Button(toolbar, text="Справка", command=app.show_help).pack(side="right")
@@ -62,13 +65,15 @@ def build_window(app, help_text):
     app.notebook.grid(row=3, column=0, sticky="nsew", pady=(0, 7))
     app.pages = {}
     for key, title in (("generation", "Генерация"), ("print", "PDF и цвет"),
-                       ("resources", "CPU / RAM"), ("tests", "Тесты"), ("help", "Справка")):
+                       ("resources", "CPU / RAM"), ("lab", "Лаборатория"), ("tests", "Тесты"), ("help", "Справка")):
         page = ttk.Frame(app.notebook, padding=(8, 5))
         app.notebook.add(page, text=title)
         app.pages[key] = page
     _generation(app)
     _print(app)
     _resources(app)
+    from .lab_ui import build_lab
+    build_lab(app)
     page = app.pages["tests"]
     ttk.Label(page, text="Научный профиль: 3 повтора · QR V1-M · K100\n"
               "Настройки и экземпляры обычной генерации на него не влияют.", style="Muted.TLabel").pack(anchor="w")
@@ -195,7 +200,7 @@ def _resources(app):
     app.edit(ttk.Spinbox(controls, from_=1, to=1000, width=6, textvariable=app.batch_size_var)).pack(side="left")
     ttk.Label(page, textvariable=app.execution_preview, style="Accent.TLabel", wraplength=850).pack(anchor="w", pady=1)
     ttk.Label(page, text="Процессы кодируют QR; запись PDF и проверка пока последовательны.\n"
-              "CPU выбирает Windows/Linux. Потоки и ручная привязка ещё не подключены.",
+              "Потоки ограничены GIL. Принудительная CPU affinity доступна в лаборатории.",
               style="Muted.TLabel", wraplength=850).pack(anchor="w", pady=3)
     buttons = ttk.Frame(page); buttons.pack(anchor="w", pady=2)
     app.edit(ttk.Button(buttons, text="Обновить ресурсы", command=app.refresh_hardware)).pack(side="left")

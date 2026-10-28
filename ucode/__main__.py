@@ -8,13 +8,20 @@ from .config import Experiment
 
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="uCode", description="Локальный QR/PDF бенчмарк")
-    parser.add_argument("command", choices=("doctor", "create", "benchmark", "suite", "gui", "batch", "template", "generate"), nargs="?", default="gui")
+    parser.add_argument("command", choices=("doctor", "create", "benchmark", "suite", "gui", "batch", "template", "generate", "lab"), nargs="?", default="gui")
     parser.add_argument("--count", type=int, default=200)
     parser.add_argument("--copies", type=int, default=1, help="Экземпляров каждого значения в обычной генерации")
     parser.add_argument("--duplicate-policy", choices=("preserve", "unique"), default="preserve")
-    parser.add_argument("--backend", choices=("serial", "process"), default="serial")
-    parser.add_argument("--workers", type=int, default=1)
-    parser.add_argument("--batch-size", type=int, default=32)
+    parser.add_argument("--backend", choices=("serial", "process", "thread"), default="serial")
+    parser.add_argument("--workers", type=int)
+    parser.add_argument("--batch-size", type=int)
+    parser.add_argument("--lab-counts", default="200")
+    parser.add_argument("--cpu-counts", default="1,2,4,6,12,all-2,all")
+    parser.add_argument("--cpu-unit", choices=("logical","physical","both"), default="logical")
+    parser.add_argument("--backends", default="serial,process,thread")
+    parser.add_argument("--ram-modes", default="auto")
+    parser.add_argument("--repeats", type=int, default=3)
+    parser.add_argument("--warmups", type=int, default=0)
     parser.add_argument("--output", type=Path, default=Path(__file__).resolve().parent.parent / "output" / "runs")
     parser.add_argument("--qualifying-report", type=Path, help="Отчёт PASS этапа 200 для явного запуска 1000")
     parser.add_argument("--input", type=Path, help="Входной UTF-8 TXT: один 12-значный код на строку")
@@ -56,11 +63,24 @@ def main(argv=None):
             root = args.output if args.output != Path(__file__).resolve().parent.parent / "output" / "runs" else Path(__file__).resolve().parent.parent / "output" / "jobs"
             directory = run_batch(args.input, root, mode=args.mode, copies_per_value=args.copies,
                                   duplicate_policy=args.duplicate_policy,
-                                  execution=ExecutionOptions(args.backend, args.workers, args.batch_size),
+                                  execution=ExecutionOptions(args.backend, 1 if args.workers is None else args.workers,
+                                                             32 if args.batch_size is None else args.batch_size),
                                   progress=lambda message: print(message, flush=True))
             result = json.loads((directory / "manifest.json").read_text(encoding="utf-8"))
             print(directory / "manifest.json")
             return 0 if result["status"] == "COMPLETE" else 2 if result["status"] == "LIMITED" else 1
+        if args.command == "lab":
+            from .resource_lab import LabConfig, run_lab
+            config=LabConfig(counts=tuple(int(n) for n in args.lab_counts.split(",")),
+                cpu_counts=tuple(args.cpu_counts.split(",")),cpu_units=("logical","physical") if args.cpu_unit=="both" else (args.cpu_unit,),
+                backends=tuple(args.backends.split(",")),ram_modes=tuple(args.ram_modes.split(",")),
+                repeats=args.repeats,warmups=args.warmups,workers=0 if args.workers is None else args.workers,
+                batch_size=1 if args.batch_size is None else args.batch_size,output_mode=args.mode)
+            default=Path(__file__).resolve().parent.parent/"output"/"runs"
+            folder=run_lab(args.output if args.output!=default else default.parent/"laboratory",config,
+                           progress=lambda message:print(message,flush=True))
+            print(folder/"comparison.html")
+            return 0 if json.loads((folder/"lab.json").read_text(encoding="utf-8"))["status"]=="COMPLETE" else 1
         from .benchmark import create_inputs, load_qualifying_methods, run_experiment
         config = Experiment(count=args.count)
         if args.command == "create":

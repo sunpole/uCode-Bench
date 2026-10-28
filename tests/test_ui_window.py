@@ -180,6 +180,27 @@ class OperatorWindowTests(unittest.TestCase):
         self.assertTrue(self.app.generate.instate(["disabled"]))
         self.assertIn("CPU", self.app.plan_var.get())
 
+    def test_resource_lab_first_case_runs_from_gui_and_opens_report(self):
+        from ucode.lab_ui import start_lab
+        destination=self.folder/"lab-drive"
+        self.app.destination_var.set(str(destination))
+        self.app.show_lab()
+        self.app.lab_counts.set("2")
+        self.app.lab_cpus.set("1,all")
+        self.app.lab_backends.set("serial,process")
+        self.app.lab_ram.set("max")
+        self.app.lab_repeats.set("1")
+        start_lab(self.app,True)
+        self.app.worker.join(timeout=20)
+        self.assertFalse(self.app.worker.is_alive())
+        self.app.poll()
+        data=json.loads((self.app.last_output/"lab.json").read_text(encoding="utf-8"))
+        self.assertEqual(data["status"],"COMPLETE",data)
+        self.assertEqual(len(data["cases"]),1)
+        self.assertEqual(self.app.last_output.parent,destination/"laboratory")
+        self.assertEqual(self.app.last_report.name,"comparison.html")
+        self.assertTrue(self.app.report_button.instate(["!disabled"]))
+
 
 class CancellationTests(unittest.TestCase):
     def test_cancel_during_encoding_keeps_input_and_never_shows_100(self):
