@@ -1,5 +1,11 @@
 # Внутренние контракты
 
+## Resource-lab history (28.10.2026)
+
+`history.scan_history(root)` — ограниченный read-only индекс одного lab-root или папки lab.json; `read_run` валидирует kind/schema/структуру и восстанавливает summary из непрогревочных trials. Только COMPLETE + сохранённая полная QA PASS + ожидаемые count/mode/число повторов дают успешные медианы; время конечное, total>=production. История не доказывает неизменность PDF после QA и не ранжирует разные запуски/ПК. Ошибочные файлы видны отдельно, размер/количество записей ограничены; HISTORY_P07.md задаёт пределы.
+
+`artifact_path` запрещает absolute/drive/.. и resolve-выход из исходного run, `pdf_for_case` читает относительные ссылки непрогревочных trial, не выполняя QA/генерацию. `HistoryView` использует существующий worker и события history/history_error, не заменяет last_* производственного результата. Поиск/фильтр/страницы работают в Tk, видимых строк3/4 по DPI, без scrollbar. Старые scientific/benchmark не подменяются resource-lab; общий сравнительный импорт остаётся TODO.
+
 ## Test interface (28.10.2026)
 
 `lab_ui.refresh_cpu_buttons` получает текущие hardware/UNITS и тот же `select_cpus`, что runner. Кнопки — варианты серии, не сумма; all/all-2 раскрываются по unit. Недоступные кнопки остаются disabled после busy/idle, предпочтения не урезаются скрытно. Новый GUI default physical/1, если топология известна, старые saved prefs сохранены. `show_lab` обновляет hardware из ОС; fallback не выдумывает физические ядра/CPU IDs. Preview считает repeats+warmups, статистика по-прежнему исключает warmup.

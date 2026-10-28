@@ -55,4 +55,7 @@ def apply_dark_theme(root):
               foreground=[("selected", c["accent"])])
     style.configure("Horizontal.TProgressbar", background=c["accent"], troughcolor=c["surface"],
                     borderwidth=0, thickness=8)
+    style.configure("History.Treeview",background=c["surface"],fieldbackground=c["surface"],foreground=c["text"],rowheight=20)
+    style.configure("History.Treeview.Heading",background=c["raised"],foreground=c["text"])
+    style.map("History.Treeview",background=[("selected",c["raised"])],foreground=[("selected",c["text"])])
     return style
