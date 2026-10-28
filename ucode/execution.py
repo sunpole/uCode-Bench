@@ -107,7 +107,11 @@ def encode_values(values, *, engine_key="reportlab", options=None, plan=None, ca
             if sent < chunks:
                 start = sent * options.batch_size
                 batch = values[start:start+options.batch_size]
-                connection.send((sent, batch)); active[connection] = (sent, batch)
+                try:
+                    connection.send((sent, batch))
+                except OSError as exc:
+                    raise RuntimeError("Рабочий процесс завершился без результата; задача не доставлена") from exc
+                active[connection] = (sent, batch)
                 sent += 1
                 info["max_in_flight_values"] = max(info["max_in_flight_values"], sum(len(b) for _, b in active.values()))
         for _, connection in pool: assign(connection)
@@ -122,7 +126,7 @@ def encode_values(values, *, engine_key="reportlab", options=None, plan=None, ca
                     raise RuntimeError("Рабочий процесс завершился без результата; канал закрыт") from exc
                 if ready:
                     try: message = connection.recv()
-                    except EOFError as exc: raise RuntimeError("Рабочий процесс завершился без результата") from exc
+                    except (EOFError, OSError) as exc: raise RuntimeError("Рабочий процесс завершился без результата") from exc
                     if message[0] != "ok": raise RuntimeError("Ошибка рабочего процесса: " + message[1])
                     _, index, frames, pid = message
                     expected_index, batch = active.pop(connection)
