@@ -116,7 +116,7 @@ def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
               settings=None,
               progress: Callable[[str], None] | None = None, cancel=None, events=None,
               generator="qr", engine="reportlab", copies_per_value=1, duplicate_policy="preserve", execution=None,
-              qa_mode="full",activity="normal",force_disk=False,temporary_data=False) -> Path:
+              qa_mode="full",activity="normal",force_disk=False,temporary_data=False,execution_observer=None) -> Path:
     """Create actual PDF files and QA evidence, without overwriting old runs.
 
     Encoding and PDF writing are measured separately from quality checks.
@@ -144,7 +144,7 @@ def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
         from .stream_batch import run_stream_batch
         return run_stream_batch(input_txt,output_root,count_plan=plan,settings=config,mode=mode,engine=engine,
                                 execution=execution or ExecutionOptions(),qa_mode=qa_mode,activity=activity,
-                                progress=progress,cancel=cancel,events=events,temporary_data=temporary_data)
+                                progress=progress,cancel=cancel,events=events,temporary_data=temporary_data,execution_observer=execution_observer)
     resource_info = check_resources(output_root, plan.total_codes)
     numbers = list(plan.iter_values())
     encoding_numbers = list(dict.fromkeys(plan.selected_values))
@@ -161,7 +161,10 @@ def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
     copies = 2 if mode == "both" else 1
     samples = len({0, len(numbers) // 2, len(numbers) - 1}) if raster else 0
     qa_units=0 if qa_mode=="deferred" else (len(numbers)+samples)*copies
-    tracker = ProgressTracker(len(encoding_numbers) + len(numbers)*copies + qa_units + 1, events,
+    def publish(event):
+        if execution_observer: execution_observer(execution_info)
+        if events: events({**event,"execution":{"backend":execution.backend,"confirmed_processes":len(execution_info.get("worker_pids",[])) if execution.backend=="process" else 1,"selected_cpu_count":len(execution.cpus) or execution_info["effective_workers"]}})
+    tracker = ProgressTracker(len(encoding_numbers) + len(numbers)*copies + qa_units + 1, publish,
                               min_interval=.5 if activity=="minimal" else .05,emit_every=64 if activity=="minimal" else 1)
     base = 0
     report = {

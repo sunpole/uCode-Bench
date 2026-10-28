@@ -1,0 +1,103 @@
+{
+  "kind": "generation-core-verification",
+  "date": "2026-10-28",
+  "scope": "Small PDFs only. Sustained 14-core utilization, 50000-page speed and diagnostic cost at that size remain USER-CHECK.",
+  "production": [
+    {
+      "cpus": 1,
+      "qa": "UNVERIFIED",
+      "separate_audit": "COMPLETE",
+      "seconds": {
+        "code_encoding": 0.512899399996968,
+        "qr_encoding": 0.512899399996968,
+        "write_multipage": 0.03404669999872567,
+        "production_until_pdf_closed": 0.5761589999965508,
+        "quality_checks": 0.0,
+        "total_including_qa": 0.576304700000037
+      },
+      "confirmed_distinct_cpu_masks": 1,
+      "detailed_cpu_sampler": "NOT_RUN"
+    },
+    {
+      "cpus": 2,
+      "qa": "UNVERIFIED",
+      "separate_audit": "COMPLETE",
+      "seconds": {
+        "code_encoding": 0.47480799999902956,
+        "qr_encoding": 0.47480799999902956,
+        "write_multipage": 0.04458389999490464,
+        "production_until_pdf_closed": 0.5399588000000222,
+        "quality_checks": 0.0,
+        "total_including_qa": 0.540116999996826
+      },
+      "confirmed_distinct_cpu_masks": 2,
+      "detailed_cpu_sampler": "NOT_RUN"
+    }
+  ],
+  "lab": {
+    "count": 3,
+    "cases": 4,
+    "repeats": 3,
+    "trials": 12,
+    "status": "UNVERIFIED",
+    "qa_seconds": 0,
+    "cpu_on_trials": 6,
+    "cpu_off_trials": 6,
+    "frozen_code": true,
+    "overhead_pairs": [
+      {
+        "off_case": "C0001",
+        "on_case": "C0002",
+        "count": 3,
+        "off_seconds": 1.2194483999992372,
+        "on_seconds": 1.0733843999987585,
+        "difference_pct": -11.977874586622118
+      },
+      {
+        "off_case": "C0003",
+        "on_case": "C0004",
+        "count": 3,
+        "off_seconds": 1.0224204000041937,
+        "on_seconds": 1.0730432999989716,
+        "difference_pct": 4.951280314298345
+      }
+    ],
+    "cost_scope": "Three-page samples show timing noise, no large-workload overhead conclusion"
+  },
+  "search": {
+    "count": 2,
+    "cases": 23,
+    "full_qa_pass": 23,
+    "all_11_mergers_via_frozen_runtime": "PASS",
+    "source_digest": "a4b04b3145d8f689f28b9c8633e929f4e358c6cb2937cc02301d05944a5b3334"
+  },
+  "tests": {
+    "full_regression": 225,
+    "full_pass": 225,
+    "seconds": 78.9,
+    "affected_after_controls_and_warnings": 19,
+    "ui_reports_after_text_links": 7,
+    "dpi_percent": [
+      100,
+      125,
+      150
+    ]
+  },
+  "user_report_analysis": {
+    "sha256": "bb8631a51c1f10eda0693a484c51df1ba224e63ea095b9165ed03aa972fa5bc3",
+    "rows": 1044,
+    "complete_correct_cases": 10,
+    "valid_cpu_counts": [
+      1
+    ],
+    "integrity_error_mentions": 978
+  },
+  "not_claimed": [
+    "3000-5000 codes/second",
+    "sustained use of 14 cores",
+    "100% CPU saturation",
+    "full RAM allocation",
+    "manual GUI acceptance",
+    "new remote Linux success"
+  ]
+}

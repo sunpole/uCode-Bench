@@ -45,7 +45,7 @@ def build_window(app, help_text):
                           state="normal" if generator.available else "disabled",
                           command=app.show_generation)
     settings = app.menu(toolbar, "Настройки")
-    settings.add_command(label="Генерация и экземпляры", command=app.show_generation)
+    settings.add_command(label="Экземпляры и повторы TXT", command=lambda:app.notebook.select(app.pages["print"]))
     settings.add_command(label="Размер PDF и белое поле", command=lambda: app.geometry_dialog(False))
     settings.add_command(label="Размер модуля", command=lambda: app.geometry_dialog(True))
     settings.add_command(label="Цвет CMYK и формат PDF", command=app.color_dialog)
@@ -148,21 +148,17 @@ def _generation(app):
     source.columnconfigure(0, weight=1)
     ttk.Label(source, textvariable=app.filename, font=("Segoe UI", 10, "bold"), wraplength=730).grid(row=0, column=0, sticky="w")
     app.edit(ttk.Button(source, text="Открыть TXT…", command=app.choose)).grid(row=0, column=1, sticky="e")
-    ttk.Label(page, textvariable=app.file_count, style="Muted.TLabel", wraplength=850).grid(row=1, column=0, sticky="w", pady=(2, 5))
-    options = ttk.Frame(page)
-    options.grid(row=2, column=0, sticky="w")
-    ttk.Label(options, text="Экземпляров каждого:").pack(side="left")
-    app.copies_entry = app.edit(ttk.Spinbox(options, from_=1, to=1e300, width=6, textvariable=app.copies_var))
-    app.copies_entry.pack(side="left", padx=(6, 18))
-    app.duplicate_picker=ChoiceMenu(app,options,app.duplicates_var,"Повторы TXT",[(label,label) for label in POLICIES],command=app.remember)
-    app.duplicate_picker.button.pack(side="left",padx=6)
+    ttk.Label(page, textvariable=app.file_count, style="Muted.TLabel", wraplength=850).grid(row=1, column=0, sticky="w", pady=(1, 2))
     numbers = ttk.Frame(page)
     numbers.grid(row=3, column=0, sticky="w", pady=4)
     ttk.Label(numbers, text="Новая база:").pack(side="left")
     app.custom_count_entry = app.edit(ttk.Spinbox(numbers, from_=1, to=1e300, width=8, textvariable=app.custom_count_var))
     app.custom_count_entry.pack(side="left", padx=6)
     app.edit(ttk.Button(numbers, text="Создать TXT", command=app.template_custom)).pack(side="left")
-    ttk.Label(numbers, text="Своё количество · большой тираж порциями", style="Muted.TLabel").pack(side="left", padx=12)
+    app.main_pdf_picker=ChoiceMenu(app,numbers,app.pdf_profile_var,"PDF",[(label,label) for label in PDF_PROFILES],command=app.apply_pdf_profile)
+    app.main_pdf_picker.button.pack(side="left",padx=6)
+    app.main_activity_picker=ChoiceMenu(app,numbers,app.activity_var,"Доп. данные",[("Обычные","normal"),("Минимум","minimal")],command=app.remember)
+    app.main_activity_picker.button.pack(side="left",padx=3)
     ttk.Label(page, textvariable=app.plan_var, style="Accent.TLabel", font=("Segoe UI", 10, "bold"),
               wraplength=850).grid(row=4, column=0, sticky="w", pady=(2, 5))
     destination = ttk.Frame(page)
@@ -171,10 +167,18 @@ def _generation(app):
     ttk.Label(destination, text="Папка PDF:").grid(row=0, column=0, padx=(0, 7))
     app.edit(ttk.Entry(destination, textvariable=app.destination_var, state="readonly"), "readonly").grid(row=0, column=1, sticky="ew")
     app.edit(ttk.Button(destination, text="Выбрать…", command=app.choose_destination)).grid(row=0, column=2, padx=(7, 0))
+    from .generation_cpu import GenerationCPU
+    app.generation_cpu=GenerationCPU(app,page)
 
 
 def _print(app):
     page = app.pages["print"]
+    options = ttk.Frame(page); options.pack(anchor="w",pady=(0,3))
+    ttk.Label(options, text="Экземпляров каждого:").pack(side="left")
+    app.copies_entry = app.edit(ttk.Spinbox(options, from_=1, to=1e300, width=6, textvariable=app.copies_var))
+    app.copies_entry.pack(side="left", padx=(6, 18))
+    app.duplicate_picker=ChoiceMenu(app,options,app.duplicates_var,"Повторы TXT",[(label,label) for label in POLICIES],command=app.remember)
+    app.duplicate_picker.button.pack(side="left",padx=6)
     row = ttk.Frame(page)
     row.pack(anchor="w", pady=(0, 5))
     for text, value in (("Сторона PDF, мм", "side"), ("Модуль, мм", "module")):
@@ -200,9 +204,7 @@ def _print(app):
     app.pdf_picker=ChoiceMenu(app,mode,app.pdf_profile_var,"PDF",[(label,label) for label in PDF_PROFILES],command=app.apply_pdf_profile)
     app.pdf_picker.button.pack(side="left")
     app.edit(ttk.Checkbutton(mode,text="Минимум расходов",variable=app.activity_var,onvalue="minimal",offvalue="normal",command=app.remember,style="Choice.TCheckbutton")).pack(side="left",padx=8)
-    ttk.Label(page, textvariable=app.print_preview, style="Accent.TLabel", wraplength=850).pack(anchor="w", pady=5)
-    ttk.Label(page, text="Изменения размера и цвета применяются кнопкой ниже. Поле QR — минимум 4 модуля.",
-              style="Muted.TLabel", wraplength=850).pack(anchor="w")
+    ttk.Label(page, textvariable=app.print_preview, style="Accent.TLabel", wraplength=850).pack(anchor="w", pady=3)
     buttons = ttk.Frame(page)
     buttons.pack(anchor="w", pady=(8, 0))
     app.edit(ttk.Button(buttons, text="Применить размер и цвет", command=app.apply_print)).pack(side="left")
@@ -238,8 +240,8 @@ def _resources(app):
     app.edit(ttk.Spinbox(controls, from_=1, to=1000, width=6, textvariable=app.batch_size_var)).pack(side="left")
     preview=ttk.Label(page, textvariable=app.execution_preview, style="Accent.TLabel", wraplength=850)
     preview.pack(anchor="w", pady=1)
-    hint=ttk.Label(page, text="Число физических ядер для сравнения выбирается во вкладке «Тесты».\n"
-              "При обычном создании PDF нагрузку распределяет система. Запись PDF выполняется по очереди.",
+    hint=ttk.Label(page, text="Для создания PDF выберите ядра прямо во вкладке «Генерация».\n"
+              "Процессы кодируют QR параллельно. Запись общего PDF пока последовательная.",
               style="Muted.TLabel", wraplength=850)
     hint.pack(anchor="w", pady=3)
     buttons = ttk.Frame(page); buttons.pack(anchor="w", pady=2)

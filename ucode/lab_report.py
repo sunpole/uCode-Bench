@@ -42,9 +42,9 @@ def recommendations(cases,group_by_ram=True):
     for case in cases:
         summary = case.get("summary", {})
         if summary.get("status") == "PASS" and summary.get("median_with_qa_seconds"):
-            groups.setdefault((case["count"], case["ram_mode"] if group_by_ram else "all"), []).append(case)
+            groups.setdefault((case["count"], case["ram_mode"] if group_by_ram else "all",case.get("telemetry_mode","cpu")), []).append(case)
     result = []
-    for (count, ram), rows in sorted(groups.items()):
+    for (count, ram, telemetry), rows in sorted(groups.items()):
         best = min(rows, key=lambda row: row["summary"]["median_with_qa_seconds"])
         near = [row for row in rows if row["summary"]["median_with_qa_seconds"] <= best["summary"]["median_with_qa_seconds"] * 1.05]
         def budget(row):
@@ -52,6 +52,7 @@ def recommendations(cases,group_by_ram=True):
             return statistics.median(values) if values else float("inf")
         economical = min(near, key=lambda row: (len(row["cpus"]), budget(row), row["summary"]["median_with_qa_seconds"]))
         result.append({"count": count, "ram_mode": ram, "fastest_case": best["id"],
+                       "telemetry_mode":telemetry,
                        "near_best_fewer_cpus_case": economical["id"],
                        "rule": "Fewest allowed CPUs among measured results within 5% of fastest median including QA; not statistical significance"})
     return result
@@ -64,7 +65,7 @@ def optimization_pairs(cases,axis="pdf_profile"):
         if not case["summary"].get("median_seconds") or not case["summary"].get("median_with_qa_seconds"): continue
         other=case.get("activity","normal") if axis=="pdf_profile" else case.get("pdf_profile","standard")
         key=(case["count"],case["cpu_unit"],tuple((cpu["group"],cpu["logical"]) for cpu in case["cpus"]),
-             case["backend"],case["ram_mode"],case["workers"],other)
+             case["backend"],case["ram_mode"],case["workers"],other,case.get("telemetry_mode","cpu"))
         groups.setdefault(key,{})[case.get(axis,first)]=case
     result=[]
     for group in groups.values():
@@ -81,6 +82,8 @@ def optimization_pairs(cases,axis="pdf_profile"):
 
 
 def write_reports(folder, data):
+    from .cpu_report import write_cpu_report
+    write_cpu_report(folder,data)
     folder = Path(folder)
     qa_mode=data["config"].get("qa_mode","full")
     scope={"full":"Полная проверка PDF; рекомендации включают QA.",
@@ -100,7 +103,7 @@ def write_reports(folder, data):
     for case in data["cases"]:
         summary=case.get("summary",{})
         if case["backend"]=="serial" and len(case["cpus"])==1 and summary.get("status")=="PASS" and summary.get("median_with_qa_seconds"):
-            baselines.setdefault((case["count"],case["ram_mode"],case["cpu_unit"],case.get("pdf_profile","standard"),case.get("activity","normal")),summary["median_with_qa_seconds"])
+            baselines.setdefault((case["count"],case["ram_mode"],case["cpu_unit"],case.get("pdf_profile","standard"),case.get("activity","normal"),case.get("telemetry_mode","cpu")),summary["median_with_qa_seconds"])
     table = []
     for case in data["cases"]:
         summary = case.get("summary", {})
@@ -116,7 +119,7 @@ def write_reports(folder, data):
         encoding = median_of(lambda trial: trial["seconds"].get("code_encoding"))
         write = median_of(lambda trial: sum(trial["seconds"].get(key,0) for key in ("write_singles","write_multipage")))
         qa = median_of(lambda trial: trial["seconds"].get("quality_checks"))
-        baseline=baselines.get((case["count"],case["ram_mode"],case["cpu_unit"],case.get("pdf_profile","standard"),case.get("activity","normal")))
+        baseline=baselines.get((case["count"],case["ram_mode"],case["cpu_unit"],case.get("pdf_profile","standard"),case.get("activity","normal"),case.get("telemetry_mode","cpu")))
         total=summary.get("median_with_qa_seconds")
         speedup=baseline/total if baseline and total and summary.get("status")=="PASS" else None
         table.append((case["id"], case["count"], case["cpu_unit"], case["cpu_choice"], len(case["cpus"]), case["backend"],
@@ -170,6 +173,7 @@ def write_reports(folder, data):
     rows += ["", "Разница до 5% — эвристика удобства, не доказательство статистической значимости.",
              "Результаты относятся к этому ПК/сборке/параметрам. Проценты ускорения не экстраполируются на другие размеры.",
              "Сырые повторы, RAM budget/фактическая память, CPU affinity, фазовые времена и реальные PDF — lab.json / trials/."]
+    rows.append("Загрузка CPU по этапам/ядрам и стоимость замеров ВКЛ/ВЫКЛ: ЗАГРУЗКА_CPU.txt, cpu-load.html, cpu-load.csv.")
     (folder / "ОТЧЁТ.txt").write_text("\n".join(rows)+"\n", encoding="utf-8")
     headings = ("Вариант", "Кодов", "CPU тип", "CPU выбор", "CPU доступ", "Метод", "Работников", "Партия", "RAM режим",
                 "Статус", "PDF медиана, с", "С QA, с", "PDF кодов/с", "С QA кодов/с", "min, с", "max, с", "mean, с", "Разброс, с", "RSS пик, МиБ", "RAM budget, МиБ", "Работники факт", "QR, с", "Запись, с", "QA, с", "Ускорение / serial1, ×",
@@ -184,4 +188,5 @@ def write_reports(folder, data):
     document = '<!doctype html><html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>uCode — CPU / RAM</title><style>body{background:#0b1220;color:#edf4fc;font:15px Segoe UI,Arial;margin:24px}a{color:#5ce0bd}table{border-collapse:collapse;font-size:13px}td,th{border:1px solid #31445e;padding:7px;text-align:left;white-space:nowrap}th{background:#21344d;position:sticky;top:0}pre{white-space:pre-wrap;max-width:1100px;line-height:1.5}.table{overflow:auto;max-height:70vh}</style><h1>uCode · CPU / RAM</h1><pre>'+notes+'</pre><h2>Основные результаты</h2><p>Зелёным выделены самые быстрые успешные варианты по медиане с QA.</p><div class="table"><table><thead><tr>'+short_header+'</tr></thead><tbody>'+short_body+'</tbody></table></div><details><summary>Все фазы и параметры</summary><div class="table"><table><thead><tr>'+header+'</tr></thead><tbody>'+body+'</tbody></table></div></details><p><a href="ОТЧЁТ.txt">Понятный отчёт</a> · <a href="comparison.csv">CSV</a> · <a href="lab.json">Сырые данные</a></p></html>'
     if (folder/"all-results.html").is_file():
         document=document.replace('<h2>Основные результаты</h2>','<p><a href="all-results.html">Все отдельные запуски и времена</a></p><h2>Основные результаты</h2>')
+    document=document.replace('<h2>Основные результаты</h2>','<p><a href="cpu-load.html">Загрузка CPU: min / среднее / max и стоимость замеров</a></p><h2>Основные результаты</h2>')
     (folder / "comparison.html").write_text(document, encoding="utf-8")

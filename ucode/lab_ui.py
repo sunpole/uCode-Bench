@@ -96,6 +96,7 @@ def read_form(app):
                          output_mode=app.mode_var.get(), print_settings=asdict(app.print_settings),
                          pdf_profiles=tuple(PDF_PROFILES.get(value,value) for value in _parts(app.lab_pdf_profiles.get())),
                          qa_mode=QA_MODES[app.qa_mode_var.get()],
+                         telemetry_modes=_parts(app.lab_telemetry.get()),
                          activity_modes=tuple(value.lower().replace("минимум","minimal").replace("обычный","normal") for value in _parts(app.lab_activities.get())))
     except (ValueError, KeyError) as exc:
         raise ValueError("Проверьте списки, повторы и размеры партии: " + str(exc)) from exc
@@ -108,7 +109,8 @@ def build_lab(app):
         value=json.loads(path.read_text(encoding="utf-8"))
         value.setdefault("pdf_profiles",["standard","compact"])
         value.setdefault("activity_modes",["normal","minimal"])
-        for key in ("counts","cpu_counts","cpu_units","backends","ram_modes","pdf_profiles","activity_modes"): value[key]=tuple(value[key])
+        value.setdefault("telemetry_modes",["cpu"])
+        for key in ("counts","cpu_counts","cpu_units","backends","ram_modes","pdf_profiles","activity_modes","telemetry_modes"): value[key]=tuple(value[key])
         saved=asdict(LabConfig(**value))
     except (OSError, ValueError, KeyError, TypeError): pass
     def var(key, default):
@@ -125,6 +127,7 @@ def build_lab(app):
     app.lab_batch=var("batch_size",1); app.lab_workers=var("workers",0)
     app.lab_pdf_profiles=var("pdf_profiles",("standard","compact"))
     app.lab_activities=var("activity_modes",("normal","minimal"))
+    app.lab_telemetry=var("telemetry_modes",("cpu",))
     app.lab_preview=tk.StringVar(master=app.root)
     app.lab_hardware=tk.StringVar(master=app.root)
     page=app.pages["lab"]
@@ -143,6 +146,8 @@ def build_lab(app):
     app.edit(ttk.Spinbox(row,textvariable=app.lab_repeats,width=4,from_=1,to=10)).pack(side="left",padx=7)
     app.lab_options_button=app.edit(ttk.Button(row,text="Все параметры…",command=lambda:app.test_controls.toggle()))
     app.lab_options_button.pack(side="left",padx=7)
+    app.lab_telemetry_picker=ChoiceMenu(app,row,app.lab_telemetry,"Загрузка CPU",[("ВКЛ","cpu"),("ВЫКЛ","off"),("ВКЛ/ВЫКЛ","off,cpu")])
+    app.lab_telemetry_picker.button.pack(side="left")
     row=ttk.Frame(page); row.pack(anchor="w")
     app.lab_units_picker=ChoiceMenu(app,app.lab_ram_row,app.lab_units,"Сравнивать",[("Ядра","Физические: 1 поток/ядро"),("Потоки SMT","Логические CPU"),("Ядра и потоки","Оба варианта")])
     app.lab_units_picker.button.pack(side="left",padx=(0,8))
@@ -199,7 +204,7 @@ def build_lab(app):
         if hasattr(app,"notebook"): app.fit_window()
     app.lab_refresh=refresh
     app.lab_count_control.after_sync=refresh
-    for variable in (app.lab_cpus,app.lab_units,app.lab_backends,app.lab_ram,app.lab_repeats,app.lab_warmups,app.lab_batch,app.lab_workers,app.lab_pdf_profiles,app.lab_activities):
+    for variable in (app.lab_cpus,app.lab_units,app.lab_backends,app.lab_ram,app.lab_repeats,app.lab_warmups,app.lab_batch,app.lab_workers,app.lab_pdf_profiles,app.lab_activities,app.lab_telemetry):
         variable.trace_add("write",refresh)
     refresh()
 

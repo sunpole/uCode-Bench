@@ -32,6 +32,7 @@ class SearchConfig:
     activities:tuple=("normal","minimal")
     qa_mode:str="full"
     ram_mode:str="auto"
+    telemetry_mode:str="cpu"
     search_mode:str="staged"
     keep_best:int=2
     part_counts:tuple=(10,)
@@ -53,6 +54,7 @@ class SearchConfig:
         if isinstance(self.repeats,bool) or not isinstance(self.repeats,int) or not 1<=self.repeats<=10: raise ValueError("Повторы:1–10")
         if isinstance(self.keep_best,bool) or not isinstance(self.keep_best,int) or not 1<=self.keep_best<=8 or any(isinstance(n,bool) or not isinstance(n,int) or not 1<=n<=1000 for n in self.batches): raise ValueError("Неверные число лидеров/порции кодов")
         PrintSettings(**self.print_settings)
+        if self.telemetry_mode not in ("cpu","off"): raise ValueError("Неверный режим CPU-замеров")
 
 
 def candidates(config,cpu):
@@ -124,6 +126,11 @@ def run_search(output_root,config,*,cancel=None,events=None):
     data={"kind":"pc-performance-search","schema_version":1,"status":"RUNNING","config":asdict(config),"hardware":hardware,
           "catalog":catalog,"source_digest":code_fingerprint(),"plan":plan,"cases":[],"stages":[],"errors":[]}
     data["profile_hash"]=hashlib.sha256(json.dumps({"config":data["config"],"source":data["source_digest"],"catalog":catalog},sort_keys=True).encode()).hexdigest()
+    from .frozen_runtime import snapshot_runtime,assert_trial_integrity
+    frozen=snapshot_runtime(folder)
+    data["source_digest"]=frozen["source_digest"]
+    data["profile_hash"]=hashlib.sha256(json.dumps({"config":data["config"],"source":data["source_digest"],"catalog":catalog},sort_keys=True).encode()).hexdigest()
+    data["runtime_snapshot"]={"folder":".runtime","source_digest":frozen["source_digest"]}
     finished=0
     def stopped():
         if cancel is not None and cancel.is_set(): raise InterruptedError("Подбор остановлен")
@@ -137,6 +144,7 @@ def run_search(output_root,config,*,cancel=None,events=None):
         for repeat in range(config.repeats):
             stopped()
             request={"count":count,"cpus":case["cpus"],"backend":case["backend"],"workers":case["workers"],"batch_size":case["batch_size"],
+                     **frozen,"cpu_unit":case["cpu_unit"],"telemetry_mode":config.telemetry_mode,
                      "pdf_profile":case["pdf_profile"],"activity":case["activity"],"ram_mode":config.ram_mode,"qa_mode":config.qa_mode,
                      "warmup":False,"output_mode":"multipage","print_settings":config.print_settings,"temporary_data":True,
                      "source_digest":data["source_digest"],"engine_version":catalog["encoders"][0]["version"],
@@ -148,6 +156,7 @@ def run_search(output_root,config,*,cancel=None,events=None):
             trial=_run_trial(folder/"t"/f"{len(data['cases']):04d}-{repeat+1:02d}",request,cancel,event)
             trial["relative_folder"]=(Path("t")/trial["folder"]).as_posix()
             case["trials"].append(trial); finished+=1
+            assert_trial_integrity(trial)
             if trial["status"]=="CANCELLED": raise InterruptedError("Подбор остановлен")
             if trial["status"] in ("SKIPPED","RESOURCE_LIMIT"): break
         case["summary"]=summarize_trials(case["trials"],config.repeats,count,qa_mode=config.qa_mode)

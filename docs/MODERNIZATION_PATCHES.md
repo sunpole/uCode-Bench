@@ -1,5 +1,9 @@
 # Комплексная модернизация uCode — карта патчей
 
+## Ядра генерации и наблюдение CPU — 28.10.2026
+
+15 задач в codex/generation-core-controls: [инструкция/архитектура](GENERATION_CORES.md). VERIFIED локально: видимые CPU-кнопки production, отдельные проверенные CPU workers, полезный RAM-cache, отсутствие подробной CPU-телеметрии в production, тестовые min/mean/max по фазам/CPU и ВКЛ–ВЫКЛ, frozen lab/search, fail-fast целостности, предупреждение неполной серии. 225 full tests PASS, поздние19+7 affected PASS; real1/2CPU7pages с отдельным full audit,12 малых A/B попыток,23 all-merger frozen search PASS. USER-CHECK: новый throughput50000/100000, длительная загрузка14 ядер, большой A/B и визуальная приёмка. Весь проект не объявляется завершённым.
+
 ## Актуальный дополнительный пакет — Подбор ПК (28.10.2026)
 
 13 небольших задач реализованы в отдельной codex/pc-performance-search: [план/инструкция/границы](PC_PERFORMANCE_SEARCH.md). VERIFIED локально: каталог11адаптеров/9семейств, проектная среда, PDFsharp exact boxes, configurable direct search, staged CPU endpoints, seq/parallel parts+merge, QA/no-QA, отчёты/GUI/отмена. 218 локальных тестов PASS; 33 отдельных объединения и23 попытки нового поиска на2страничных PDF — полная QA PASS. USER-CHECK: большие200/1000/10000/100000, фактическое ускорение, визуальная приёмка. LIMITATION: альтернативные QR encoders/планировщики не подключены, split не перебирает все direct-профили, mergedPDF reader O(N)metadata; полный проект ещё не объявляется завершённым. Прежние TODO ниже сохраняют силу.

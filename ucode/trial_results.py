@@ -31,6 +31,7 @@ def trial_rows(data):
                 "qa":seconds.get("quality_checks"),"total":seconds.get("total_including_qa"),"status":status,
                 "qa_mode":manifest.get("qa_mode",data["config"].get("qa_mode","full")),
                 "workers":manifest.get("execution",{}).get("effective_workers"),
+                "telemetry_mode":case.get("telemetry_mode","cpu"),
                 "reason":"; ".join(map(str,trial.get("errors",[]))) or str(case.get("reason",""))})
     return result
 
@@ -55,7 +56,7 @@ def recommendation(data):
     if not valid: return "Нет полного успешного набора: проверьте статусы отдельных запусков."+warning
     if len(valid)!=len(data["cases"]): return "Часть режимов не завершена; общего победителя нет."+warning
     keys={(row["case"]["count"],row["case"].get("cpu_unit"),row["case"].get("backend"),row["case"].get("ram_mode"),
-           row["case"].get("pdf_profile","standard"),row["case"].get("activity","normal")) for row in valid}
+           row["case"].get("pdf_profile","standard"),row["case"].get("activity","normal"),row["case"].get("telemetry_mode","cpu")) for row in valid}
     if len(keys)!=1: return "Параметры различаются; сравнивайте отдельные группы в подробном отчёте."+warning
     metric="median_with_qa_seconds" if mode=="full" else "median_operation_seconds"
     best=min(valid,key=lambda row:row["summary"][metric])
@@ -75,9 +76,9 @@ def write_trial_results(folder,data):
     folder=Path(folder); rows=trial_rows(data)
     mode=data["config"].get("qa_mode","full")
     scope={"full":"Полная проверка PDF","deferred":"БЕЗ ПРОВЕРКИ PDF — качество не подтверждено","vector":"Частичная проверка PDF — структуры и матрицы, без растровых образцов"}[mode]
-    headings=("№","Кодов","Режим CPU","Повтор","Прогрев","Создание PDF, сек","Проверка, сек","Всего, сек","Статус","Работников факт","Причина","Режим проверки")
+    headings=("№","Кодов","Режим CPU","Повтор","Прогрев","Создание PDF, сек","Проверка, сек","Всего, сек","Статус","Работников факт","Причина","Режим проверки","Замеры CPU")
     table=[(row["number"],row["count"],row["cpu"],row["repeat"],"да" if row["warmup"] else "нет",
-            row["production"],row["qa"],row["total"],row["status"],row["workers"],row["reason"],row["qa_mode"]) for row in rows]
+            row["production"],row["qa"],row["total"],row["status"],row["workers"],row["reason"],row["qa_mode"],"ВКЛ" if row["telemetry_mode"]=="cpu" else "ВЫКЛ") for row in rows]
     with (folder/"all-results.csv").open("x",encoding="utf-8-sig",newline="") as stream:
         writer=csv.writer(stream); writer.writerow(headings); writer.writerows(table)
     esc=lambda value:html.escape("—" if value is None else seconds_text(value) if isinstance(value,float) else str(value))
@@ -88,7 +89,7 @@ def write_trial_results(folder,data):
         return '<div class="table"><table><thead><tr>'+''.join('<th>'+esc(v)+'</th>' for v in titles)+'</tr></thead><tbody>'+''.join('<tr>'+''.join('<td>'+esc(v)+'</td>' for v in row)+'</tr>' for row in values)+'</tbody></table></div>'
     text='<!doctype html><html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>uCode — все результаты</title><style>body{background:#0b1220;color:#edf4fc;font:16px Segoe UI,Arial;margin:24px}a{color:#5ce0bd}table{border-collapse:collapse}td,th{padding:8px;border:1px solid #31445e;text-align:left}th{background:#21344d}.table{overflow:auto}p{max-width:1000px;line-height:1.5}</style>'
     text+=f'<h1>Все результаты: {len(rows)}</h1><p>'+esc(recommendation(data))+'</p>'
-    text+='<p>'+esc(scope)+'</p>'
+    text+='<p>'+esc(scope)+'</p><p><a href="cpu-load.html">Загрузка CPU: min / среднее / max и стоимость замеров ВКЛ/ВЫКЛ</a></p>'
     text+='<p>Каждая строка — отдельный проход. Прогрев помечен отдельно и исключён из сводки. Невыполненные строки не содержат вымышленных времён. Сравнение относится только к выбранному режиму проверки, этому ПК и тиражу. UNVERIFIED и LIMITED не входят в рейтинг полной QA. Порог 5% — практическое правило выбора меньшего количества ядер, не доказательство статистического равенства.</p>'
     text+=table_html(headings,table)
     text+='<h2>Сводка завершённых режимов</h2>'+table_html(("Кодов","CPU","Создание: медиана, сек","Всего: среднее, сек","Всего: минимум, сек","Всего: максимум, сек"),summary)
