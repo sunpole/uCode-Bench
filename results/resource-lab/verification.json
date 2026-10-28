@@ -1,0 +1,1126 @@
+{
+  "schema_version": 1,
+  "kind": "resource-lab-functional-verification",
+  "status": "PASS",
+  "tested_source_revision": "17b0e13e4275688690af0b79b9ecf8b42fe65d79",
+  "pull_request": "https://github.com/sunpole/uCode-Bench/pull/6",
+  "ci_url": "https://github.com/sunpole/uCode-Bench/actions/runs/40639361409",
+  "local_tests": {
+    "total": 142,
+    "passed": 141,
+    "skipped": 1
+  },
+  "ci_tests_per_platform": {
+    "total": 142,
+    "passed": 137,
+    "skipped": 5
+  },
+  "methodology": "Functional tiny PDF/memory/affinity tests. Not scaling recommendations for 200/500/1000/10000. Downloaded hashes, page counts, statistics and CPU inheritance rechecked.",
+  "large_workloads": "NOT RUN",
+  "manual_visual_check": "USER-CHECK",
+  "windows_multi_group_forced_affinity": "UNSUPPORTED / SKIPPED",
+  "local_single_page_masks_pre_metadata_text_update": [
+    {
+      "unit": "logical",
+      "choice": "all",
+      "verified_cpu_count": 28,
+      "qa": "PASS"
+    },
+    {
+      "unit": "physical",
+      "choice": "all",
+      "verified_cpu_count": 14,
+      "qa": "PASS"
+    },
+    {
+      "unit": "logical",
+      "choice": "all-2",
+      "verified_cpu_count": 26,
+      "qa": "PASS"
+    },
+    {
+      "unit": "physical",
+      "choice": "all-2",
+      "verified_cpu_count": 12,
+      "qa": "PASS"
+    }
+  ],
+  "normal_pdf_files_rechecked": 30,
+  "lab_pdf_files_rechecked": 36,
+  "platforms": [
+    {
+      "platform": "linux",
+      "engine_version": "4.5.1",
+      "python": "3.12.15",
+      "source_digest": "8c872407fbac9fa2075138802c53f3885ec7328da84de37d11173b8b205cb9fd",
+      "comparison_profile_hash": "c34acd75e7a8b429030037e51dda17c55fc840b7b5969c5a3e0cca2c25d26ec3",
+      "cases": [
+        {
+          "id": "C0001",
+          "cpu_choice": "1",
+          "cpu_unit": "logical",
+          "allowed_cpu_count": 1,
+          "backend": "serial",
+          "ram_mode": "max",
+          "status": "PASS",
+          "summary": {
+            "status": "PASS",
+            "median_seconds": 0.010966,
+            "codes_per_second": 182.3819077147547,
+            "min_seconds": 0.010858,
+            "max_seconds": 0.011186,
+            "mean_seconds": 0.011003333333333334,
+            "spread_seconds": 0.00032800000000000017,
+            "median_with_qa_seconds": 0.160317,
+            "codes_per_second_with_qa": 12.475283344872972,
+            "median_launcher_wall_seconds": 0.40274743700000215,
+            "peak_observed_tree_rss_bytes": 65703936,
+            "completed_repeats": 3
+          },
+          "trials": [
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 14074970112,
+              "rss_peak_bytes": 46428160,
+              "seconds": {
+                "production": 0.010966,
+                "total_including_qa": 0.162266,
+                "code_encoding": 0.00663,
+                "qr_encoding": 0.00663,
+                "write_multipage": 0.003582,
+                "production_until_pdf_closed": 0.010966,
+                "quality_checks": 0.151123,
+                "worker_wall": 0.3276485629999968,
+                "launcher_wall": 0.402710287000005
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Sampled tree RSS guard + cooperative cancel; not a kernel RAM quota"
+            },
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 14075552564,
+              "rss_peak_bytes": 46428160,
+              "seconds": {
+                "production": 0.011186,
+                "total_including_qa": 0.160317,
+                "code_encoding": 0.006838,
+                "qr_encoding": 0.006838,
+                "write_multipage": 0.003554,
+                "production_until_pdf_closed": 0.011186,
+                "quality_checks": 0.148953,
+                "worker_wall": 0.3263761850000009,
+                "launcher_wall": 0.40276125399999785
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Sampled tree RSS guard + cooperative cancel; not a kernel RAM quota"
+            },
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 14089822618,
+              "rss_peak_bytes": 65703936,
+              "seconds": {
+                "production": 0.010858,
+                "total_including_qa": 0.160287,
+                "code_encoding": 0.006564,
+                "qr_encoding": 0.006564,
+                "write_multipage": 0.003561,
+                "production_until_pdf_closed": 0.010858,
+                "quality_checks": 0.149184,
+                "worker_wall": 0.32594839699999056,
+                "launcher_wall": 0.40274743700000215
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Sampled tree RSS guard + cooperative cancel; not a kernel RAM quota"
+            }
+          ]
+        },
+        {
+          "id": "C0002",
+          "cpu_choice": "1",
+          "cpu_unit": "logical",
+          "allowed_cpu_count": 1,
+          "backend": "process",
+          "ram_mode": "max",
+          "status": "PASS",
+          "summary": {
+            "status": "PASS",
+            "median_seconds": 0.272976,
+            "codes_per_second": 7.326651427231698,
+            "min_seconds": 0.271565,
+            "max_seconds": 0.277348,
+            "mean_seconds": 0.273963,
+            "spread_seconds": 0.005782999999999983,
+            "median_with_qa_seconds": 0.420437,
+            "codes_per_second_with_qa": 4.756955263214227,
+            "median_launcher_wall_seconds": 0.7041864389999972,
+            "peak_observed_tree_rss_bytes": 86487040,
+            "completed_repeats": 3
+          },
+          "trials": [
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 14085321524,
+              "rss_peak_bytes": 86487040,
+              "seconds": {
+                "production": 0.271565,
+                "total_including_qa": 0.420142,
+                "code_encoding": 0.267019,
+                "qr_encoding": 0.267019,
+                "write_multipage": 0.003815,
+                "production_until_pdf_closed": 0.271565,
+                "quality_checks": 0.148355,
+                "worker_wall": 0.5838260339999977,
+                "launcher_wall": 0.7042610799999949
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Sampled tree RSS guard + cooperative cancel; not a kernel RAM quota"
+            },
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 14076920218,
+              "rss_peak_bytes": 86429696,
+              "seconds": {
+                "production": 0.277348,
+                "total_including_qa": 0.425686,
+                "code_encoding": 0.272719,
+                "qr_encoding": 0.272719,
+                "write_multipage": 0.003894,
+                "production_until_pdf_closed": 0.277348,
+                "quality_checks": 0.148174,
+                "worker_wall": 0.589622391000006,
+                "launcher_wall": 0.7041864389999972
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Sampled tree RSS guard + cooperative cancel; not a kernel RAM quota"
+            },
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 14091514676,
+              "rss_peak_bytes": 86220800,
+              "seconds": {
+                "production": 0.272976,
+                "total_including_qa": 0.420437,
+                "code_encoding": 0.268396,
+                "qr_encoding": 0.268396,
+                "write_multipage": 0.003851,
+                "production_until_pdf_closed": 0.272976,
+                "quality_checks": 0.14729,
+                "worker_wall": 0.5859630009999961,
+                "launcher_wall": 0.7039710630000116
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Sampled tree RSS guard + cooperative cancel; not a kernel RAM quota"
+            }
+          ]
+        },
+        {
+          "id": "C0003",
+          "cpu_choice": "1",
+          "cpu_unit": "logical",
+          "allowed_cpu_count": 1,
+          "backend": "thread",
+          "ram_mode": "max",
+          "status": "PASS",
+          "summary": {
+            "status": "PASS",
+            "median_seconds": 0.013513,
+            "codes_per_second": 148.00562421372013,
+            "min_seconds": 0.013416,
+            "max_seconds": 0.013524,
+            "mean_seconds": 0.013484333333333334,
+            "spread_seconds": 0.00010799999999999872,
+            "median_with_qa_seconds": 0.162525,
+            "codes_per_second_with_qa": 12.305799107829564,
+            "median_launcher_wall_seconds": 0.4028134510000001,
+            "peak_observed_tree_rss_bytes": 66994176,
+            "completed_repeats": 3
+          },
+          "trials": [
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 14080300647,
+              "rss_peak_bytes": 65802240,
+              "seconds": {
+                "production": 0.013416,
+                "total_including_qa": 0.161217,
+                "code_encoding": 0.009029,
+                "qr_encoding": 0.009029,
+                "write_multipage": 0.003671,
+                "production_until_pdf_closed": 0.013416,
+                "quality_checks": 0.147584,
+                "worker_wall": 0.3246590270000098,
+                "launcher_wall": 0.4028134510000001
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Sampled tree RSS guard + cooperative cancel; not a kernel RAM quota"
+            },
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 14093022413,
+              "rss_peak_bytes": 66035712,
+              "seconds": {
+                "production": 0.013524,
+                "total_including_qa": 0.162525,
+                "code_encoding": 0.009088,
+                "qr_encoding": 0.009088,
+                "write_multipage": 0.003718,
+                "production_until_pdf_closed": 0.013524,
+                "quality_checks": 0.148838,
+                "worker_wall": 0.3275191219999982,
+                "launcher_wall": 0.40271279499999935
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Sampled tree RSS guard + cooperative cancel; not a kernel RAM quota"
+            },
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 14100336231,
+              "rss_peak_bytes": 66994176,
+              "seconds": {
+                "production": 0.013513,
+                "total_including_qa": 0.178535,
+                "code_encoding": 0.009079,
+                "qr_encoding": 0.009079,
+                "write_multipage": 0.003693,
+                "production_until_pdf_closed": 0.013513,
+                "quality_checks": 0.164844,
+                "worker_wall": 0.3424899460000006,
+                "launcher_wall": 0.4532422660000037
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Sampled tree RSS guard + cooperative cancel; not a kernel RAM quota"
+            }
+          ]
+        },
+        {
+          "id": "C0004",
+          "cpu_choice": "2",
+          "cpu_unit": "logical",
+          "allowed_cpu_count": 2,
+          "backend": "serial",
+          "ram_mode": "max",
+          "status": "PASS",
+          "summary": {
+            "status": "PASS",
+            "median_seconds": 0.010904,
+            "codes_per_second": 183.4189288334556,
+            "min_seconds": 0.010718,
+            "max_seconds": 0.011045,
+            "mean_seconds": 0.010889,
+            "spread_seconds": 0.00032699999999999917,
+            "median_with_qa_seconds": 0.164948,
+            "codes_per_second_with_qa": 12.125033343841695,
+            "median_launcher_wall_seconds": 0.4026799789999984,
+            "peak_observed_tree_rss_bytes": 65409024,
+            "completed_repeats": 3
+          },
+          "trials": [
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 14106654720,
+              "rss_peak_bytes": 46325760,
+              "seconds": {
+                "production": 0.010904,
+                "total_including_qa": 0.164948,
+                "code_encoding": 0.006576,
+                "qr_encoding": 0.006576,
+                "write_multipage": 0.003512,
+                "production_until_pdf_closed": 0.010904,
+                "quality_checks": 0.153756,
+                "worker_wall": 0.3335515340000086,
+                "launcher_wall": 0.4026799789999984
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Sampled tree RSS guard + cooperative cancel; not a kernel RAM quota"
+            },
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 14106724762,
+              "rss_peak_bytes": 46383104,
+              "seconds": {
+                "production": 0.010718,
+                "total_including_qa": 0.163638,
+                "code_encoding": 0.00656,
+                "qr_encoding": 0.00656,
+                "write_multipage": 0.003462,
+                "production_until_pdf_closed": 0.010718,
+                "quality_checks": 0.152645,
+                "worker_wall": 0.33144143599999154,
+                "launcher_wall": 0.40250905900001044
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Sampled tree RSS guard + cooperative cancel; not a kernel RAM quota"
+            },
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 14103838311,
+              "rss_peak_bytes": 65409024,
+              "seconds": {
+                "production": 0.011045,
+                "total_including_qa": 0.168838,
+                "code_encoding": 0.006667,
+                "qr_encoding": 0.006667,
+                "write_multipage": 0.003648,
+                "production_until_pdf_closed": 0.011045,
+                "quality_checks": 0.157604,
+                "worker_wall": 0.335519251000008,
+                "launcher_wall": 0.4531752890000007
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Sampled tree RSS guard + cooperative cancel; not a kernel RAM quota"
+            }
+          ]
+        },
+        {
+          "id": "C0005",
+          "cpu_choice": "2",
+          "cpu_unit": "logical",
+          "allowed_cpu_count": 2,
+          "backend": "process",
+          "ram_mode": "max",
+          "status": "PASS",
+          "summary": {
+            "status": "PASS",
+            "median_seconds": 0.383709,
+            "codes_per_second": 5.2122832667464145,
+            "min_seconds": 0.372468,
+            "max_seconds": 0.385145,
+            "mean_seconds": 0.3804406666666667,
+            "spread_seconds": 0.012676999999999994,
+            "median_with_qa_seconds": 0.53303,
+            "codes_per_second_with_qa": 3.752134026227417,
+            "median_launcher_wall_seconds": 0.804290887999997,
+            "peak_observed_tree_rss_bytes": 122556416,
+            "completed_repeats": 3
+          },
+          "trials": [
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 14111071028,
+              "rss_peak_bytes": 122404864,
+              "seconds": {
+                "production": 0.372468,
+                "total_including_qa": 0.523045,
+                "code_encoding": 0.367964,
+                "qr_encoding": 0.367964,
+                "write_multipage": 0.003762,
+                "production_until_pdf_closed": 0.372468,
+                "quality_checks": 0.15036,
+                "worker_wall": 0.6956447080000032,
+                "launcher_wall": 0.804290887999997
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Sampled tree RSS guard + cooperative cancel; not a kernel RAM quota"
+            },
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 14081823130,
+              "rss_peak_bytes": 122556416,
+              "seconds": {
+                "production": 0.383709,
+                "total_including_qa": 0.53303,
+                "code_encoding": 0.378721,
+                "qr_encoding": 0.378721,
+                "write_multipage": 0.00378,
+                "production_until_pdf_closed": 0.383709,
+                "quality_checks": 0.149131,
+                "worker_wall": 0.7007587290000004,
+                "launcher_wall": 0.8042452640000022
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Sampled tree RSS guard + cooperative cancel; not a kernel RAM quota"
+            },
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 14072846746,
+              "rss_peak_bytes": 122294272,
+              "seconds": {
+                "production": 0.385145,
+                "total_including_qa": 0.533384,
+                "code_encoding": 0.38014,
+                "qr_encoding": 0.38014,
+                "write_multipage": 0.003731,
+                "production_until_pdf_closed": 0.385145,
+                "quality_checks": 0.148018,
+                "worker_wall": 0.7014565319999946,
+                "launcher_wall": 0.804293954000002
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Sampled tree RSS guard + cooperative cancel; not a kernel RAM quota"
+            }
+          ]
+        },
+        {
+          "id": "C0006",
+          "cpu_choice": "2",
+          "cpu_unit": "logical",
+          "allowed_cpu_count": 2,
+          "backend": "thread",
+          "ram_mode": "max",
+          "status": "PASS",
+          "summary": {
+            "status": "PASS",
+            "median_seconds": 0.01357,
+            "codes_per_second": 147.38393515106853,
+            "min_seconds": 0.013397,
+            "max_seconds": 0.013571,
+            "mean_seconds": 0.013512666666666666,
+            "spread_seconds": 0.00017400000000000054,
+            "median_with_qa_seconds": 0.167916,
+            "codes_per_second_with_qa": 11.9107172633936,
+            "median_launcher_wall_seconds": 0.45300541099999236,
+            "peak_observed_tree_rss_bytes": 66170880,
+            "completed_repeats": 3
+          },
+          "trials": [
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 14073687245,
+              "rss_peak_bytes": 46485504,
+              "seconds": {
+                "production": 0.013397,
+                "total_including_qa": 0.164987,
+                "code_encoding": 0.009075,
+                "qr_encoding": 0.009075,
+                "write_multipage": 0.003611,
+                "production_until_pdf_closed": 0.013397,
+                "quality_checks": 0.151356,
+                "worker_wall": 0.33638593100000946,
+                "launcher_wall": 0.4025534829999913
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Sampled tree RSS guard + cooperative cancel; not a kernel RAM quota"
+            },
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 14081078477,
+              "rss_peak_bytes": 66052096,
+              "seconds": {
+                "production": 0.013571,
+                "total_including_qa": 0.167916,
+                "code_encoding": 0.009193,
+                "qr_encoding": 0.009193,
+                "write_multipage": 0.003653,
+                "production_until_pdf_closed": 0.013571,
+                "quality_checks": 0.154121,
+                "worker_wall": 0.3357723879999952,
+                "launcher_wall": 0.4530183729999919
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Sampled tree RSS guard + cooperative cancel; not a kernel RAM quota"
+            },
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 14088421786,
+              "rss_peak_bytes": 66170880,
+              "seconds": {
+                "production": 0.01357,
+                "total_including_qa": 0.172773,
+                "code_encoding": 0.009134,
+                "qr_encoding": 0.009134,
+                "write_multipage": 0.003707,
+                "production_until_pdf_closed": 0.01357,
+                "quality_checks": 0.159005,
+                "worker_wall": 0.33959701300000233,
+                "launcher_wall": 0.45300541099999236
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Sampled tree RSS guard + cooperative cancel; not a kernel RAM quota"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "platform": "windows",
+      "engine_version": "4.5.1",
+      "python": "3.12.10",
+      "source_digest": "4911a7036c4e96fd5356f5805a6ae8694528ec0ffb7cfd877b0cda96a3c63299",
+      "comparison_profile_hash": "22b295b59779c1091e11b8e846d98d59191d2de1c3cb9d6847bb1a1c1bb000e5",
+      "cases": [
+        {
+          "id": "C0001",
+          "cpu_choice": "1",
+          "cpu_unit": "logical",
+          "allowed_cpu_count": 1,
+          "backend": "serial",
+          "ram_mode": "max",
+          "status": "PASS",
+          "summary": {
+            "status": "PASS",
+            "median_seconds": 0.01366,
+            "codes_per_second": 146.41288433382138,
+            "min_seconds": 0.013654,
+            "max_seconds": 0.013724,
+            "mean_seconds": 0.013679333333333333,
+            "spread_seconds": 7.000000000000062e-05,
+            "median_with_qa_seconds": 0.234883,
+            "codes_per_second_with_qa": 8.514877619921407,
+            "median_launcher_wall_seconds": 0.6091077999999754,
+            "peak_observed_tree_rss_bytes": 52412416,
+            "completed_repeats": 3
+          },
+          "trials": [
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 12905950004,
+              "rss_peak_bytes": 52273152,
+              "seconds": {
+                "production": 0.01366,
+                "total_including_qa": 0.268175,
+                "code_encoding": 0.007282,
+                "qr_encoding": 0.007282,
+                "write_multipage": 0.003893,
+                "production_until_pdf_closed": 0.01366,
+                "quality_checks": 0.254273,
+                "worker_wall": 0.4794392999999957,
+                "launcher_wall": 0.6095662999999831
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Windows owned job aggregate commit limit + sampled RSS guard"
+            },
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 12907959092,
+              "rss_peak_bytes": 50778112,
+              "seconds": {
+                "production": 0.013724,
+                "total_including_qa": 0.234883,
+                "code_encoding": 0.007238,
+                "qr_encoding": 0.007238,
+                "write_multipage": 0.003937,
+                "production_until_pdf_closed": 0.013724,
+                "quality_checks": 0.220899,
+                "worker_wall": 0.45445159999999873,
+                "launcher_wall": 0.6091077999999754
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Windows owned job aggregate commit limit + sampled RSS guard"
+            },
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 12902728090,
+              "rss_peak_bytes": 52412416,
+              "seconds": {
+                "production": 0.013654,
+                "total_including_qa": 0.229141,
+                "code_encoding": 0.007165,
+                "qr_encoding": 0.007165,
+                "write_multipage": 0.003952,
+                "production_until_pdf_closed": 0.013654,
+                "quality_checks": 0.215254,
+                "worker_wall": 0.45204749999999194,
+                "launcher_wall": 0.55809050000002
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Windows owned job aggregate commit limit + sampled RSS guard"
+            }
+          ]
+        },
+        {
+          "id": "C0002",
+          "cpu_choice": "1",
+          "cpu_unit": "logical",
+          "allowed_cpu_count": 1,
+          "backend": "process",
+          "ram_mode": "max",
+          "status": "PASS",
+          "summary": {
+            "status": "PASS",
+            "median_seconds": 0.312614,
+            "codes_per_second": 6.397666131395267,
+            "min_seconds": 0.299627,
+            "max_seconds": 0.313122,
+            "mean_seconds": 0.30845433333333333,
+            "spread_seconds": 0.013495000000000035,
+            "median_with_qa_seconds": 0.535595,
+            "codes_per_second_with_qa": 3.7341648073637725,
+            "median_launcher_wall_seconds": 0.861836100000005,
+            "peak_observed_tree_rss_bytes": 74977280,
+            "completed_repeats": 3
+          },
+          "trials": [
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 12894842880,
+              "rss_peak_bytes": 74977280,
+              "seconds": {
+                "production": 0.299627,
+                "total_including_qa": 0.517944,
+                "code_encoding": 0.29281,
+                "qr_encoding": 0.29281,
+                "write_multipage": 0.004186,
+                "production_until_pdf_closed": 0.299627,
+                "quality_checks": 0.218086,
+                "worker_wall": 0.7420554000000266,
+                "launcher_wall": 0.8617174999999975
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Windows owned job aggregate commit limit + sampled RSS guard"
+            },
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 12900612096,
+              "rss_peak_bytes": 74174464,
+              "seconds": {
+                "production": 0.313122,
+                "total_including_qa": 0.535595,
+                "code_encoding": 0.306221,
+                "qr_encoding": 0.306221,
+                "write_multipage": 0.004276,
+                "production_until_pdf_closed": 0.313122,
+                "quality_checks": 0.222212,
+                "worker_wall": 0.7496706000000017,
+                "launcher_wall": 0.861836100000005
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Windows owned job aggregate commit limit + sampled RSS guard"
+            },
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 12901286708,
+              "rss_peak_bytes": 73801728,
+              "seconds": {
+                "production": 0.312614,
+                "total_including_qa": 0.545438,
+                "code_encoding": 0.305573,
+                "qr_encoding": 0.305573,
+                "write_multipage": 0.004257,
+                "production_until_pdf_closed": 0.312614,
+                "quality_checks": 0.232571,
+                "worker_wall": 0.7637645000000077,
+                "launcher_wall": 0.9116257000000019
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Windows owned job aggregate commit limit + sampled RSS guard"
+            }
+          ]
+        },
+        {
+          "id": "C0003",
+          "cpu_choice": "1",
+          "cpu_unit": "logical",
+          "allowed_cpu_count": 1,
+          "backend": "thread",
+          "ram_mode": "max",
+          "status": "PASS",
+          "summary": {
+            "status": "PASS",
+            "median_seconds": 0.017866,
+            "codes_per_second": 111.94447554013209,
+            "min_seconds": 0.017784,
+            "max_seconds": 0.021018,
+            "mean_seconds": 0.018889333333333334,
+            "spread_seconds": 0.0032339999999999973,
+            "median_with_qa_seconds": 0.229383,
+            "codes_per_second_with_qa": 8.71904195167035,
+            "median_launcher_wall_seconds": 0.5578526999999838,
+            "peak_observed_tree_rss_bytes": 52162560,
+            "completed_repeats": 3
+          },
+          "trials": [
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 12893375693,
+              "rss_peak_bytes": 51593216,
+              "seconds": {
+                "production": 0.017866,
+                "total_including_qa": 0.229383,
+                "code_encoding": 0.011485,
+                "qr_encoding": 0.011485,
+                "write_multipage": 0.003837,
+                "production_until_pdf_closed": 0.017866,
+                "quality_checks": 0.211249,
+                "worker_wall": 0.4350918999999749,
+                "launcher_wall": 0.5572568000000047
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Windows owned job aggregate commit limit + sampled RSS guard"
+            },
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 12896343245,
+              "rss_peak_bytes": 51691520,
+              "seconds": {
+                "production": 0.017784,
+                "total_including_qa": 0.227068,
+                "code_encoding": 0.011321,
+                "qr_encoding": 0.011321,
+                "write_multipage": 0.003821,
+                "production_until_pdf_closed": 0.017784,
+                "quality_checks": 0.209077,
+                "worker_wall": 0.46294960000000174,
+                "launcher_wall": 0.6085091999999861
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Windows owned job aggregate commit limit + sampled RSS guard"
+            },
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 12900368794,
+              "rss_peak_bytes": 52162560,
+              "seconds": {
+                "production": 0.021018,
+                "total_including_qa": 0.235217,
+                "code_encoding": 0.014665,
+                "qr_encoding": 0.014665,
+                "write_multipage": 0.003766,
+                "production_until_pdf_closed": 0.021018,
+                "quality_checks": 0.213986,
+                "worker_wall": 0.4447757000000081,
+                "launcher_wall": 0.5578526999999838
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Windows owned job aggregate commit limit + sampled RSS guard"
+            }
+          ]
+        },
+        {
+          "id": "C0004",
+          "cpu_choice": "2",
+          "cpu_unit": "logical",
+          "allowed_cpu_count": 2,
+          "backend": "serial",
+          "ram_mode": "max",
+          "status": "PASS",
+          "summary": {
+            "status": "PASS",
+            "median_seconds": 0.013741,
+            "codes_per_second": 145.54981442398662,
+            "min_seconds": 0.01374,
+            "max_seconds": 0.01496,
+            "mean_seconds": 0.014147,
+            "spread_seconds": 0.0012199999999999989,
+            "median_with_qa_seconds": 0.225092,
+            "codes_per_second_with_qa": 8.885255806514671,
+            "median_launcher_wall_seconds": 0.5577149000000077,
+            "peak_observed_tree_rss_bytes": 64294912,
+            "completed_repeats": 3
+          },
+          "trials": [
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 12907896423,
+              "rss_peak_bytes": 58654720,
+              "seconds": {
+                "production": 0.01374,
+                "total_including_qa": 0.225092,
+                "code_encoding": 0.00713,
+                "qr_encoding": 0.00713,
+                "write_multipage": 0.003829,
+                "production_until_pdf_closed": 0.01374,
+                "quality_checks": 0.21113,
+                "worker_wall": 0.450107499999973,
+                "launcher_wall": 0.5577149000000077
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Windows owned job aggregate commit limit + sampled RSS guard"
+            },
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 12893770138,
+              "rss_peak_bytes": 59080704,
+              "seconds": {
+                "production": 0.013741,
+                "total_including_qa": 0.224793,
+                "code_encoding": 0.007237,
+                "qr_encoding": 0.007237,
+                "write_multipage": 0.003859,
+                "production_until_pdf_closed": 0.013741,
+                "quality_checks": 0.210826,
+                "worker_wall": 0.441453800000005,
+                "launcher_wall": 0.5586140999999998
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Windows owned job aggregate commit limit + sampled RSS guard"
+            },
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 12904294810,
+              "rss_peak_bytes": 64294912,
+              "seconds": {
+                "production": 0.01496,
+                "total_including_qa": 0.226377,
+                "code_encoding": 0.007535,
+                "qr_encoding": 0.007535,
+                "write_multipage": 0.00387,
+                "production_until_pdf_closed": 0.01496,
+                "quality_checks": 0.211211,
+                "worker_wall": 0.450622199999998,
+                "launcher_wall": 0.5576478000000122
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Windows owned job aggregate commit limit + sampled RSS guard"
+            }
+          ]
+        },
+        {
+          "id": "C0005",
+          "cpu_choice": "2",
+          "cpu_unit": "logical",
+          "allowed_cpu_count": 2,
+          "backend": "process",
+          "ram_mode": "max",
+          "status": "PASS",
+          "summary": {
+            "status": "PASS",
+            "median_seconds": 0.432798,
+            "codes_per_second": 4.621093443130514,
+            "min_seconds": 0.43047,
+            "max_seconds": 0.440864,
+            "mean_seconds": 0.4347106666666667,
+            "spread_seconds": 0.010393999999999959,
+            "median_with_qa_seconds": 0.650161,
+            "codes_per_second_with_qa": 3.0761611354725984,
+            "median_launcher_wall_seconds": 1.012405799999982,
+            "peak_observed_tree_rss_bytes": 110043136,
+            "completed_repeats": 3
+          },
+          "trials": [
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 12905179546,
+              "rss_peak_bytes": 106921984,
+              "seconds": {
+                "production": 0.43047,
+                "total_including_qa": 0.640721,
+                "code_encoding": 0.422268,
+                "qr_encoding": 0.422268,
+                "write_multipage": 0.00414,
+                "production_until_pdf_closed": 0.43047,
+                "quality_checks": 0.210033,
+                "worker_wall": 0.8624579000000097,
+                "launcher_wall": 1.0126863000000128
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Windows owned job aggregate commit limit + sampled RSS guard"
+            },
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 12903826637,
+              "rss_peak_bytes": 110043136,
+              "seconds": {
+                "production": 0.432798,
+                "total_including_qa": 0.650161,
+                "code_encoding": 0.425229,
+                "qr_encoding": 0.425229,
+                "write_multipage": 0.004202,
+                "production_until_pdf_closed": 0.432798,
+                "quality_checks": 0.217107,
+                "worker_wall": 0.8805838000000108,
+                "launcher_wall": 1.012405799999982
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Windows owned job aggregate commit limit + sampled RSS guard"
+            },
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 12904136295,
+              "rss_peak_bytes": 110039040,
+              "seconds": {
+                "production": 0.440864,
+                "total_including_qa": 0.656035,
+                "code_encoding": 0.434228,
+                "qr_encoding": 0.434228,
+                "write_multipage": 0.004078,
+                "production_until_pdf_closed": 0.440864,
+                "quality_checks": 0.214932,
+                "worker_wall": 0.8794901999999922,
+                "launcher_wall": 1.0122637000000054
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Windows owned job aggregate commit limit + sampled RSS guard"
+            }
+          ]
+        },
+        {
+          "id": "C0006",
+          "cpu_choice": "2",
+          "cpu_unit": "logical",
+          "allowed_cpu_count": 2,
+          "backend": "thread",
+          "ram_mode": "max",
+          "status": "PASS",
+          "summary": {
+            "status": "PASS",
+            "median_seconds": 0.018348,
+            "codes_per_second": 109.00370612600828,
+            "min_seconds": 0.018179,
+            "max_seconds": 0.019514,
+            "mean_seconds": 0.018680333333333334,
+            "spread_seconds": 0.0013349999999999994,
+            "median_with_qa_seconds": 0.231556,
+            "codes_per_second_with_qa": 8.637219506296532,
+            "median_launcher_wall_seconds": 0.6080685000000017,
+            "peak_observed_tree_rss_bytes": 61419520,
+            "completed_repeats": 3
+          },
+          "trials": [
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 12899974349,
+              "rss_peak_bytes": 50794496,
+              "seconds": {
+                "production": 0.018348,
+                "total_including_qa": 0.249401,
+                "code_encoding": 0.011754,
+                "qr_encoding": 0.011754,
+                "write_multipage": 0.003994,
+                "production_until_pdf_closed": 0.018348,
+                "quality_checks": 0.230815,
+                "worker_wall": 0.47843770000000063,
+                "launcher_wall": 0.6080685000000017
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Windows owned job aggregate commit limit + sampled RSS guard"
+            },
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 12911092532,
+              "rss_peak_bytes": 61419520,
+              "seconds": {
+                "production": 0.019514,
+                "total_including_qa": 0.231556,
+                "code_encoding": 0.011676,
+                "qr_encoding": 0.011676,
+                "write_multipage": 0.003884,
+                "production_until_pdf_closed": 0.019514,
+                "quality_checks": 0.211821,
+                "worker_wall": 0.4567218999999909,
+                "launcher_wall": 0.6082839000000035
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Windows owned job aggregate commit limit + sampled RSS guard"
+            },
+            {
+              "pages": 2,
+              "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9",
+              "affinity_verified": true,
+              "workers_inherited_affinity": true,
+              "budget_bytes": 12905430221,
+              "rss_peak_bytes": 59219968,
+              "seconds": {
+                "production": 0.018179,
+                "total_including_qa": 0.230714,
+                "code_encoding": 0.011741,
+                "qr_encoding": 0.011741,
+                "write_multipage": 0.003961,
+                "production_until_pdf_closed": 0.018179,
+                "quality_checks": 0.212304,
+                "worker_wall": 0.46757619999999633,
+                "launcher_wall": 0.6075562999999988
+              },
+              "qa": "PASS",
+              "ram_enforcement": "Windows owned job aggregate commit limit + sampled RSS guard"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
