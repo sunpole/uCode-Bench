@@ -85,7 +85,7 @@ class OperatorWindowTests(unittest.TestCase):
         self.assertTrue(self.app.audit_button.instate(["!disabled"]))
         self.app.audit_button.invoke(); self.app.worker.join(timeout=10); self.app.poll()
         self.assertFalse(self.app.busy)
-        self.assertEqual(self.app.last_output,job)
+        self.assertTrue(self.app.last_output.samefile(job))
         self.assertIn("ПРОВЕРКА:",self.app.result_var.get())
         self.assertEqual((job/"manifest.json").read_bytes(),original)
         self.assertEqual(self.app.last_report.parent.parent.name,"audits")

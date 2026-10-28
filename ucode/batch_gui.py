@@ -19,6 +19,7 @@ from .ui_layout import POLICIES, EXECUTION_METHODS, PDF_PROFILES,QA_MODES,build_
 from .engines import get_engine
 from .hardware import inspect_hardware, probe_directory
 from .execution import ExecutionOptions, execution_plan
+from .open_reports import open_html_report
 
 PROJECT = Path(__file__).resolve().parents[1]
 HELP_TEXT = """1. База TXT → Открыть: UTF-8, одна строка — ровно 12 цифр.
@@ -56,6 +57,15 @@ HELP_TEXT = """1. База TXT → Открыть: UTF-8, одна строка 
 Сейчас — наблюдаемая скорость по короткому окну (около 3 секунд).
 Средняя этапа — обработанный объём / время с начала данного этапа.
 «CPU / RAM»: физические ядра и логические CPU показаны раздельно.
+«Лаборатория»: выберите физические ядра или логические потоки текущего ПК.
+Галочки 1/2/4/6/8/12/Все −2/Все — отдельные варианты серии, не их сумма.
+«Все −2» исключает два выбранных ядра/потока из теста, но не резервирует
+их исключительно для Windows. Недоступные кнопки отключены.
+Прогрев — дополнительные пробные PDF для файлового кэша перед замерами.
+0 выключает прогрев. Эти запуски сохраняются, но не входят в медиану;
+они добавляются к каждому варианту. Каждый повтор запускается в новом
+процессе, поэтому прогрев не сохраняет Python-пул между замерами.
+«Замеры» — число учитываемых запусков; обычно достаточно трёх.
 Доступные CPU учитывают ограничения процесса. SMT не удваивает число ядер.
 Процессы параллельно кодируют QR; запись PDF и QA пока последовательны.
 Размер партии определяет число кодов на задачу. Для маленького TXT запуск
@@ -227,12 +237,14 @@ class BatchWindow:
         self.open.configure(state="normal" if self.last_pdf and not self.busy else "disabled")
         self.folder_button.configure(state="normal" if self.last_output and not self.busy else "disabled")
         self.report_button.configure(state="normal" if self.last_report and not self.busy else "disabled")
+        self.report_button.configure(text="Отчёт в браузере" if self.last_report and self.last_report.suffix.lower() in (".html",".htm") else "Посмотреть отчёт")
 
     def show_generation(self):
         self.notebook.select(self.pages["generation"])
         self.custom_count_entry.focus_set()
 
     def show_lab(self):
+        self.refresh_hardware()
         self.notebook.select(self.pages["lab"])
 
     def show_resources(self):
@@ -251,6 +263,7 @@ class BatchWindow:
                 f"RAM: {gib(ram['total_bytes'])}, свободно {gib(ram['available_bytes'])} · диск {disk['bus'] or '?'}, свободно {gib(disk['free_bytes'])}")
             if hasattr(self, "workers_entry"):
                 self.workers_entry.configure(values=cpu["presets"])
+            if hasattr(self,"lab_refresh"): self.lab_refresh()
             self.refresh_plan()
         except (ValueError, OSError) as exc:
             self.hardware_summary.set(f"Ресурсы не определены: {exc}")
@@ -559,6 +572,9 @@ class BatchWindow:
         path = Path(path)
         if not path.exists():
             self.status_var.set("Файлы ещё не созданы")
+        elif path.suffix.lower() in (".html",".htm") and path.is_file():
+            try: open_html_report(path)
+            except (OSError,ValueError) as exc: self.status_var.set(str(exc))
         elif hasattr(os, "startfile"):
             os.startfile(str(path.resolve()))
         else:

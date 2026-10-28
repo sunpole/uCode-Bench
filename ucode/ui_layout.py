@@ -57,7 +57,7 @@ def build_window(app, help_text):
                          ("Большой — 10 000", 10000), ("Полный — 200 → 1 000 → 10 000", "all")):
         tests.add_command(label=label, command=lambda n=count: app.start_test(n))
     tests.add_separator()
-    tests.add_command(label="Лаборатория CPU / RAM", command=app.show_lab)
+    tests.add_command(label="Тесты CPU / PDF — ядра и прогрев", command=app.show_lab)
     tests.add_command(label="Результаты лаборатории", command=lambda: app.open_path(Path(app.destination_var.get()) / "laboratory"))
     tests.add_command(label="Выбрать движки объединения", command=app.performance_dialog)
     tests.add_command(label="Предыдущие результаты", command=lambda: app.open_path(app.output_root / "benchmarks"))
@@ -67,8 +67,8 @@ def build_window(app, help_text):
     app.notebook.grid(row=3, column=0, sticky="nsew", pady=(0, 7))
     app.pages = {}
     for key, title in (("generation", "Генерация"), ("print", "PDF и цвет"),
-                       ("resources", "CPU / RAM"), ("lab", "Лаборатория"), ("tests", "Тесты"), ("help", "Справка")):
-        page = ttk.Frame(app.notebook, padding=(8, 5))
+                       ("resources", "CPU / RAM"), ("lab", "Тесты CPU / PDF"), ("tests", "Объединение"), ("help", "Справка")):
+        page = ttk.Frame(app.notebook, padding=(8, 4))
         app.notebook.add(page, text=title)
         app.pages[key] = page
     _generation(app)
