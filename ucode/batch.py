@@ -20,6 +20,8 @@ from .generators import get_generator
 from .generation_plan import build_plan
 from .progress import ProgressTracker
 from .resources import check_resources
+from .hardware import inspect_hardware
+from .execution import ExecutionOptions, execution_plan, encode_values
 from . import __version__
 
 SIZES = (200, 1000, 10000)
@@ -109,7 +111,7 @@ def _sha256(path: Path) -> str:
 def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
               settings=None,
               progress: Callable[[str], None] | None = None, cancel=None, events=None,
-              generator="qr", engine="reportlab", copies_per_value=1, duplicate_policy="preserve") -> Path:
+              generator="qr", engine="reportlab", copies_per_value=1, duplicate_policy="preserve", execution=None) -> Path:
     """Create actual PDF files and QA evidence, without overwriting old runs.
 
     Encoding and PDF writing are measured separately from quality checks.
@@ -132,6 +134,11 @@ def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
     resource_info = check_resources(output_root, plan.total_codes)
     numbers = list(plan.iter_values())
     encoding_numbers = list(dict.fromkeys(plan.selected_values))
+    hardware = inspect_hardware(output_root)
+    execution = execution or ExecutionOptions()
+    if execution.backend not in selected_engine.info().execution_modes:
+        raise ValueError("Движок не поддерживает выбранный способ выполнения")
+    execution_info = execution_plan(execution, len(encoding_numbers), hardware["cpu"], hardware["ram"]["available_bytes"])
     selected_engine.prepare()
     directory = _make_directory(output_root, f"pdf-{len(numbers)}")
     raster = shutil.which("pdftoppm") is not None
@@ -148,6 +155,7 @@ def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
         "first_code": numbers[0], "last_code": numbers[-1],
         "print": print_metadata,
         "resources": resource_info,
+        "hardware": hardware, "execution": execution_info,
         "files": {}, "seconds": {}, "qa": {}, "errors": [],
     }
     started = time.perf_counter()
@@ -173,7 +181,9 @@ def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
         progress(f"Читаем {len(numbers)} строк TXT и создаём {code_module.name}")
         tracker.step(f"Кодирование {code_module.progress_name}", 0, len(encoding_numbers), base, force=True)
         t = time.perf_counter()
-        encoded = selected_engine.encode(encoding_numbers, cancel=cancel,
+        encoded, _ = encode_values(encoding_numbers, engine_key=engine, options=execution,
+            selected_engine=selected_engine, generator=generator, mode=mode, colorspace=print_metadata["colorspace"],
+            plan=execution_info.copy(), metadata=report["execution"], cancel=cancel,
             on_progress=lambda done, total: tracker.step(f"Кодирование {code_module.progress_name}", done, total, base))
         if len(encoded) != len(encoding_numbers) or any(frame.payload != number for frame, number in zip(encoded, encoding_numbers)):
             raise ValueError("Движок изменил количество или порядок значений относительно TXT")

@@ -116,6 +116,24 @@ def human_report(report: dict) -> str:
         f"Проверка качества: {format_duration(values.get('quality_checks'))}",
     ]
     elapsed = values.get("total_including_qa")
+    hardware = report.get("hardware")
+    if hardware:
+        cpu, ram, disk = (hardware[key] for key in ("cpu", "ram", "disk"))
+        def gib(value):
+            return f"{value / 1024**3:.2f} ГиБ" if value is not None else "неизвестно"
+        execution = report.get("execution", {})
+        rows.extend(["", "ПРОЦЕССОР И РЕСУРСЫ",
+                     f"CPU: {cpu.get('name') or 'неизвестно'}",
+                     f"Физические ядра: {cpu['physical_cores']}; логические CPU: {cpu['logical_processors']}",
+                     f"Доступно процессу: {cpu['available_physical']} физических / {cpu['available_logical']} логических",
+                     f"Источник CPU: {cpu['source']}; ограничения: {cpu.get('reason') or 'см. scope в manifest'}",
+                     f"RAM всего / доступно: {gib(ram['total_bytes'])} / {gib(ram['available_bytes'])}",
+                     f"Диск: {disk.get('bus') or 'шина неизвестна'}; {disk.get('media') or 'носитель неизвестен'}; свободно {gib(disk['free_bytes'])}",
+                     "Скорость диска этим запуском не измерялась.",
+                     f"Режим кодирования: {execution.get('backend')}; процессы запрошены / использованы: {execution.get('requested_workers')} / {execution.get('effective_workers')}",
+                     f"Партия: {execution.get('batch_size')}; завершено значений: {execution.get('completed_values', 0)}",
+                     "Запись PDF и QA последовательны. Affinity: планировщик ОС, закрепление не выполняется.",
+                     f"Предварительная оценка RAM (не измеренный пик/не квота): {gib(execution.get('required_ram_estimate_bytes'))}; резерв {gib(execution.get('os_reserve_bytes'))}", ""])
     generation = report.get("generation")
     if generation:
         rows.extend(["", "РАСЧЁТ ТИРАЖА",

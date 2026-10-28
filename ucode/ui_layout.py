@@ -4,6 +4,7 @@ import tkinter as tk
 from .ui_theme import COLORS, apply_dark_theme
 
 POLICIES = {"Сохранить строки": "preserve", "Только уникальные": "unique"}
+EXECUTION_METHODS = {"Последовательно": "serial", "Процессы": "process"}
 
 
 def build_window(app, help_text):
@@ -44,6 +45,7 @@ def build_window(app, help_text):
     settings.add_command(label="Размер PDF и белое поле", command=lambda: app.geometry_dialog(False))
     settings.add_command(label="Размер модуля", command=lambda: app.geometry_dialog(True))
     settings.add_command(label="Цвет CMYK и формат PDF", command=app.color_dialog)
+    settings.add_command(label="CPU, RAM и диск", command=app.show_resources)
     settings.add_command(label="Печать K100", command=app.use_k100)
     settings.add_separator()
     settings.add_command(label="Восстановить стандартные настройки", command=app.restore_defaults)
@@ -60,12 +62,13 @@ def build_window(app, help_text):
     app.notebook.grid(row=3, column=0, sticky="nsew", pady=(0, 7))
     app.pages = {}
     for key, title in (("generation", "Генерация"), ("print", "PDF и цвет"),
-                       ("tests", "Тесты"), ("help", "Справка")):
+                       ("resources", "CPU / RAM"), ("tests", "Тесты"), ("help", "Справка")):
         page = ttk.Frame(app.notebook, padding=(8, 5))
         app.notebook.add(page, text=title)
         app.pages[key] = page
     _generation(app)
     _print(app)
+    _resources(app)
     page = app.pages["tests"]
     ttk.Label(page, text="Научный профиль: 3 повтора · QR V1-M · K100\n"
               "Настройки и экземпляры обычной генерации на него не влияют.", style="Muted.TLabel").pack(anchor="w")
@@ -175,3 +178,26 @@ def _print(app):
     buttons.pack(anchor="w", pady=(8, 0))
     app.edit(ttk.Button(buttons, text="Применить размер и цвет", command=app.apply_print)).pack(side="left")
     app.edit(ttk.Button(buttons, text="Стандартные настройки", command=app.restore_defaults)).pack(side="left", padx=8)
+
+
+def _resources(app):
+    page = app.pages["resources"]
+    ttk.Label(page, textvariable=app.hardware_summary, style="Muted.TLabel", wraplength=850).pack(anchor="w")
+    controls = ttk.Frame(page)
+    controls.pack(anchor="w", pady=3)
+    app.edit(ttk.Combobox(controls, values=tuple(EXECUTION_METHODS), textvariable=app.backend_var,
+                         state="readonly", width=19), "readonly").pack(side="left")
+    ttk.Label(controls, text="Процессов:").pack(side="left", padx=(10, 5))
+    app.workers_entry = app.edit(ttk.Combobox(controls, values=app.hardware["cpu"]["presets"],
+                                             textvariable=app.workers_var, width=7))
+    app.workers_entry.pack(side="left")
+    ttk.Label(controls, text="Кодов в партии:").pack(side="left", padx=(10, 5))
+    app.edit(ttk.Spinbox(controls, from_=1, to=1000, width=6, textvariable=app.batch_size_var)).pack(side="left")
+    ttk.Label(page, textvariable=app.execution_preview, style="Accent.TLabel", wraplength=850).pack(anchor="w", pady=1)
+    ttk.Label(page, text="Процессы кодируют QR; запись PDF и проверка пока последовательны.\n"
+              "CPU выбирает Windows/Linux. Потоки и ручная привязка ещё не подключены.",
+              style="Muted.TLabel", wraplength=850).pack(anchor="w", pady=3)
+    buttons = ttk.Frame(page); buttons.pack(anchor="w", pady=2)
+    app.edit(ttk.Button(buttons, text="Обновить ресурсы", command=app.refresh_hardware)).pack(side="left")
+    app.edit(ttk.Button(buttons, text="Проверить запись 32 КиБ", command=app.probe_output)).pack(side="left", padx=8)
+    app.edit(ttk.Button(buttons, text="Сохранить", command=app.remember)).pack(side="left")

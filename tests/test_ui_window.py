@@ -149,6 +149,37 @@ class OperatorWindowTests(unittest.TestCase):
         self.assertAlmostEqual(self.app.print_settings.module_mm, .5)
         self.assertEqual(self.app.mode_var.get(), "multipage")
 
+    def test_cpu_panel_and_process_worker_from_tk_thread(self):
+        if self.app.hardware["cpu"]["available_logical"] < 2:
+            self.skipTest("Нужны два доступных CPU")
+        path = self.folder / "cpu.txt"
+        path.write_text("200000000001\n200000000002\n", encoding="utf-8")
+        self.app.input_var.set(str(path))
+        self.app.show_resources()
+        self.app.backend_var.set("Процессы")
+        self.app.workers_var.set("2")
+        self.app.batch_size_var.set("1")
+        self.app.inspect_input()
+        self.app.start()
+        self.app.worker.join(timeout=15)
+        self.assertFalse(self.app.worker.is_alive())
+        self.app.poll()
+        data = json.loads((self.app.last_output / "manifest.json").read_text(encoding="utf-8"))
+        self.assertIn(data["status"], ("COMPLETE", "LIMITED"))
+        self.assertEqual(data["execution"]["backend"], "process")
+        self.assertEqual(len(data["execution"]["worker_pids"]), 2)
+        self.assertEqual(data["qa"]["multipage"]["pages_checked"], 2)
+        self.assertEqual(self.app.read_generation_options().workers, 2)
+
+    def test_cpu_count_above_available_is_rejected(self):
+        path = self.folder / "cpu.txt"
+        path.write_text("200000000001\n", encoding="utf-8")
+        self.app.input_var.set(str(path)); self.app.inspect_input()
+        self.app.backend_var.set("Процессы")
+        self.app.workers_var.set(str(self.app.hardware["cpu"]["available_logical"] + 1))
+        self.assertTrue(self.app.generate.instate(["disabled"]))
+        self.assertIn("CPU", self.app.plan_var.get())
+
 
 class CancellationTests(unittest.TestCase):
     def test_cancel_during_encoding_keeps_input_and_never_shows_100(self):

@@ -1,0 +1,153 @@
+"""Ordered, bounded encoding backends. Workers never touch Tk or final PDF.
+
+Spawn + one pipe per owned process avoids the Windows 61-worker executor cap.
+Only one batch is in flight per worker; cancellation reaps this pool only.
+"""
+from dataclasses import dataclass
+import math
+import multiprocessing as mp
+import os
+import time
+
+from .engines import get_engine
+from .hardware import inspect_cpu, memory_info
+
+
+@dataclass(frozen=True)
+class ExecutionOptions:
+    backend: str = "serial"
+    workers: int = 1
+    batch_size: int = 32
+
+    def __post_init__(self):
+        if self.backend not in ("serial", "process"):
+            raise ValueError("Доступны последовательный режим и процессы; потоки пока не подключены")
+        for value in (self.workers, self.batch_size):
+            if isinstance(value, bool) or not isinstance(value, int) or value < 1:
+                raise ValueError("Процессы и партия должны быть положительными целыми числами")
+        if self.batch_size > 1000:
+            raise ValueError("Размер партии: от 1 до 1000")
+
+
+def execution_plan(options, count, cpu, available_ram):
+    if options.workers > cpu["available_logical"] and options.backend == "process":
+        raise ValueError(f"Процессов больше, чем доступных CPU: {cpu['available_logical']}")
+    effective = min(options.workers, math.ceil(count / options.batch_size)) if options.backend == "process" else 1
+    if options.backend == "process" and available_ram is None:
+        raise ValueError("Свободная RAM неизвестна; процессы недоступны до проверки ресурсов")
+    # A conservative preflight estimate, not a measured peak or a RAM quota.
+    reserve = max(512 * 1024**2, (available_ram or 0) // 10)
+    required = 256 * 1024**2 + count * 40000 + (effective * 128 * 1024**2 if options.backend == "process" else 0)
+    if available_ram is not None and available_ram < required + reserve:
+        raise ValueError(f"Недостаточно свободной RAM для {effective} процессов и резерва ОС; уменьшите процессы")
+    return {"backend": options.backend, "requested_workers": options.workers, "effective_workers": effective,
+            "batch_size": options.batch_size, "required_ram_estimate_bytes": required,
+            "os_reserve_bytes": reserve, "ram_limit_enforced": False,
+            "ram_check": "estimated" if available_ram is not None else "unknown",
+            "scope": "Только кодирование QR; запись PDF и QA последовательны",
+            "affinity": "OS scheduler, без закрепления CPU", "start_method": "spawn" if options.backend == "process" else None}
+
+
+def _worker(connection, stop, engine_key, engine_spec):
+    try:
+        engine = get_engine(engine_key, **engine_spec); engine.prepare()
+        while not stop.is_set():
+            job = connection.recv()
+            if job is None: break
+            index, values = job
+            frames = engine.encode(values, cancel=stop)
+            connection.send(("ok", index, frames, os.getpid()))
+    except (EOFError, BrokenPipeError):
+        pass
+    except BaseException as exc:
+        try: connection.send(("error", type(exc).__name__ + ": " + str(exc)))
+        except (OSError, EOFError): pass
+    finally:
+        connection.close()
+
+
+def _cancelled(cancel):
+    if cancel is not None and cancel.is_set():
+        raise InterruptedError("Кодирование остановлено; созданные файлы сохранены")
+
+
+def encode_values(values, *, engine_key="reportlab", options=None, plan=None, cancel=None,
+                  on_progress=None, metadata=None, selected_engine=None, generator="qr",
+                  mode="multipage", colorspace="DeviceCMYK"):
+    options = options or ExecutionOptions()
+    engine_spec = {"generator": generator, "mode": mode, "colorspace": colorspace}
+    engine = selected_engine or get_engine(engine_key, **engine_spec)
+    if options.backend not in engine.info().execution_modes:
+        raise ValueError("Движок не поддерживает выбранный способ выполнения")
+    _cancelled(cancel)
+    plan = plan or execution_plan(options, len(values), inspect_cpu(), memory_info()["available_bytes"])
+    info = metadata if metadata is not None else {}
+    info.update(plan, worker_pids=[], completed_values=0, max_in_flight_values=0)
+    if options.backend == "serial":
+        engine.prepare()
+        def observe(done, total):
+            info["completed_values"] = done
+            if on_progress: on_progress(done, total)
+        frames = engine.encode(values, cancel=cancel, on_progress=observe)
+        return frames, info
+    context = mp.get_context("spawn"); stop = context.Event()
+    pool = []; result = {}; sent = 0; completed = 0; chunks = math.ceil(len(values) / options.batch_size)
+    try:
+        for _ in range(plan["effective_workers"]):
+            _cancelled(cancel)
+            parent, child = context.Pipe()
+            process = context.Process(target=_worker, args=(child, stop, engine_key, engine_spec), name="ucode-encoder")
+            try: process.start()
+            except BaseException:
+                parent.close(); child.close(); raise
+            child.close(); pool.append((process, parent))
+        active = {}
+        def assign(connection):
+            nonlocal sent
+            if sent < chunks:
+                start = sent * options.batch_size
+                batch = values[start:start+options.batch_size]
+                connection.send((sent, batch)); active[connection] = (sent, batch)
+                sent += 1
+                info["max_in_flight_values"] = max(info["max_in_flight_values"], sum(len(b) for _, b in active.values()))
+        for _, connection in pool: assign(connection)
+        while active:
+            _cancelled(cancel)
+            changed = False
+            for process, connection in pool:
+                if connection not in active: continue
+                try:
+                    ready = connection.poll()
+                except OSError as exc:
+                    raise RuntimeError("Рабочий процесс завершился без результата; канал закрыт") from exc
+                if ready:
+                    try: message = connection.recv()
+                    except EOFError as exc: raise RuntimeError("Рабочий процесс завершился без результата") from exc
+                    if message[0] != "ok": raise RuntimeError("Ошибка рабочего процесса: " + message[1])
+                    _, index, frames, pid = message
+                    expected_index, batch = active.pop(connection)
+                    if index != expected_index or [frame.payload for frame in frames] != list(batch):
+                        raise ValueError("Рабочий процесс изменил порядок или количество кодов")
+                    result[index] = frames; completed += len(frames)
+                    info["completed_values"] = completed
+                    if pid not in info["worker_pids"]: info["worker_pids"].append(pid)
+                    if on_progress: on_progress(completed, len(values))
+                    _cancelled(cancel); assign(connection); changed = True
+                elif process.exitcode is not None:
+                    raise RuntimeError(f"Рабочий процесс завершился, exitcode={process.exitcode}")
+            if not changed: time.sleep(.01)
+        return [frame for i in range(chunks) for frame in result[i]], info
+    finally:
+        stop.set()
+        for process, connection in pool:
+            try: connection.send(None)
+            except (OSError, EOFError): pass
+        deadline = time.monotonic() + .5
+        for process, _ in pool: process.join(max(0, deadline-time.monotonic()))
+        for process, _ in pool:
+            if process.is_alive(): process.terminate()
+        for process, connection in pool:
+            process.join(2)
+            if process.is_alive(): process.kill(); process.join(2)
+            connection.close()
+            process.close()
