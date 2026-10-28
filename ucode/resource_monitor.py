@@ -143,9 +143,10 @@ def tree_stats(root):
 
 
 class TreeMonitor:
-    def __init__(self, cancel, budget, interval=.05):
+    def __init__(self, cancel, budget, interval=.05,telemetry=None):
         self.cancel = cancel; self.budget = budget; self.interval = interval
         self.stop = threading.Event(); self.peaks = {}; self.reason = ""
+        self.telemetry=telemetry
         self.data = {"peak_tree_rss_bytes": 0, "samples": 0, "max_observed_processes": 0,
                      "peak_tree_private_bytes": None,
                      "sample_interval_seconds": interval,
@@ -155,6 +156,10 @@ class TreeMonitor:
     def sample(self):
         stats = tree_stats(os.getpid())
         if not stats: return
+        if self.telemetry:
+            try: self.telemetry.sample(stats)
+            except (OSError,ValueError) as exc:
+                if len(self.telemetry.errors)<10: self.telemetry.errors.append(str(exc))
         rss = sum(item["rss"] for item in stats)
         if all(item["private"] is not None for item in stats):
             self.data["peak_tree_private_bytes"] = max(self.data["peak_tree_private_bytes"] or 0, sum(item["private"] for item in stats))
@@ -179,6 +184,7 @@ class TreeMonitor:
 
     def finish(self):
         self.stop.set(); self.thread.join(2); self.sample()
+        if self.telemetry: self.data["cpu_telemetry"]=self.telemetry.finish()
         self.data["observed_cpu_seconds"] = sum(self.peaks.values())
         self.data["limit_reason"] = self.reason
         return self.data

@@ -38,10 +38,11 @@ class LabConfig:
     pdf_profiles: tuple = ("standard",)
     activity_modes: tuple = ("normal",)
     qa_mode: str = "full"
+    telemetry_modes: tuple = ("cpu",)
 
     def __post_init__(self):
         if self.qa_mode not in ("full","vector","deferred"): raise ValueError("Неверный режим проверки PDF")
-        axes = (self.counts, self.cpu_counts, self.cpu_units, self.backends, self.ram_modes,self.pdf_profiles,self.activity_modes)
+        axes = (self.counts, self.cpu_counts, self.cpu_units, self.backends, self.ram_modes,self.pdf_profiles,self.activity_modes,self.telemetry_modes)
         if any(not isinstance(axis, tuple) or not axis or len(axis) > 64 for axis in axes):
             raise ValueError("Списки лаборатории должны содержать 1–64 значения")
         if any(isinstance(n, bool) or not isinstance(n, int) or n<1 for n in self.counts):
@@ -52,6 +53,7 @@ class LabConfig:
             raise ValueError("Неизвестные CPU units/backend")
         if set(self.pdf_profiles)-{"standard","compact"} or set(self.activity_modes)-{"normal","minimal"}:
             raise ValueError("Неизвестные PDF/overhead профили")
+        if set(self.telemetry_modes)-{"off","cpu"}: raise ValueError("Неверный режим замеров CPU")
         if any(mode not in ("auto", "50%", "80%", "max") and not (isinstance(mode,str) and mode.endswith("MiB") and mode[:-3].isdigit()) for mode in self.ram_modes):
             raise ValueError("RAM: auto, 50%, 80%, max, число с MiB")
         for value, minimum, maximum in ((self.repeats,1,10),(self.warmups,0,3),(self.batch_size,1,1000)):
@@ -73,17 +75,17 @@ class LabConfig:
 
 def build_cases(config, cpu):
     rows = []; equivalent = {}
-    for count, choice, unit, backend, ram,pdf_profile,activity in itertools.product(config.counts, config.cpu_counts, config.cpu_units, config.backends, config.ram_modes,config.pdf_profiles,config.activity_modes):
+    for count, choice, unit, backend, ram,pdf_profile,activity,telemetry in itertools.product(config.counts, config.cpu_counts, config.cpu_units, config.backends, config.ram_modes,config.pdf_profiles,config.activity_modes,config.telemetry_modes):
         row = {"id": f"C{len(rows)+1:04d}", "count": count, "cpu_choice": str(choice), "cpu_unit": unit,
                "backend": backend, "ram_mode": ram,"pdf_profile":pdf_profile,"activity":activity, "cpus": [], "workers": 1,
-               "status": "PENDING", "reason": "", "trials": [],"qa_mode":config.qa_mode}
+               "status": "PENDING", "reason": "", "trials": [],"qa_mode":config.qa_mode,"telemetry_mode":telemetry}
         try:
             row["cpus"] = select_cpus(cpu, unit, choice)
             row["workers"] = 1 if backend == "serial" else config.workers or len(row["cpus"])
             if row["workers"] > len(row["cpus"]): raise ValueError("Работников больше выбранных CPU")
             if os.name == "nt" and len({item["group"] for item in row["cpus"]}) > 1:
                 raise ValueError("Windows multi-group forced affinity пока не поддерживается")
-            identity=(count,unit,tuple((item["group"],item["logical"]) for item in row["cpus"]),backend,ram,row["workers"],pdf_profile,activity)
+            identity=(count,unit,tuple((item["group"],item["logical"]) for item in row["cpus"]),backend,ram,row["workers"],pdf_profile,activity,telemetry)
             if identity in equivalent:
                 row["equivalent_case"]=equivalent[identity]
                 raise ValueError("Эквивалентный CPU-набор уже проверяется в "+equivalent[identity])
@@ -109,10 +111,11 @@ def _run_trial(folder, request, cancel, on_progress, timeout=None, cancel_grace=
     atomic_json(folder / "request.json", request)
     env = dict(os.environ, PYTHONUTF8="1")
     args = [sys.executable, "-m", "ucode.lab_worker", str((folder/"request.json").resolve())]
+    if request.get("runtime_root"): env["UCODE_ASSET_ROOT"]=request["asset_root"]
     kwargs = {"creationflags": subprocess.CREATE_NO_WINDOW} if os.name=="nt" else {"start_new_session": True}
     started = time.perf_counter(); cancelling = None; seen = None; timed_out = False
     with (folder / "worker.log").open("x", encoding="utf-8") as log:
-        process = subprocess.Popen(args, cwd=PROJECT, env=env, stdout=log, stderr=subprocess.STDOUT, **kwargs)
+        process = subprocess.Popen(args, cwd=request.get("runtime_root",PROJECT), env=env, stdout=log, stderr=subprocess.STDOUT, **kwargs)
         try:
             while process.poll() is None:
                 elapsed = time.perf_counter()-started
@@ -166,9 +169,13 @@ def run_lab(output_root, config, *, cancel=None, events=None, progress=None):
     profile={"output_mode":config.output_mode,"print_settings":asdict(PrintSettings(**config.print_settings)),
              "source_digest":data["source_digest"],"python":data["python"],"engine":data["engine"],"gil_enabled":data["gil_enabled"],
              "timing":"production before QA; operation includes selected QA mode; wrapper separately", "metrics_interval_seconds":.05,
-             "pdf_profiles":config.pdf_profiles,"activity_modes":config.activity_modes,"qa_mode":config.qa_mode}
+             "pdf_profiles":config.pdf_profiles,"activity_modes":config.activity_modes,"qa_mode":config.qa_mode,"telemetry_modes":config.telemetry_modes}
     data["comparison_profile"]=profile
     data["comparison_profile_hash"]=hashlib.sha256(json.dumps(profile,sort_keys=True).encode()).hexdigest()
+    from .frozen_runtime import snapshot_runtime,assert_trial_integrity
+    frozen=snapshot_runtime(folder)
+    data["runtime_snapshot"]={"folder":".runtime","source_digest":frozen["source_digest"]}
+    data["source_digest"]=frozen["source_digest"]
     started=time.perf_counter(); completed=0; total=max(1,plan["runs"])
     try:
         if hardware["disk"]["free_bytes"] < plan["estimated_disk_bytes"]:
@@ -181,7 +188,8 @@ def run_lab(output_root, config, *, cancel=None, events=None, progress=None):
                 if cancel is not None and cancel.is_set(): raise InterruptedError("Серия остановлена")
                 warmup=repeat<config.warmups
                 if progress: progress(f"{case['id']} · {case['count']} кодов · CPU {case['cpu_choice']} {case['cpu_unit']} · {case['backend']} · {case['pdf_profile']}/{case['activity']} · {'прогрев' if warmup else 'повтор'} {repeat+1}")
-                request={"count": case["count"], "cpus": case["cpus"], "backend": case["backend"],
+                request={"count": case["count"], "cpus": case["cpus"], "backend": case["backend"],"cpu_unit":case["cpu_unit"],
+                         **frozen,"telemetry_mode":case["telemetry_mode"],
                          "qa_mode":config.qa_mode,
                          "workers": case["workers"], "batch_size": config.batch_size, "ram_mode": case["ram_mode"],
                          "output_mode": config.output_mode, "print_settings": config.print_settings, "warmup": warmup,
@@ -198,6 +206,7 @@ def run_lab(output_root, config, *, cancel=None, events=None, progress=None):
                 trial = _run_trial(folder/"trials"/f"{case['id']}-{repeat+1:02d}", request, cancel, update)
                 trial["relative_folder"] = "trials/"+trial["folder"]
                 case["trials"].append(trial); completed+=1
+                assert_trial_integrity(trial)
                 if trial["status"]=="CANCELLED": raise InterruptedError("Серия остановлена")
                 if warmup and trial["status"]!={"full":"COMPLETE","deferred":"UNVERIFIED","vector":"LIMITED"}[config.qa_mode]: break
                 write_reports(folder,data)

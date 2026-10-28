@@ -10,7 +10,8 @@ from .external import ExternalAdapter, run_engine
 
 
 def _project_root() -> Path:
-    return Path(__file__).resolve().parents[2]
+    from ..runtime import ROOT
+    return ROOT
 
 
 class PdfBoxAdapter(ExternalAdapter):

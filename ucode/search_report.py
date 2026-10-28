@@ -49,6 +49,8 @@ def report_summary(data):
 
 
 def write_search_report(folder,data):
+    from .cpu_report import write_cpu_report
+    write_cpu_report(folder,data)
     from .lab_worker import atomic_json
     folder=Path(folder); data["winners"]=report_summary(data); atomic_json(folder/"pc-search.json",data)
     def number(value): return "—" if value is None else f"{value:.3f}".replace(".",",") if isinstance(value,float) else str(value)
@@ -61,7 +63,7 @@ def write_search_report(folder,data):
             rows.append((case["id"],case["count"],strategy_text(case),"Ядра" if case["cpu_unit"]=="physical" else "Потоки SMT",len(case["cpus"]),METHODS[case["backend"]],case["batch_size"],case["pdf_profile"],case["activity"],
                          index+1,seconds.get("launcher_wall"),seconds.get("code_encoding"),seconds.get("write_multipage"),seconds.get("parts_creation"),seconds.get("merge"),seconds.get("quality_checks"),
                          phase.get("Подготовка, запуск и прочее"),memory.get("observed_cpu_seconds"),memory.get("peak_tree_rss_bytes"),trial.get("pdf_bytes"),trial.get("storage_total_bytes"),trial.get("manifest",{}).get("parts",{}).get("concurrency"),STATUSES.get(status,status),
-                         "; ".join(map(str,trial.get("errors",[]))) or case.get("reason","")))
+                         "; ".join(map(str,trial.get("errors",[]))) if trial else case.get("reason","")))
     fields=("Вариант","Кодов","Способ","CPU тип","CPU разрешено","Кодирование","Кодов за шаг","PDF","Расходы","Повтор","Полное время,с","QR,с (сумма)","Запись PDF,с (сумма)",
             "Части — полное время,с","Объединение,с","Проверка,с","Подготовка/запуск/прочее,с","CPU-сек наблюд.","RSS пик,байт","Итоговый PDF,байт","Каталог запуска,байт","Частей одновременно","Статус","Причина")
     with (folder/"pc-search.csv").open("w",encoding="utf-8-sig",newline="") as stream:
@@ -96,14 +98,23 @@ def write_search_report(folder,data):
         notes.append(f"{item['name']}: {'установлен' if item['installed'] else 'не установлен'}; НЕ ПОДКЛЮЧЁН; {item['reason']}")
     notes += [data["catalog"]["interpreters"]["reason"]+"; адаптер не подключён.","Исходники SHA256: "+data["source_digest"],
               "Старые результаты сохранены. Сырые повторы/пути/метрики: pc-search.json; все строки: pc-search.csv."]
+    notes.append("Загрузка CPU min/среднее/max по этапам и привязанным процессам: cpu-load.html, ЗАГРУЗКА_CPU.txt, cpu-load.csv.")
     (folder/"ОТЧЁТ.txt").write_text("\n".join(notes)+"\n",encoding="utf-8")
     esc=lambda value:html.escape(number(value))
     def table(titles,values):
         return '<div class="scroll"><table><thead><tr>'+''.join('<th>'+esc(value)+'</th>' for value in titles)+'</tr></thead><tbody>'+''.join('<tr>'+''.join('<td>'+esc(value)+'</td>' for value in row)+'</tr>' for row in values)+'</tbody></table></div>'
     summary=[(w["count"],w["case"],w["strategy"],w["cpu_label"],w["median_seconds"],w["min_seconds"],w["max_seconds"],w["bottleneck"],STATUSES.get(w["status"],w["status"])) for w in data["winners"]]
     document='<!doctype html><html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>uCode — подбор на ПК</title><style>body{background:#0b1220;color:#edf4fc;font:16px Segoe UI,Arial;margin:24px}a{color:#5ce0bd}table{border-collapse:collapse}th,td{padding:8px;border:1px solid #31445e;text-align:left}th{background:#21344d}.scroll{overflow:auto}pre{white-space:pre-wrap;line-height:1.5}</style><h1>Подбор на этом ПК</h1><p>'+esc(scope)+'</p>'
+    from .pc_search import SearchConfig,choose_leaders
+    config=SearchConfig(**{k:tuple(v) if k in ("counts","cpu_units","cpu_counts","backends","batches","pdf_profiles","activities","part_counts","part_modes","mergers") else v for k,v in data["config"].items()})
+    complete=choose_leaders(data["cases"],config)
+    allowed=", ".join(map(str,sorted({len(c["cpus"]) for c in complete}))) or "нет"
+    state="СЕРИЯ НЕ ЗАВЕРШЕНА — сравнение всех вариантов не получено" if data["status"] not in ("COMPLETE","UNVERIFIED","LIMITED") else "Серия завершена"
+    document+='<p><strong>'+esc(state)+'</strong> · '+esc(data["status"])+'</p><p>Полные корректные варианты: '+esc(len(complete))+'. Разрешённые CPU-наборы этих вариантов: '+esc(allowed)+'. Фактическая загрузка — в отдельном отчёте CPU.</p>'
+    if data.get("errors"): document+='<p style="color:#ffb6a3">'+esc('; '.join(data["errors"]))+'</p>'
+    document+='<h2>Лучшие среди завершённых вариантов</h2>'
     document+=table(("Кодов","Вариант","Способ","CPU","Медиана,с","min,с","max,с","Дольше всего","Качество"),summary)
-    document+='<h2>Все отдельные запуски</h2>'+table(fields,rows)
+    document+='<p><a href="cpu-load.html">Загрузка CPU: min / среднее / max</a></p><h2>Все отдельные запуски</h2>'+table(fields,rows)
     document+='<h2>Методика, ограничения и доступность</h2><pre>'+html.escape('\n'.join(notes))+'</pre><p><a href="pc-search.csv">CSV</a> · <a href="ОТЧЁТ.txt">Отчёт TXT</a></p>'
     links=[]
     for case in data["cases"]:

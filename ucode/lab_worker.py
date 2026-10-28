@@ -15,9 +15,9 @@ from .resource_monitor import ram_budget, create_owned_job, TreeMonitor
 _JOB_HANDLE = None
 
 
-def code_fingerprint():
+def code_fingerprint(package=None):
     digest=hashlib.sha256()
-    package=Path(__file__).parent
+    package=Path(package) if package is not None else Path(__file__).parent
     for path in sorted(package.rglob("*.py")):
         digest.update(path.relative_to(package).as_posix().encode()); digest.update(path.read_bytes())
     for name in ("merge-pdflib.mjs","PdfBoxMerge.java","pdfsharp/Program.cs","pdfsharp/PdfSharpMerge.csproj"):
@@ -46,7 +46,7 @@ def main(request_path):
     request_path = Path(request_path).resolve()
     folder = request_path.parent
     request = json.loads(request_path.read_text(encoding="utf-8"))
-    result = {"status": "RUNNING", "seconds": {}, "errors": [], "warmup": request.get("warmup", False)}
+    result = {"status": "RUNNING", "seconds": {}, "errors": [], "warmup": request.get("warmup", False),"runtime_code_root":str(Path(__file__).resolve().parents[1])}
     cancel = threading.Event(); watcher_stop = threading.Event(); monitor = None
     started = time.perf_counter()
     def watch():
@@ -64,7 +64,9 @@ def main(request_path):
         except OSError as exc: raise NotImplementedError("Не удалось создать изолированный Windows job: " + str(exc)) from exc
         result["ram_enforcement"] = ("Windows owned job aggregate commit limit + sampled RSS guard" if os.name == "nt" else
                                      "Sampled tree RSS guard + cooperative cancel; not a kernel RAM quota")
-        monitor = TreeMonitor(cancel, budget).start()
+        from .cpu_telemetry import CPUTrace
+        telemetry=CPUTrace(request["cpus"],folder/"cpu-samples.csv") if request.get("telemetry_mode","cpu")=="cpu" else None
+        monitor = TreeMonitor(cancel, budget,telemetry=telemetry).start()
         # Imports are included in outer trial time, separately from production.
         from .batch import run_batch
         from .execution import ExecutionOptions,execution_plan
@@ -85,6 +87,7 @@ def main(request_path):
                 stream.write(f"{(200000000000+i)%10**12:012d}\n")
         last_update = [0.0]
         def progress(value):
+            if telemetry: telemetry.set_phase(value["stage"])
             now = time.perf_counter()
             if now-last_update[0] >= .05 or value["percent"] == 100:
                 try: atomic_json(folder / "progress.json", value)
@@ -92,7 +95,8 @@ def main(request_path):
                 last_update[0] = now
         settings = PrintSettings(**{**request.get("print_settings", {}),"pdf_profile":request.get("pdf_profile","standard")})
         workers = request["workers"] if request["backend"] != "serial" else 1
-        options=ExecutionOptions(request["backend"],workers,request["batch_size"])
+        options=ExecutionOptions(request["backend"],workers,request["batch_size"],
+                                 tuple(request["cpus"]) if request["backend"]=="process" else (),request.get("cpu_unit","logical"))
         estimated=execution_plan(options,count,inspect_cpu(),memory_info()["available_bytes"],buffered=count>10000)
         if estimated["required_ram_estimate_bytes"]>budget["budget_bytes"]:
             raise ValueError("Выбранный RAM budget меньше предварительной оценки; уменьшите работников или увеличьте бюджет")
@@ -102,7 +106,8 @@ def main(request_path):
         else:
             job = run_batch(source, folder / "jobs", mode=request["output_mode"], settings=settings,
                             execution=options,qa_mode=request.get("qa_mode","full"),activity=request.get("activity","normal"),
-                            events=progress, cancel=cancel,temporary_data=request.get("temporary_data",False))
+                            events=progress, cancel=cancel,temporary_data=request.get("temporary_data",False),
+                            execution_observer=telemetry.bind if telemetry else None)
             manifest = json.loads((job / "manifest.json").read_text(encoding="utf-8"))
             result["manifest"] = manifest
             result["job"] = job.relative_to(folder).as_posix()
@@ -117,7 +122,8 @@ def main(request_path):
                                  **{k: v for k, v in manifest["seconds"].items() if k not in ("total_including_qa",)}}
             requested_keys = cpu_keys(request["cpus"])
             for cpus in manifest["execution"].get("worker_affinity", {}).values():
-                if cpus is None or cpu_keys(cpus) != requested_keys:
+                valid=bool(cpus) and (len(cpus)==1 and set(cpu_keys(cpus)).issubset(set(requested_keys)) if options.cpus else cpu_keys(cpus)==requested_keys)
+                if not valid:
                     result["status"] = "INVALID"
                     result["errors"].append("Worker не подтвердил наследование CPU affinity")
     except (NotImplementedError, ValueError) as exc:

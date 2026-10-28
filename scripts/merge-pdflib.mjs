@@ -2,8 +2,9 @@
 // Keep file paths in UTF-8 JSON rather than expanding 1000 paths into argv.
 import { readFile, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
+import { resolve } from 'node:path';
 
-const require = createRequire(import.meta.url);
+const require = createRequire(process.env.UCODE_ASSET_ROOT ? resolve(process.env.UCODE_ASSET_ROOT, 'package.json') : import.meta.url);
 const { PDFDocument } = require('pdf-lib');
 
 async function main() {

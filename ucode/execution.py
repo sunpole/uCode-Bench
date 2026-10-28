@@ -18,6 +18,9 @@ class ExecutionOptions:
     backend: str = "serial"
     workers: int = 1
     batch_size: int = 32
+    cpus: tuple = ()
+    cpu_unit: str = "physical"
+    ram_mode: str = "auto"
 
     def __post_init__(self):
         if self.backend not in ("serial", "process", "thread"):
@@ -27,9 +30,20 @@ class ExecutionOptions:
                 raise ValueError("Процессы и партия должны быть положительными целыми числами")
         if self.batch_size > 1000:
             raise ValueError("Размер партии: от 1 до 1000")
+        if self.cpus and (self.backend!="process" or self.cpu_unit not in ("physical","logical")):
+            raise ValueError("Выбор ядер требует отдельных процессов")
+        if self.ram_mode not in ("auto","max","50%","80%"):
+            raise ValueError("Неверный бюджет ОЗУ")
 
 
 def execution_plan(options, count, cpu, available_ram,*,buffered=False):
+    if options.cpus:
+        from .affinity import cpu_keys
+        if len(cpu_keys(options.cpus))!=len(set(cpu_keys(options.cpus))) or not set(cpu_keys(options.cpus)).issubset(set(cpu_keys(cpu.get("available_cpus") or []))):
+            raise ValueError("Выбранные ядра больше не доступны")
+        if options.workers>len(options.cpus): raise ValueError("Процессов больше выбранных CPU")
+        if options.cpu_unit=="physical" and len({(c["group"],c["core"]) for c in options.cpus})!=len(options.cpus):
+            raise ValueError("Выбраны SMT-потоки одного ядра вместо разных физических ядер")
     if options.workers > cpu["available_logical"] and options.backend != "serial":
         raise ValueError(f"Процессов больше, чем доступных CPU: {cpu['available_logical']}")
     effective = min(options.workers, math.ceil(count / options.batch_size)) if options.backend != "serial" else 1
@@ -39,10 +53,17 @@ def execution_plan(options, count, cpu, available_ram,*,buffered=False):
     reserve = max(512 * 1024**2, (available_ram or 0) // 10)
     per_worker = 128 * 1024**2 if options.backend == "process" else 8 * 1024**2 if options.backend == "thread" else 0
     buffered_count=min(count,max(1,effective)*options.batch_size) if buffered else count
-    required = 256 * 1024**2 + buffered_count * 40000 + effective * per_worker
+    cache_mib=useful_cache_mib(options,available_ram) if buffered else 0
+    required = 256 * 1024**2 + buffered_count * 40000 + effective * per_worker+cache_mib*1024**2
     if available_ram is not None and available_ram < required + reserve:
         raise ValueError(f"Недостаточно свободной RAM для {effective} процессов и резерва ОС; уменьшите процессы")
+    from .resource_monitor import ram_budget
+    budget=ram_budget(options.ram_mode,available_ram) if available_ram is not None else None
+    if budget and required>budget["budget_bytes"]: raise ValueError("План превышает безопасный бюджет ОЗУ; уменьшите число ядер или порцию")
     return {"backend": options.backend, "requested_workers": options.workers, "effective_workers": effective,
+            "cpu_selection":{"unit":options.cpu_unit,"cpus":list(options.cpus),"worker_pinning":bool(options.cpus)},
+            "ram_budget":budget,"detailed_metrics":"NOT_RUN — available in tests only",
+            "sqlite_cache_mib":cache_mib,
             "batch_size": options.batch_size, "required_ram_estimate_bytes": required,
             "os_reserve_bytes": reserve, "ram_limit_enforced": False,
             "ram_check": "estimated" if available_ram is not None else "unknown",
@@ -50,8 +71,18 @@ def execution_plan(options, count, cpu, available_ram,*,buffered=False):
             "affinity": "OS scheduler within inherited affinity; backend does not widen CPU access", "start_method": "spawn" if options.backend == "process" else None}
 
 
-def _worker(connection, stop, engine_key, engine_spec,encoding_only=False):
+def useful_cache_mib(options,available_ram):
+    from .resource_monitor import ram_budget
+    if available_ram is None: return 4
+    budget=ram_budget(options.ram_mode,available_ram)["budget_bytes"]
+    return max(4,min(512,budget//(32*1024**2))) if options.ram_mode=="max" else 16
+
+
+def _worker(connection, stop, engine_key, engine_spec,encoding_only=False,cpus=()):
     try:
+        if cpus:
+            from .affinity import apply_affinity
+            apply_affinity(list(cpus))
         engine = get_engine(engine_key, **engine_spec)
         (getattr(engine,"prepare_encoding",engine.prepare) if encoding_only else engine.prepare)()
         cpus = inspect_cpu().get("available_cpus")
@@ -111,10 +142,11 @@ def encode_values(values, *, engine_key="reportlab", options=None, plan=None, ca
     context = mp.get_context("spawn"); stop = context.Event()
     pool = []; result = result_store if result_store is not None else {}; sent = 0; completed = 0; chunks = math.ceil(len(values) / options.batch_size)
     try:
-        for _ in range(plan["effective_workers"]):
+        for index in range(plan["effective_workers"]):
             _cancelled(cancel)
             parent, child = context.Pipe()
-            process = context.Process(target=_worker, args=(child, stop, engine_key, engine_spec,encoding_only), name="ucode-encoder")
+            assigned=(options.cpus[index],) if options.cpus else ()
+            process = context.Process(target=_worker, args=(child, stop, engine_key, engine_spec,encoding_only,assigned), name="ucode-encoder")
             try: process.start()
             except BaseException:
                 parent.close(); child.close(); raise

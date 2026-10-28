@@ -54,7 +54,7 @@ def verify_stream_outputs(directory,frames,settings,mode,*,raster,cancel=None,on
     return qa
 
 
-def run_stream_batch(input_txt,output_root,*,count_plan,settings,mode,engine,execution,qa_mode,activity,progress,cancel,events,temporary_data=False):
+def run_stream_batch(input_txt,output_root,*,count_plan,settings,mode,engine,execution,qa_mode,activity,progress,cancel,events,temporary_data=False,execution_observer=None):
     from .batch import _make_directory,_sha256
     from .generators import get_generator
     from .engines import get_engine
@@ -85,7 +85,9 @@ def run_stream_batch(input_txt,output_root,*,count_plan,settings,mode,engine,exe
             if not Path(scratch.name).resolve().is_relative_to(directory.resolve()): raise ValueError("Папка временного индекса вне результата")
         data_path=Path(scratch.name)/"data.sqlite" if scratch else directory/"data.sqlite"
         report["qr_cache_retained"]=not temporary_data
-        plan=DiskPlan(data_path,source,copies=count_plan.copies_per_value,policy=count_plan.duplicate_policy,cancel=cancel,guard=guard)
+        from .execution import useful_cache_mib
+        plan=DiskPlan(data_path,source,copies=count_plan.copies_per_value,policy=count_plan.duplicate_policy,cancel=cancel,guard=guard,
+                      cache_mib=useful_cache_mib(execution,hardware["ram"]["available_bytes"]))
         if plan.plan.total_codes!=count_plan.total_codes: raise ValueError("Входной TXT изменился после расчёта тиража; повторите загрузку")
         count=plan.plan.total_codes; unique=plan.plan.unique_values; frames=plan.frames()
         first=plan.db.execute("SELECT value FROM rows ORDER BY id LIMIT 1").fetchone()[0]
@@ -99,7 +101,10 @@ def run_stream_batch(input_txt,output_root,*,count_plan,settings,mode,engine,exe
         if activity=="normal": report["files"]["txt"]["sha256"]=_sha256(directory/"codes.txt")
         raster=qa_mode=="full" and shutil.which("pdftoppm") is not None
         copies=2 if mode=="both" else 1; samples=len({0,count//2,count-1}) if raster else 0
-        tracker=ProgressTracker(unique+count*copies+(0 if qa_mode=="deferred" else (count+samples)*copies)+1,events,min_interval=.5 if activity=="minimal" else .05)
+        def publish(event):
+            if execution_observer: execution_observer(report["execution"])
+            if events: events({**event,"execution":{"backend":execution.backend,"confirmed_processes":len(report["execution"].get("worker_pids",[])) if execution.backend=="process" else 1,"selected_cpu_count":len(execution.cpus) or report["execution"].get("effective_workers",1)}})
+        tracker=ProgressTracker(unique+count*copies+(0 if qa_mode=="deferred" else (count+samples)*copies)+1,publish,min_interval=.5 if activity=="minimal" else .05)
         info=execution_plan(execution,unique,hardware["cpu"],hardware["ram"]["available_bytes"],buffered=True)
         report["execution"]=info
         def encoding(done,total): guard(); tracker.step("Кодирование QR",done,total,0)

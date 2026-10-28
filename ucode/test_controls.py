@@ -24,7 +24,7 @@ def custom_config(app):
     config=LabConfig(counts=(count,),cpu_counts=choices,cpu_units=units,backends=("process",),ram_modes=("auto",),
         repeats=repeats,warmups=0,batch_size=min(32,max(1,count//largest)),workers=0,output_mode="multipage",
         print_settings=asdict(app.print_settings),pdf_profiles=(app.print_settings.pdf_profile,),activity_modes=("normal",),
-        qa_mode=QA_MODES[app.qa_mode_var.get()])
+        qa_mode=QA_MODES[app.qa_mode_var.get()],telemetry_modes=tuple(app.lab_telemetry.get().split(",")))
     for case in build_cases(config,app.hardware["cpu"]):
         if case["status"]=="SKIPPED": raise ValueError("Проверьте выбор ядер: "+case["reason"])
     return config
@@ -57,7 +57,8 @@ class TestControls:
             from .lab_ui import _count
             modes=len(cases); order=" → ".join(cpu_name(case) for case in cases)
             if len(order)>55: order=order[:52]+"…"
-            self.plan.set(f"{_count(modes,('режим','режима','режимов'))} × {_count(config.repeats,('повтор','повтора','повторов'))} = {_count(modes*config.repeats,('запуск','запуска','запусков'))}. Порядок: {order}. Без прогрева.")
+            extra=" Сравнение замеров ВКЛ/ВЫКЛ." if len(config.telemetry_modes)>1 else " Без прогрева."
+            self.plan.set(f"{_count(modes,('режим','режима','режимов'))} × {_count(config.repeats,('повтор','повтора','повторов'))} = {_count(modes*config.repeats,('запуск','запуска','запусков'))}. Порядок: {order}."+extra)
             self.valid=True
         except (ValueError,KeyError) as exc: self.plan.set(str(exc))
         self.update_buttons()
@@ -119,7 +120,8 @@ class TestControls:
         labels={"COMPLETE":"Пройдено","ERROR":"Ошибка","INVALID":"Ошибка QA","NOT_RUN":"Не выполнен",
                 "CANCELLED":"Остановлен","SKIPPED":"Пропущен","LIMITED":"QA неполная","RESOURCE_LIMIT":"Нехватка ресурсов","UNVERIFIED":"Без проверки"}
         for row in self.rows[self.page*self.page_size:(self.page+1)*self.page_size]:
-            self.table.insert("","end",values=(row["cpu"],row["repeat"],seconds_text(row["production"]),
+            label=row["cpu"]+(" · замеры "+("ВКЛ" if row["telemetry_mode"]=="cpu" else "ВЫКЛ") if len(self.app.lab_telemetry.get().split(","))>1 else "")
+            self.table.insert("","end",values=(label,row["repeat"],seconds_text(row["production"]),
                 "Выкл." if row["qa_mode"]=="deferred" else seconds_text(row["qa"]),seconds_text(row["total"]),labels.get(row["status"],row["status"])))
         if self.rows: self.position.set(f"{self.rows[0]['count']} кодов: результаты {self.page*self.page_size+1}–{min(len(self.rows),(self.page+1)*self.page_size)} из {len(self.rows)}. Все строки — в отчёте ниже.")
         else: self.position.set("После запуска здесь будут все отдельные результаты")

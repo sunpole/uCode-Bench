@@ -72,10 +72,11 @@ class CountPlan:
 
 
 class DiskPlan:
-    def __init__(self,path,source,*,copies=1,policy="preserve",cancel=None,guard=lambda:None):
+    def __init__(self,path,source,*,copies=1,policy="preserve",cancel=None,guard=lambda:None,cache_mib=4):
         from .batch import iter_codes
         self.db=sqlite3.connect(str(path)); self.copies=positive_count(copies)
-        self.db.execute("PRAGMA cache_size=-4096")
+        if not isinstance(cache_mib,int) or not 1<=cache_mib<=1024: raise ValueError("Некорректный размер кэша SQLite")
+        self.db.execute(f"PRAGMA cache_size={-cache_mib*1024}")
         self.db.executescript("CREATE TABLE codes(id INTEGER PRIMARY KEY,value TEXT UNIQUE,frame TEXT); CREATE TABLE rows(id INTEGER PRIMARY KEY,value TEXT)")
         n=0; first=last=None
         try:

@@ -3,6 +3,7 @@
 Reference: https://pdf-lib.js.org/docs/api/classes/pdfdocument
 """
 import json
+import os
 from pathlib import Path
 
 from .base import MergeError, validate_paths
@@ -10,7 +11,8 @@ from .external import ExternalAdapter, run_engine
 
 
 def _project_root() -> Path:
-    return Path(__file__).resolve().parents[2]
+    from ..runtime import ROOT
+    return ROOT
 
 
 class PdfLibAdapter(ExternalAdapter):
@@ -19,7 +21,8 @@ class PdfLibAdapter(ExternalAdapter):
 
     def _assets(self):
         root = _project_root()
-        helper = root / "scripts" / "merge-pdflib.mjs"
+        code_root=Path(__file__).resolve().parents[2] if os.environ.get("UCODE_ASSET_ROOT") else root
+        helper = code_root / "scripts" / "merge-pdflib.mjs"
         package_file = root / "node_modules" / "pdf-lib" / "package.json"
         if not helper.is_file() or not package_file.is_file():
             raise MergeError("Local pdf-lib package or helper is missing; run the explicit engine setup")

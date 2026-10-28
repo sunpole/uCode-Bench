@@ -18,6 +18,9 @@ class GenerationPreferences:
     batch_size: int = 32
     qa_mode: str = "full"
     activity: str = "normal"
+    cpu_choice: str = "legacy"
+    cpu_unit: str = "physical"
+    ram_mode: str = "auto"
 
     def __post_init__(self):
         for value in (self.copies_per_value, self.template_count):
@@ -28,6 +31,10 @@ class GenerationPreferences:
         ExecutionOptions(self.execution_backend, self.workers, self.batch_size)
         if self.qa_mode not in ("full","vector","deferred") or self.activity not in ("normal","minimal"):
             raise ValueError("Неверные режимы QA/накладных расходов")
+        if self.cpu_unit not in ("physical","logical") or self.ram_mode not in ("auto","max","50%","80%"):
+            raise ValueError("Неверный выбор CPU/ОЗУ")
+        if self.cpu_choice not in ("legacy","all","all-2") and not (isinstance(self.cpu_choice,str) and self.cpu_choice.isascii() and self.cpu_choice.isdigit() and int(self.cpu_choice)>0):
+            raise ValueError("Неверное количество ядер")
 
 
 def load_user_preferences(path):

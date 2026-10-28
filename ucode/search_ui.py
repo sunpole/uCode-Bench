@@ -30,6 +30,7 @@ class SearchView:
         self.mergers=variable("mergers",tuple(row.name for row in available_adapters()))
         self.mode=variable("search_mode","staged"); self.best=variable("keep_best",2)
         self.ram=variable("ram_mode","auto")
+        self.telemetry=variable("telemetry_mode","cpu")
         self.all_cpus=tk.BooleanVar(master=root,value=saved.get("all_cpu_counts",True))
         self.plan=tk.StringVar(master=root)
         row=ttk.Frame(page); row.pack(anchor="w")
@@ -54,10 +55,11 @@ class SearchView:
         ChoiceMenu(app,row,self.parts,"Частей",[(str(n),str(n)) for n in (2,4,10,20,100)],multiple=True).button.pack(side="left",padx=5)
         ChoiceMenu(app,row,self.part_modes,"Части",[("По очереди","sequential"),("Одновременно","parallel")],multiple=True).button.pack(side="left")
         ChoiceMenu(app,row,self.mergers,"Объединение",[(row.name,row.name) for row in available_adapters()],multiple=True).button.pack(side="left",padx=5)
+        ChoiceMenu(app,row,self.telemetry,"CPU-замеры",[("ВКЛ","cpu"),("ВЫКЛ","off")]).button.pack(side="left")
         ttk.Label(page,textvariable=self.plan,style="Accent.TLabel",wraplength=900).pack(anchor="w",pady=3)
         ttk.Label(page,text="Без галочки CPU — выбор из «Тестов». Итог один PDF. Детали — в отчёте.",
                   style="Muted.TLabel",wraplength=900).pack(anchor="w")
-        for var in (self.counts,self.repeats,self.units,self.methods,self.pdf,self.activities,self.batches,self.parts,self.part_modes,self.mergers,self.mode,self.best,self.all_cpus,self.ram):
+        for var in (self.counts,self.repeats,self.units,self.methods,self.pdf,self.activities,self.batches,self.parts,self.part_modes,self.mergers,self.mode,self.best,self.all_cpus,self.ram,self.telemetry):
             var.trace_add("write",lambda *_:self.refresh())
         app.lab_cpus.trace_add("write",lambda *_:self.refresh())
         self.refresh()
@@ -68,7 +70,7 @@ class SearchView:
         return SearchConfig(counts=tuple(int(n.replace(" ","")) for n in _parts(self.counts.get())),repeats=int(self.repeats.get()),
             cpu_units=_parts(self.units.get()),cpu_counts=_parts(app.lab_cpus.get()),all_cpu_counts=self.all_cpus.get(),
             backends=_parts(self.methods.get()),batches=tuple(map(int,_parts(self.batches.get()))),pdf_profiles=_parts(self.pdf.get()),activities=_parts(self.activities.get()),
-            qa_mode=QA_MODES[app.qa_mode_var.get()],ram_mode=self.ram.get(),search_mode=self.mode.get(),keep_best=int(self.best.get()),
+            qa_mode=QA_MODES[app.qa_mode_var.get()],ram_mode=self.ram.get(),search_mode=self.mode.get(),keep_best=int(self.best.get()),telemetry_mode=self.telemetry.get(),
             part_counts=tuple(map(int,_parts(self.parts.get()))),part_modes=_parts(self.part_modes.get()),mergers=_parts(self.mergers.get()),print_settings=asdict(app.print_settings))
 
     def refresh(self):

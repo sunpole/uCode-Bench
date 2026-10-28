@@ -28,6 +28,9 @@ HELP_TEXT = """1. База TXT → Открыть: UTF-8, одна строка 
    Например: 200 уникальных × 3 экземпляра = 600 кодов.
    «Сохранить строки» оставляет все повторяющиеся строки, как в исходном TXT.
 4. «PDF и цвет»: размер, модуль, белое поле, CMYK и формат файлов.
+   Здесь же — экземпляры и повторы TXT.
+   «Генерация»: QR → CPU → Ядра → 1 / Все −2 / Все; это отдельные процессы.
+   Запись одного PDF пока последовательная. Подробные CPU-замеры только в тестах.
 5. СОЗДАТЬ PDF. Дождитесь кодирования, записи и проверки.
 6. Откройте PDF, папку или понятный ОТЧЁТ.txt.
 
@@ -193,9 +196,11 @@ class BatchWindow:
             workers, batch_size = int(self.workers_var.get()), int(self.batch_size_var.get())
         except ValueError as exc:
             raise ValueError("Количество и экземпляры должны быть целыми числами") from exc
+        control=getattr(self,"generation_cpu",None)
         return GenerationPreferences(copies, POLICIES.get(self.duplicates_var.get(), ""), count,
                                      self.destination_var.get(), EXECUTION_METHODS.get(self.backend_var.get(), ""), workers, batch_size,
-                                     QA_MODES.get(self.qa_mode_var.get(),""),self.activity_var.get())
+                                     QA_MODES.get(self.qa_mode_var.get(),""),self.activity_var.get(),
+                                     control.choice.get() if control else "legacy",control.unit.get() if control else "physical",control.ram.get() if control else "auto")
 
     def refresh_plan(self, *_):
         self.plan_valid = False
@@ -209,10 +214,15 @@ class BatchWindow:
                 text = f"{len(plan.selected_values):,} {basis} × {plan.copies_per_value:,} экз. = {plan.total_codes:,} кодов".replace(",", " ")
                 if plan.duplicate_records and options.duplicate_policy == "preserve":
                     text += f" · уникальных: {plan.unique_values}"
-                execution = execution_plan(ExecutionOptions(options.execution_backend, options.workers, options.batch_size),
+                from .generation_cpu import execution_options
+                execution = execution_plan(execution_options(options,self.hardware),
                     plan.unique_values, self.hardware["cpu"], self.hardware["ram"]["available_bytes"],buffered=plan.total_codes>10000)
                 method={"serial":"по очереди","process":"параллельно","thread":"потоки Python (опытный режим)"}[execution['backend']]
                 self.execution_preview.set(f"Создание QR: {method} · одновременно заданий: {execution['effective_workers']} · кодов за шаг: {options.batch_size}")
+                if hasattr(self,"generation_cpu"):
+                    selected=execution["cpu_selection"]["cpus"]
+                    label=f"{len(selected)} {'ядер' if options.cpu_unit=='physical' else 'потоков SMT'}" if selected else "ручной режим"
+                    self.generation_cpu.summary.set(f"QR: {label} · процессов: {execution['effective_workers']} · PDF: 1 процесс · замеры CPU в тестах")
                 self.plan_var.set(text)
                 self.current_plan = plan
                 self.plan_valid = True
@@ -221,6 +231,9 @@ class BatchWindow:
                 self.execution_preview.set(str(exc))
         else:
             self.plan_var.set("Выберите TXT, чтобы увидеть итог страниц")
+            if hasattr(self,"generation_cpu"):
+                n=self.workers_var.get(); unit="ядер" if self.generation_cpu.unit.get()=="physical" else "потоков SMT"
+                self.generation_cpu.summary.set(f"QR: {n} {unit} · PDF: 1 процесс · загрузите TXT")
         if hasattr(self, "generate"):
             self.update_buttons()
 
@@ -321,6 +334,7 @@ class BatchWindow:
             elif hasattr(self, "workers_entry"):
                 self.workers_entry.configure(values=cpu["presets"])
             if hasattr(self,"lab_refresh"): self.lab_refresh()
+            if hasattr(self,"generation_cpu"): self.generation_cpu.refresh()
             self.refresh_plan()
         except (ValueError, OSError) as exc:
             self.hardware_summary.set(f"Ресурсы не определены: {exc}")
@@ -404,10 +418,12 @@ class BatchWindow:
         self.remember()
         self.begin()
         path, mode, settings = Path(self.input_var.get()), self.mode_var.get(), self.print_settings
+        from .generation_cpu import execution_options
+        execution=execution_options(options,self.hardware)
         self.launch(lambda: run_batch(path, destination, mode=mode, settings=settings, cancel=self.cancel,
                     copies_per_value=options.copies_per_value, duplicate_policy=options.duplicate_policy,
                     generator=self.generator_key, engine=self.engine_key,
-                    execution=ExecutionOptions(options.execution_backend, options.workers, options.batch_size),
+                    execution=execution,
                     qa_mode=options.qa_mode,activity=options.activity,
                     progress=lambda s: self.events.put(("status", s)), events=lambda e: self.events.put(("progress", e))))
 
@@ -459,10 +475,19 @@ class BatchWindow:
                     counts = f"{value['done']:,} / {value['total']:,}".replace(",", " ")
                     percent = f"{value['percent']:.1f}".replace(".", ",")
                     self.status_var.set(f"{value['stage']} · {counts} · всего {percent}%")
+                    if value.get("execution"):
+                        e=value["execution"]; qr="Кодирование" in value["stage"]
+                        mode="QR (потоки Python/GIL)" if e.get("backend")=="thread" else "QR"
+                        stage=f"{mode} · результаты процессов: {e['confirmed_processes']}/{e['selected_cpu_count']}" if qr else value['stage']+" · 1 процесс"
+                        self.status_var.set(f"{stage} · {counts} · {percent}%")
                     unit = value.get("unit", "кодов")
                     average = value.get("average_speed", value["speed"])
-                    text = (f"Итоговая: {average:.1f} {unit}/сек" if value["percent"] == 100 else
-                            f"Сейчас: {value['speed']:.1f} · средняя этапа: {average:.1f} {unit}/сек")
+                    phase="QR" if "Кодирование" in value["stage"] else "Запись PDF" if value["stage"] in ("Создание PDF","Отдельные PDF") else "Этап"
+                    text = (f"Вся операция: {average:.1f} {unit}/сек" if value["percent"] == 100 else
+                            f"{phase}: сейчас {value['speed']:.1f} · средняя {average:.1f} {unit}/сек")
+                    if value.get("execution") and hasattr(self,"generation_cpu"):
+                        state=value["execution"]; writing="Кодирование" not in value["stage"]
+                        self.generation_cpu.summary.set(f"{'PDF: 1 процесс' if writing else 'QR: подтверждено процессов '+str(state['confirmed_processes'])} · выбрано CPU: {state['selected_cpu_count']} · замеры CPU в тестах")
                     self.speed_var.set(text.replace(".", ","))
                 elif kind in ("history","history_error"):
                     self.busy=False

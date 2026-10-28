@@ -138,10 +138,16 @@ def human_report(report: dict) -> str:
                      f"RAM всего / доступно: {gib(ram['total_bytes'])} / {gib(ram['available_bytes'])}",
                      f"Диск: {disk.get('bus') or 'шина неизвестна'}; {disk.get('media') or 'носитель неизвестен'}; свободно {gib(disk['free_bytes'])}",
                      "Скорость диска этим запуском не измерялась.",
-                     f"Режим кодирования: {execution.get('backend')}; работники запрошены / использованы: {execution.get('requested_workers')} / {execution.get('effective_workers')}",
-                     f"Партия: {execution.get('batch_size')}; завершено значений: {execution.get('completed_values', 0)}",
+                     f"Режим QR: {execution.get('backend')}; процессов по плану: {execution.get('effective_workers')}; подтвердили результат: {len(execution.get('worker_pids',[])) if execution.get('backend')=='process' else 1}",
+                     f"Кодов за один шаг: {execution.get('batch_size')}; завершено значений: {execution.get('completed_values', 0)}",
                      "Запись PDF и QA последовательны. CPU scope/affinity — в manifest или отчёте лаборатории.",
                      f"Предварительная оценка RAM (не измеренный пик/не квота): {gib(execution.get('required_ram_estimate_bytes'))}; резерв {gib(execution.get('os_reserve_bytes'))}", ""])
+        selection=execution.get("cpu_selection",{})
+        chosen=selection.get("cpus",[])
+        rows.extend([f"Выбрано для QR: {len(chosen)} {'физических ядер (по одному SMT-потоку)' if selection.get('unit')=='physical' else 'логических CPU'}" if chosen else "Ядра QR: распределяет ОС, явный набор не выбран",
+                     "Привязка подтверждённых процессов: "+("; ".join(f"процесс {pid} → "+", ".join(f"G{c['group']}/CPU{c['logical']}" for c in cpus) for pid,cpus in execution.get("worker_affinity",{}).items() if cpus) or "нет данных"),
+                     f"Лимит полезного кэша SQLite: {execution.get('sqlite_cache_mib',0)} МиБ; это предел кэша, не принудительное выделение всей ОЗУ.",
+                     "Подробная загрузка CPU min/среднее/max в обычной генерации НЕ собиралась. Данные о числе процессов/привязке не доказывают 100% загрузку; замеры доступны в тестах."])
     generation = report.get("generation")
     if generation:
         rows.extend(["", "РАСЧЁТ ТИРАЖА",
@@ -153,6 +159,9 @@ def human_report(report: dict) -> str:
                      "Режим «оба» сохраняет один тираж в двух видах PDF; число кодов не удваивается.", ""])
     if elapsed and elapsed > 0:
         rows.append(f"Средняя скорость всей операции: {report.get('count', 0)/elapsed:.2f} кодов/сек".replace(".", ","))
+    for label,key,count in (("QR-кодирование","code_encoding",report.get("generation",{}).get("encoded_values",report.get("count",0))),("Запись общего PDF","write_multipage",report.get("count",0))):
+        seconds=values.get(key)
+        if isinstance(seconds,(int,float)) and seconds>0: rows.append(f"Скорость этапа «{label}»: {count/seconds:.2f} кодов/сек (это не скорость всей операции)")
     def quality_label(kind,unselected):
         if report.get("qa_mode")=="deferred" and kind in report.get("files",{}): return "NOT_RUN — проверка выключена"
         return qa.get(kind,{}).get("status",unselected)
