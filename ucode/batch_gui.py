@@ -78,7 +78,7 @@ QA PASS* в истории — сохранённое подтверждение
 «Замеры» — число учитываемых запусков; обычно достаточно трёх.
 Доступные CPU учитывают ограничения процесса. SMT не удваивает число ядер.
 Процессы параллельно кодируют QR; запись PDF и QA пока последовательны.
-Размер партии определяет число кодов на задачу. Для маленького TXT запуск
+«Кодов за один шаг» — размер порции кодов для обработки. Для маленького TXT запуск
 процессов может занять больше времени, чем последовательное кодирование.
 RAM проверяется предварительно с запасом, это не жёсткий лимит потребления.
 Скорость диска не определяется по названию NVMe/SATA. Проверка 32 КиБ —
@@ -211,7 +211,8 @@ class BatchWindow:
                     text += f" · уникальных: {plan.unique_values}"
                 execution = execution_plan(ExecutionOptions(options.execution_backend, options.workers, options.batch_size),
                     plan.unique_values, self.hardware["cpu"], self.hardware["ram"]["available_bytes"])
-                self.execution_preview.set(f"Кодирование: {execution['backend']} · рабочих процессов: {execution['effective_workers']} · партия: {options.batch_size}")
+                method={"serial":"по очереди","process":"параллельно","thread":"потоки Python (опытный режим)"}[execution['backend']]
+                self.execution_preview.set(f"Создание QR: {method} · одновременно заданий: {execution['effective_workers']} · кодов за шаг: {options.batch_size}")
                 self.plan_var.set(text)
                 self.current_plan = plan
                 self.plan_valid = True
@@ -280,6 +281,26 @@ class BatchWindow:
     def show_resources(self):
         self.notebook.select(self.pages["resources"])
         self.refresh_hardware()
+
+    def show_core_tests(self):
+        if self.busy: return
+        from .affinity import select_cpus
+        from .lab_ui import _parts
+        self.refresh_hardware()
+        if not self.hardware["cpu"].get("available_physical"):
+            self.status_var.set("Число физических ядер определить не удалось; доступен выбор потоков во вкладке «Тесты»")
+            return
+        choices=[]
+        for choice in _parts(self.lab_cpus.get()):
+            try: select_cpus(self.hardware["cpu"],"physical",choice)
+            except ValueError: continue
+            choices.append(choice)
+        self.lab_cpus.set(",".join(choices) or "1")
+        self.lab_units.set("Физические: 1 поток/ядро")
+        if self.test_controls.expanded: self.test_controls.toggle()
+        self.notebook.select(self.pages["lab"])
+        self.lab_refresh()
+        self.status_var.set("Отметьте число ядер и нажмите запуск. Несколько галочек — отдельные тесты по очереди.")
 
     def refresh_hardware(self):
         try:

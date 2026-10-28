@@ -1,5 +1,7 @@
 # Внутренние контракты
 
+CPU UI: Тесты содержит явные переключатели физических ядер/SMT, канонические UNITS не изменены. `show_core_tests` включает physical, сохраняет допустимые CPU choices, удаляет несовместимые, пустой набор заменяет1, не запускает нагрузку. Неизвестная топология не подменяется logical. Обычная генерация сохраняет распределение ОС; production workers не называются physical cores. Дополнительные параметры скрываемые, legacy значения сохранены. ChoiceMenu принимает aliases для старых русских названий после изменения подписей. Границы/проверки: PLAIN_CPU_CONTROLS.md.
+
 ## Button settings (28.10.2026)
 
 `ui_choices.ChoiceMenu` связывает кнопку/русские подписи с прежним StringVar, поддерживает single/multiple и legacy label aliases. Canonical CSV/keys остаются внутренним форматом read_form/preferences; GUI не содержит editable enum/CSV полей. Single menu имеет отдельный Tcl StringVar: trace модели не удаляет menu callback до его вызова. Unknown selected values видны и снимаются, неподдерживаемые CPU не получают рабочего допуска.

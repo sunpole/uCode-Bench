@@ -4,8 +4,9 @@ from tkinter import ttk
 
 
 class ChoiceMenu:
-    def __init__(self,app,parent,variable,label,options,*,multiple=False,command=None):
+    def __init__(self,app,parent,variable,label,options,*,multiple=False,command=None,aliases=None):
         self.app=app; self.variable=variable; self.label=label; self.multiple=multiple; self.command=command
+        self.aliases=dict(aliases or {})
         self.options=(); self.values={}; self.flags={}
         self.single_value=tk.StringVar(master=app.root)
         self.button=app.edit(ttk.Menubutton(parent))
@@ -15,7 +16,7 @@ class ChoiceMenu:
 
     def selected(self):
         raw=self.variable.get().split(",") if self.multiple else [self.variable.get()]
-        aliases={text:value for text,value in self.options}
+        aliases={**self.aliases,**{text:value for text,value in self.options}}
         return list(dict.fromkeys(aliases.get(part.strip(),part.strip()) for part in raw if part.strip()))
 
     def set_options(self,options):
