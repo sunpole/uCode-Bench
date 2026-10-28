@@ -123,3 +123,33 @@ class ButtonSettingsTests(unittest.TestCase):
         picker=self.app.history_view.filter_picker
         picker.menu.invoke(picker.values["Успешные"])
         self.assertEqual(self.app.history_view.filter.get(),"Успешные")
+
+    def test_physical_core_button_selects_actual_core_masks(self):
+        from ucode.resource_lab import build_cases
+        self.app.hardware["cpu"]=cpu_fixture(14)
+        self.app.lab_units.set("Логические CPU")
+        self.app.lab_unit_buttons["physical"].invoke()
+        self.app.lab_cpus.set("2,12,all")
+        config=custom_config(self.app)
+        self.assertEqual(config.cpu_units,("physical",))
+        cases=build_cases(config,self.app.hardware["cpu"])
+        self.assertEqual([len(case["cpus"]) for case in cases],[2,12,14])
+        for case in cases:
+            self.assertEqual(len({cpu["core"] for cpu in case["cpus"]}),len(case["cpus"]))
+        self.assertIn("Ядра",self.app.lab_unit_buttons["physical"].cget("text"))
+
+    def test_resources_link_opens_physical_tests_without_starting_work(self):
+        from unittest.mock import patch
+        self.app.hardware["cpu"]=cpu_fixture(14)
+        self.app.lab_units.set("Логические CPU"); self.app.lab_cpus.set("28")
+        self.assertFalse(self.app.cpu_extra_frame.winfo_manager())
+        with patch.object(self.app,"refresh_hardware"):
+            self.app.core_tests_button.invoke()
+        self.assertEqual(self.app.notebook.select(),str(self.app.pages["lab"]))
+        self.assertEqual(custom_config(self.app).cpu_units,("physical",))
+        self.assertEqual(custom_config(self.app).cpu_counts,("1",))
+        self.assertIsNone(self.app.worker)
+        self.app.cpu_extra_button.invoke()
+        self.assertEqual(self.app.cpu_extra_frame.winfo_manager(),"pack")
+        self.app.cpu_extra_button.invoke()
+        self.assertFalse(self.app.cpu_extra_frame.winfo_manager())

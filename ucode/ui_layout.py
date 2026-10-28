@@ -210,19 +210,36 @@ def _print(app):
 def _resources(app):
     page = app.pages["resources"]
     ttk.Label(page, textvariable=app.hardware_summary, style="Muted.TLabel", wraplength=850).pack(anchor="w")
-    controls = ttk.Frame(page)
+    navigation=ttk.Frame(page); navigation.pack(anchor="w",pady=3)
+    app.core_tests_button=app.edit(ttk.Button(navigation,text="Выбрать ядра для теста →",command=app.show_core_tests))
+    app.core_tests_button.pack(side="left")
+    def toggle():
+        if app.busy: return
+        if app.cpu_extra_frame.winfo_manager():
+            app.cpu_extra_frame.pack_forget(); app.cpu_extra_button.configure(text="Дополнительные настройки…")
+            hint.pack(after=preview,anchor="w",pady=3)
+        else:
+            app.cpu_extra_frame.pack(after=navigation,fill="x"); app.cpu_extra_button.configure(text="Скрыть дополнительные настройки")
+            hint.pack_forget()
+        app.fit_window()
+    app.cpu_extra_button=app.edit(ttk.Button(navigation,text="Дополнительные настройки…",command=toggle))
+    app.cpu_extra_button.pack(side="left",padx=7)
+    app.cpu_extra_frame=ttk.Frame(page)
+    controls = ttk.Frame(app.cpu_extra_frame)
     controls.pack(anchor="w", pady=3)
-    app.execution_picker=ChoiceMenu(app,controls,app.backend_var,"Выполнение",[("Один процесс","Последовательно"),("Несколько процессов","Процессы"),("Потоки","Потоки (GIL)")],command=app.remember)
+    app.execution_picker=ChoiceMenu(app,controls,app.backend_var,"Способ создания",[("По очереди","Последовательно"),("Параллельно","Процессы"),("Потоки Python (опытный)","Потоки (GIL)")],command=app.remember)
     app.execution_picker.button.pack(side="left")
-    app.worker_picker=ChoiceMenu(app,controls,app.workers_var,"Параллельно",[(str(n),str(n)) for n in range(1,app.hardware["cpu"]["available_logical"]+1)],command=app.remember)
+    app.worker_picker=ChoiceMenu(app,controls,app.workers_var,"Заданий одновременно",[(str(n),str(n)) for n in range(1,app.hardware["cpu"]["available_logical"]+1)],command=app.remember)
     app.workers_entry=app.worker_picker.button
     app.workers_entry.pack(side="left",padx=7)
-    ttk.Label(controls, text="Кодов в партии:").pack(side="left", padx=(10, 5))
+    ttk.Label(controls, text="Кодов за один шаг:").pack(side="left", padx=(10, 5))
     app.edit(ttk.Spinbox(controls, from_=1, to=1000, width=6, textvariable=app.batch_size_var)).pack(side="left")
-    ttk.Label(page, textvariable=app.execution_preview, style="Accent.TLabel", wraplength=850).pack(anchor="w", pady=1)
-    ttk.Label(page, text="Процессы кодируют QR; запись PDF и проверка пока последовательны.\n"
-              "Потоки ограничены GIL. Принудительная CPU affinity доступна в лаборатории.",
-              style="Muted.TLabel", wraplength=850).pack(anchor="w", pady=3)
+    preview=ttk.Label(page, textvariable=app.execution_preview, style="Accent.TLabel", wraplength=850)
+    preview.pack(anchor="w", pady=1)
+    hint=ttk.Label(page, text="Число физических ядер для сравнения выбирается во вкладке «Тесты».\n"
+              "При обычном создании PDF нагрузку распределяет система. Запись PDF выполняется по очереди.",
+              style="Muted.TLabel", wraplength=850)
+    hint.pack(anchor="w", pady=3)
     buttons = ttk.Frame(page); buttons.pack(anchor="w", pady=2)
     app.edit(ttk.Button(buttons, text="Обновить ресурсы", command=app.refresh_hardware)).pack(side="left")
     app.edit(ttk.Button(buttons, text="Проверить запись 32 КиБ", command=app.probe_output)).pack(side="left", padx=8)

@@ -34,6 +34,8 @@ def _count(value,forms):
 
 def refresh_cpu_buttons(app):
     cpu=app.hardware["cpu"]; units=UNITS[app.lab_units.get()]
+    if hasattr(app,"lab_unit_buttons"):
+        _idle_state(app,app.lab_unit_buttons["physical"],"normal" if cpu.get("available_physical") else "disabled")
     app.lab_hardware.set("ПК: "+_count(cpu.get("physical_cores"),("ядро","ядра","ядер"))+" / "+
         _count(cpu.get("logical_processors"),("поток","потока","потоков"))+
         f" · доступно: {cpu.get('available_physical') or '?'} / {cpu.get('available_logical') or '?'}")
@@ -141,8 +143,12 @@ def build_lab(app):
     app.lab_options_button=app.edit(ttk.Button(row,text="Все параметры…",command=lambda:app.test_controls.toggle()))
     app.lab_options_button.pack(side="left",padx=7)
     row=ttk.Frame(page); row.pack(anchor="w")
-    app.lab_units_picker=ChoiceMenu(app,row,app.lab_units,"Считать",[("Ядра","Физические: 1 поток/ядро"),("Потоки","Логические CPU"),("Ядра и потоки","Оба варианта")])
+    app.lab_units_picker=ChoiceMenu(app,app.lab_choice_row,app.lab_units,"Сравнивать",[("Ядра","Физические: 1 поток/ядро"),("Потоки SMT","Логические CPU"),("Ядра и потоки","Оба варианта")])
     app.lab_units_picker.button.pack(side="left",padx=(0,8))
+    app.lab_unit_buttons={}
+    for key,label,value in (("physical","Ядра процессора","Физические: 1 поток/ядро"),("logical","Потоки SMT","Логические CPU")):
+        button=app.edit(ttk.Radiobutton(row,text=label,value=value,variable=app.lab_units,style="Choice.TRadiobutton"))
+        button.pack(side="left",padx=(0,6)); app.lab_unit_buttons[key]=button
     ttk.Label(row,textvariable=app.lab_hardware,style="Muted.TLabel",wraplength=400).pack(side="left",padx=(0,8))
     app.lab_cpu_picker=ChoiceMenu(app,row,app.lab_cpus,"Выбор",(),multiple=True)
     app.lab_cpu_picker.button.pack(side="left",padx=(0,6))
@@ -151,7 +157,7 @@ def build_lab(app):
     row=app.lab_choice_row
     app.lab_pdf_picker=ChoiceMenu(app,row,app.lab_pdf_profiles,"PDF",[("Обычный","standard"),("Компактный","compact")],multiple=True)
     app.lab_activity_picker=ChoiceMenu(app,row,app.lab_activities,"Контроль",[("Обычный","normal"),("Минимум расходов","minimal")],multiple=True)
-    app.lab_backend_picker=ChoiceMenu(app,row,app.lab_backends,"Выполнение",[("Последовательно","serial"),("Процессы","process"),("Потоки","thread")],multiple=True)
+    app.lab_backend_picker=ChoiceMenu(app,row,app.lab_backends,"Способ",[("По очереди","serial"),("Параллельно","process"),("Потоки Python (опытный)","thread")],multiple=True,aliases=BACKENDS)
     for picker in (app.lab_pdf_picker,app.lab_activity_picker,app.lab_backend_picker): picker.button.pack(side="left",padx=(0,7))
     app.lab_count_control.picker.button.pack(side="left",padx=(0,6))
     app.lab_count_control.add_button.configure(text="Добавить объём")
@@ -166,9 +172,9 @@ def build_lab(app):
     row=ttk.Frame(app.lab_advanced); row.pack(anchor="w")
     app.lab_warmup_picker=ChoiceMenu(app,row,app.lab_warmups,"Прогрев",[("Выключен","0"),("1 пробный запуск","1"),("2 пробных запуска","2"),("3 пробных запуска","3")])
     app.lab_warmup_picker.button.pack(side="left",padx=(0,8))
-    app.lab_workers_picker=ChoiceMenu(app,row,app.lab_workers,"Параллельно",[("Автоматически","0")])
+    app.lab_workers_picker=ChoiceMenu(app,row,app.lab_workers,"Заданий одновременно",[("Автоматически","0")])
     app.lab_workers_picker.button.pack(side="left",padx=(0,8))
-    ttk.Label(row,text="Кодов в задаче:").pack(side="left")
+    ttk.Label(row,text="Кодов за один шаг:").pack(side="left")
     app.edit(ttk.Spinbox(row,textvariable=app.lab_batch,from_=1,to=1000,width=6)).pack(side="left",padx=5)
     app.lab_warmup_help=ttk.Label(app.lab_advanced,text="Прогрев: пробные PDF перед замерами; в итог не входят. 0 = выключен. Галочки CPU = варианты серии.",
                                 style="Muted.TLabel",wraplength=850)
