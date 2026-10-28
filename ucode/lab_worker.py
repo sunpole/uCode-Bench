@@ -17,8 +17,12 @@ _JOB_HANDLE = None
 
 def code_fingerprint():
     digest=hashlib.sha256()
-    for path in sorted(Path(__file__).parent.glob("*.py")):
-        digest.update(path.name.encode()); digest.update(path.read_bytes())
+    package=Path(__file__).parent
+    for path in sorted(package.rglob("*.py")):
+        digest.update(path.relative_to(package).as_posix().encode()); digest.update(path.read_bytes())
+    for name in ("merge-pdflib.mjs","PdfBoxMerge.java","pdfsharp/Program.cs","pdfsharp/PdfSharpMerge.csproj"):
+        path=package.parent/"scripts"/name
+        if path.is_file(): digest.update(name.encode()); digest.update(path.read_bytes())
     return digest.hexdigest()
 
 
@@ -92,26 +96,30 @@ def main(request_path):
         estimated=execution_plan(options,count,inspect_cpu(),memory_info()["available_bytes"],buffered=count>10000)
         if estimated["required_ram_estimate_bytes"]>budget["budget_bytes"]:
             raise ValueError("Выбранный RAM budget меньше предварительной оценки; уменьшите работников или увеличьте бюджет")
-        job = run_batch(source, folder / "jobs", mode=request["output_mode"], settings=settings,
-                        execution=options,qa_mode=request.get("qa_mode","full"),activity=request.get("activity","normal"),
-                        events=progress, cancel=cancel)
-        manifest = json.loads((job / "manifest.json").read_text(encoding="utf-8"))
-        result["manifest"] = manifest
-        result["job"] = job.relative_to(folder).as_posix()
-        result["pdf_bytes"]=manifest["files"].get("multipage",{}).get("bytes",0)+manifest["files"].get("singles",{}).get("bytes",0)
-        result["status"] = manifest["status"]
-        result["errors"].extend(manifest.get("errors", []))
-        if manifest["status"] == "LIMITED" and request.get("qa_mode","full")=="full":
-            result["errors"].append("Нет растрового QA; этот вариант не участвует в рейтинге")
-        if manifest["status"] == "INVALID": result["errors"].append("QA FAIL; этот вариант не участвует в рейтинге")
-        result["seconds"] = {"production": manifest["seconds"].get("production_until_pdf_closed"),
-                             "total_including_qa": manifest["seconds"]["total_including_qa"],
-                             **{k: v for k, v in manifest["seconds"].items() if k not in ("total_including_qa",)}}
-        requested_keys = cpu_keys(request["cpus"])
-        for cpus in manifest["execution"].get("worker_affinity", {}).values():
-            if cpus is None or cpu_keys(cpus) != requested_keys:
-                result["status"] = "INVALID"
-                result["errors"].append("Worker не подтвердил наследование CPU affinity")
+        if request.get("strategy")=="split":
+            from .batch_strategies import run_split_trial
+            result.update(run_split_trial(folder,request,settings,cancel,progress,budget))
+        else:
+            job = run_batch(source, folder / "jobs", mode=request["output_mode"], settings=settings,
+                            execution=options,qa_mode=request.get("qa_mode","full"),activity=request.get("activity","normal"),
+                            events=progress, cancel=cancel,temporary_data=request.get("temporary_data",False))
+            manifest = json.loads((job / "manifest.json").read_text(encoding="utf-8"))
+            result["manifest"] = manifest
+            result["job"] = job.relative_to(folder).as_posix()
+            result["pdf_bytes"]=manifest["files"].get("multipage",{}).get("bytes",0)+manifest["files"].get("singles",{}).get("bytes",0)
+            result["status"] = manifest["status"]
+            result["errors"].extend(manifest.get("errors", []))
+            if manifest["status"] == "LIMITED" and request.get("qa_mode","full")=="full":
+                result["errors"].append("Нет растрового QA; этот вариант не участвует в рейтинге")
+            if manifest["status"] == "INVALID": result["errors"].append("QA FAIL; этот вариант не участвует в рейтинге")
+            result["seconds"] = {"production": manifest["seconds"].get("production_until_pdf_closed"),
+                                 "total_including_qa": manifest["seconds"]["total_including_qa"],
+                                 **{k: v for k, v in manifest["seconds"].items() if k not in ("total_including_qa",)}}
+            requested_keys = cpu_keys(request["cpus"])
+            for cpus in manifest["execution"].get("worker_affinity", {}).values():
+                if cpus is None or cpu_keys(cpus) != requested_keys:
+                    result["status"] = "INVALID"
+                    result["errors"].append("Worker не подтвердил наследование CPU affinity")
     except (NotImplementedError, ValueError) as exc:
         result.update(status="SKIPPED", errors=[str(exc)])
     except Exception as exc:
@@ -124,6 +132,8 @@ def main(request_path):
             if monitor.reason:
                 result["status"] = "RESOURCE_LIMIT"
                 result["errors"].append(monitor.reason)
+        try: result["storage_total_bytes"]=sum(path.stat().st_size for path in folder.rglob("*") if path.is_file())
+        except OSError: result["storage_total_bytes"]=None
         result["seconds"]["worker_wall"] = time.perf_counter() - started
         atomic_json(folder / "trial.json", result)
     return 0 if result["status"] in ("COMPLETE","UNVERIFIED","LIMITED") else 2

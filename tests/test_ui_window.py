@@ -114,9 +114,12 @@ class OperatorWindowTests(unittest.TestCase):
                 self.assertLessEqual(window.minsize()[1], 668)
                 self.assertLessEqual(window.minsize()[0], 1326)
                 app.cpu_extra_button.invoke()
+                app.search_view.ram.set("max")
+                app.search_view.units.set("physical,logical")
+                app.search_view.mode.set("full")
                 for mode in ("full","deferred","vector"):
                     app.verification_buttons[mode].invoke()
-                    for tab in ("generation","lab","resources"):
+                    for tab in ("generation","lab","resources","search"):
                         app.notebook.select(app.pages[tab]); app.update_buttons(); window.update_idletasks()
                         self.assertLessEqual(window.winfo_reqwidth(),1326)
                         self.assertLessEqual(window.winfo_reqheight(),668)

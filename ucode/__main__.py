@@ -8,7 +8,7 @@ from .config import Experiment
 
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="uCode", description="Локальный QR/PDF бенчмарк")
-    parser.add_argument("command", choices=("doctor", "create", "benchmark", "suite", "gui", "batch", "template", "generate", "lab","audit"), nargs="?", default="gui")
+    parser.add_argument("command", choices=("doctor", "create", "benchmark", "suite", "gui", "batch", "template", "generate", "lab","audit","pc-search"), nargs="?", default="gui")
     parser.add_argument("--count", type=int, default=200)
     parser.add_argument("--copies", type=int, default=1, help="Экземпляров каждого значения в обычной генерации")
     parser.add_argument("--duplicate-policy", choices=("preserve", "unique"), default="preserve")
@@ -27,12 +27,18 @@ def main(argv=None):
     parser.add_argument("--activity",choices=("normal","minimal"),default="normal")
     parser.add_argument("--pdf-profiles",default="standard")
     parser.add_argument("--activity-modes",default="normal")
+    parser.add_argument("--search-counts",default="200,1000,10000,100000")
+    parser.add_argument("--search-mode",choices=("staged","full"),default="staged")
+    parser.add_argument("--keep-best",type=int,default=2)
+    parser.add_argument("--all-cpu-counts",action="store_true")
+    parser.add_argument("--parts",default="10")
+    parser.add_argument("--mergers",default="qpdf,MuPDF (mutool),PyMuPDF,pikepdf,pypdf,pdfrw,PDFium (pypdfium2),pdfcpu,Apache PDFBox,pdf-lib (Node.js),PDFsharp (.NET)")
     parser.add_argument("--output", type=Path, default=Path(__file__).resolve().parent.parent / "output" / "runs")
     parser.add_argument("--qualifying-report", type=Path, help="Отчёт PASS этапа 200 для явного запуска 1000")
     parser.add_argument("--input", type=Path, help="Входной UTF-8 TXT: один 12-значный код на строку")
     parser.add_argument("--mode", choices=("both", "singles", "multipage"), default="both")
     args = parser.parse_args(argv)
-    if args.qa!="full" and args.command not in ("generate","lab"):
+    if args.qa!="full" and args.command not in ("generate","lab","pc-search"):
         parser.error("--qa vector/deferred доступен в generate и lab; исторический научный тест всегда с полной проверкой")
     try:
         if args.command == "doctor":
@@ -85,6 +91,17 @@ def main(argv=None):
             print(folder/"ОТЧЁТ.txt")
             status=json.loads((folder/"audit.json").read_text(encoding="utf-8"))["status"]
             return 0 if status=="COMPLETE" else 2 if status=="LIMITED" else 1
+        if args.command=="pc-search":
+            from .pc_search import SearchConfig,run_search
+            cfg=SearchConfig(counts=tuple(map(int,args.search_counts.split(","))),repeats=args.repeats,
+                cpu_units=("logical","physical") if args.cpu_unit=="both" else (args.cpu_unit,),cpu_counts=tuple(args.cpu_counts.split(",")),
+                all_cpu_counts=args.all_cpu_counts,backends=tuple(args.backends.split(",")),pdf_profiles=tuple(args.pdf_profiles.split(",")),
+                activities=tuple(args.activity_modes.split(",")),qa_mode=args.qa,ram_mode=args.ram_modes,
+                search_mode=args.search_mode,keep_best=args.keep_best,part_counts=tuple(map(int,args.parts.split(","))),mergers=tuple(n.strip() for n in args.mergers.split(",")))
+            folder=run_search(args.output,cfg,events=lambda value:print(value,flush=True))
+            print(folder/"pc-search.html")
+            status=json.loads((folder/"pc-search.json").read_text(encoding="utf-8"))["status"]
+            return 0 if status=="COMPLETE" else 2 if status in ("UNVERIFIED","LIMITED") else 1
         if args.command == "lab":
             from .resource_lab import LabConfig, run_lab
             config=LabConfig(counts=tuple(int(n) for n in args.lab_counts.split(",")),

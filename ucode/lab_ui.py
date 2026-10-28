@@ -129,6 +129,7 @@ def build_lab(app):
     app.lab_hardware=tk.StringVar(master=app.root)
     page=app.pages["lab"]
     app.lab_advanced=ttk.Frame(page)
+    app.lab_ram_row=ttk.Frame(app.lab_advanced)
     app.lab_choice_row=ttk.Frame(app.lab_advanced); app.lab_choice_row.pack(anchor="w")
     row=ttk.Frame(page); row.pack(anchor="w")
     ttk.Label(row,text="Количество кодов:").pack(side="left")
@@ -143,7 +144,7 @@ def build_lab(app):
     app.lab_options_button=app.edit(ttk.Button(row,text="Все параметры…",command=lambda:app.test_controls.toggle()))
     app.lab_options_button.pack(side="left",padx=7)
     row=ttk.Frame(page); row.pack(anchor="w")
-    app.lab_units_picker=ChoiceMenu(app,app.lab_choice_row,app.lab_units,"Сравнивать",[("Ядра","Физические: 1 поток/ядро"),("Потоки SMT","Логические CPU"),("Ядра и потоки","Оба варианта")])
+    app.lab_units_picker=ChoiceMenu(app,app.lab_ram_row,app.lab_units,"Сравнивать",[("Ядра","Физические: 1 поток/ядро"),("Потоки SMT","Логические CPU"),("Ядра и потоки","Оба варианта")])
     app.lab_units_picker.button.pack(side="left",padx=(0,8))
     app.lab_unit_buttons={}
     for key,label,value in (("physical","Ядра процессора","Физические: 1 поток/ядро"),("logical","Потоки SMT","Логические CPU")):
@@ -162,7 +163,7 @@ def build_lab(app):
     app.lab_count_control.picker.button.pack(side="left",padx=(0,6))
     app.lab_count_control.add_button.configure(text="Добавить объём")
     app.lab_count_control.add_button.pack(side="left")
-    row=ttk.Frame(app.lab_advanced); row.pack(anchor="w")
+    row=app.lab_ram_row; row.pack(anchor="w")
     total_gib=(app.hardware["ram"].get("total_bytes") or 128*1024**3)/1024**3
     app.lab_ram_control=NumberSet(app,row,app.lab_ram,"Память",minimum=.25,maximum=max(.25,total_gib),default="2",suffix="MiB",factor=1024,
         options=[("Автоматически","auto"),("Половина безопасного","50%"),("80% безопасного","80%"),("Максимум с резервом","max")])
