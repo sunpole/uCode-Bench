@@ -18,6 +18,8 @@
 
 Большие50000/100000, длительная загрузка14 ядер, обещанные3000–5000 кодов/с, цена профилирования больших тиражей, ручной внешний вид и физический просмотрщик — USER-CHECK. Локальный225PASS не выдаётся за свежий LinuxCI. Перед другим запуском закрыть старое окно и открыть Start-uCode.cmd тестовой копии. Обновление других копий — отдельная чистая ветка/папка, сохранениеTXT/output/.local-state и своих правок, без reset/clean. Remote readback подтвердил прежний main06fa1e88cb4c04bd2bc822de8d2e6b59a8620fb7. Публикация/PR/ZIP фиксируются после их фактического создания.
 
+Публикация кода df76e78db6e988904be82493efce347764daac05: origin/codex/generation-core-controls, draft PR https://github.com/sunpole/uCode-Bench/pull/16, база codex/pc-performance-search, MERGEABLE, прикреплён к чату. output/generation-core-pr16-snapshot.json: оба check40766057917 Windows/Linux IN_PROGRESS. Следующий коммит меняет только документацию передачи, код повторно не меняется. ZIP output/uCode-GenerationCores-<finalsha>.zip и delivery JSON сохраняются из финального дерева с проверкой CRC/состава/remote head; main не меняется.
+
 ## 2026-10-28 — подбор ПК и восстановление всех 11 PDF-адаптеров (13 задач)
 
 Продолжение после обрыва интернета. Основа b9e39d52a26402110f0f30092aa3dac10c7ab40b, ветка codex/pc-performance-search поверх codex/streaming-page-counts. Работа только в тестовой копии016_uCode_PDF_test; исходная папка016_uCode служила источником ранее проверенного кэша инструментов, её исходники не менялись. 13 задач/инструкция/ограничения: docs/PC_PERFORMANCE_SEARCH.md. Main/старые результаты/научный профиль сохранены; большие автоматические нагрузки и ручные визуальные обходы не выполнялись.
