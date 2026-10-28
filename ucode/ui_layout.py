@@ -58,7 +58,7 @@ def build_window(app, help_text):
     tests.add_command(label="История результатов",command=app.show_history)
     tests.add_separator()
     scientific=tk.Menu(tests,tearoff=False)
-    tests.add_cascade(label="Научные тесты объединения",menu=scientific)
+    tests.add_cascade(label="Научный профиль — всегда с проверкой",menu=scientific)
     for label, count in (("Быстрый — 200", 200), ("Средний — 1 000", 1000),
                          ("Большой — 10 000", 10000), ("Полный — 200 → 1 000 → 10 000", "all")):
         scientific.add_command(label=label, command=lambda n=count: app.start_test(n))
@@ -106,6 +106,12 @@ def build_window(app, help_text):
     app.generate.pack(side="left")
     app.stop = ttk.Button(controls, text="Остановить", style="Danger.TButton", command=app.request_cancel)
     app.stop.pack(side="left", padx=9)
+    ttk.Label(controls,text="PDF:").pack(side="left",padx=(5,3))
+    app.verification_buttons={}
+    for label,value,key in (("С проверкой","Полная","full"),("Без проверки","Отложена","deferred"),("Частично","Без растра","vector")):
+        button=app.edit(ttk.Radiobutton(controls,text=label,value=value,variable=app.qa_mode_var,
+                                       style="Choice.TRadiobutton",command=app.remember))
+        button.pack(side="left",padx=2); app.verification_buttons[key]=button
     ttk.Label(controls, text="1 код = 1 страница", style="Muted.TLabel").pack(side="right")
     app.phase_label = ttk.Label(body, textvariable=app.status_var, wraplength=900)
     app.phase_label.grid(row=6, column=0, sticky="w")
@@ -183,7 +189,7 @@ def _print(app):
         ttk.Label(ink, text=name).pack(side="left")
         app.edit(ttk.Spinbox(ink,textvariable=var,width=5,from_=0,to=100,increment=1)).pack(side="left",padx=(3,10))
     app.edit(ttk.Button(ink, text="K100", command=app.use_k100)).pack(side="left")
-    app.qa_picker=ChoiceMenu(app,ink,app.qa_mode_var,"Проверка",[("Полная","Полная"),("Без растровых образцов","Без растра"),("Проверить позже","Отложена")],command=app.remember)
+    app.qa_picker=ChoiceMenu(app,ink,app.qa_mode_var,"Проверка",[("С проверкой","Полная"),("Частично — без картинок","Без растра"),("Без проверки","Отложена")],command=app.remember)
     app.qa_picker.button.pack(side="left",padx=(10,0))
     mode = ttk.Frame(page)
     mode.pack(anchor="w", pady=3)

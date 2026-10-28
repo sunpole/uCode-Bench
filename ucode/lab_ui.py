@@ -6,7 +6,7 @@ import tkinter as tk
 from tkinter import ttk
 
 from .resource_lab import LabConfig, preview, run_lab
-from .ui_layout import EXECUTION_METHODS,PDF_PROFILES
+from .ui_layout import EXECUTION_METHODS,PDF_PROFILES,QA_MODES
 from .affinity import select_cpus
 from .ui_choices import ChoiceMenu,NumberSet
 
@@ -93,6 +93,7 @@ def read_form(app):
                          batch_size=int(app.lab_batch.get()), workers=int(app.lab_workers.get()),
                          output_mode=app.mode_var.get(), print_settings=asdict(app.print_settings),
                          pdf_profiles=tuple(PDF_PROFILES.get(value,value) for value in _parts(app.lab_pdf_profiles.get())),
+                         qa_mode=QA_MODES[app.qa_mode_var.get()],
                          activity_modes=tuple(value.lower().replace("минимум","minimal").replace("обычный","normal") for value in _parts(app.lab_activities.get())))
     except (ValueError, KeyError) as exc:
         raise ValueError("Проверьте списки, повторы и размеры партии: " + str(exc)) from exc

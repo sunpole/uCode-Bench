@@ -7,6 +7,7 @@ import math
 from pathlib import Path,PureWindowsPath
 
 from .lab_report import summarize_trials
+from .qa_policy import LIMITED_STATUS,limited_trial
 
 MAX_REPORT_BYTES=32*1024**2
 MAX_INDEX_BYTES=32*1024**2
@@ -46,6 +47,7 @@ def _json(path,limit,cancel):
     if config.get("output_mode") not in ("multipage","singles","both"):
         raise ValueError("Неизвестный режим PDF в отчёте")
     repeats=config.get("repeats")
+    if config.get("qa_mode","full") not in ("full","vector","deferred"): raise ValueError("Неизвестный режим проверки PDF")
     if isinstance(repeats,bool) or not isinstance(repeats,int) or not 1<=repeats<=10:
         raise ValueError("Неверное количество замеров")
     for case in cases:
@@ -74,7 +76,13 @@ def case_result(case,config):
     """Recompute medians from complete, non-warmup trials; QA is saved evidence."""
     rows=case["trials"]
     counted=[trial for trial in rows if isinstance(trial,dict) and not trial.get("warmup")]
-    valid=(case.get("status")=="PASS" and len(counted)==config["repeats"] and
+    qa_mode=config.get("qa_mode","full")
+    if qa_mode in LIMITED_STATUS and case.get("status")==LIMITED_STATUS[qa_mode] and len(counted)==config["repeats"]:
+        if all(limited_trial(trial,case["count"],qa_mode,config["output_mode"]) for trial in rows):
+            summary=summarize_trials(rows,config["repeats"],case["count"],qa_mode=qa_mode)
+            return {"status":LIMITED_STATUS[qa_mode],"summary":summary,
+                    "reason":"Проверка PDF явно выключена; качество не подтверждено" if qa_mode=="deferred" else "Сохранена только частичная проверка PDF"}
+    valid=(qa_mode=="full" and case.get("status")=="PASS" and len(counted)==config["repeats"] and
            all(_quality_pass(trial,case["count"],config["output_mode"]) and
                isinstance(trial.get("seconds"),dict) and
                _positive(trial["seconds"].get("production")) and

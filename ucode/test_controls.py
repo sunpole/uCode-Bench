@@ -11,6 +11,7 @@ from .trial_results import trial_rows,cpu_name,seconds_text,recommendation
 
 def custom_config(app):
     from .lab_ui import UNITS,_parts
+    from .ui_layout import QA_MODES
     try: count=int(app.lab_count_control.input.get().replace(" ","").replace("\u00a0","")); repeats=int(app.lab_repeats.get())
     except ValueError as exc: raise ValueError("Введите одно количество кодов и число повторов") from exc
     if not 1<=count<=10000: raise ValueError("Количество кодов: от 1 до 10 000")
@@ -22,7 +23,8 @@ def custom_config(app):
     largest=max(len(select_cpus(app.hardware["cpu"],unit,choice)) for unit in units for choice in choices)
     config=LabConfig(counts=(count,),cpu_counts=choices,cpu_units=units,backends=("process",),ram_modes=("auto",),
         repeats=repeats,warmups=0,batch_size=min(32,max(1,count//largest)),workers=0,output_mode="multipage",
-        print_settings=asdict(app.print_settings),pdf_profiles=(app.print_settings.pdf_profile,),activity_modes=("normal",))
+        print_settings=asdict(app.print_settings),pdf_profiles=(app.print_settings.pdf_profile,),activity_modes=("normal",),
+        qa_mode=QA_MODES[app.qa_mode_var.get()])
     for case in build_cases(config,app.hardware["cpu"]):
         if case["status"]=="SKIPPED": raise ValueError("Проверьте выбор ядер: "+case["reason"])
     return config
@@ -101,9 +103,11 @@ class TestControls:
 
     def complete(self,data):
         self.rows=trial_rows(data); self.page=0; self.render()
-        done=sum(row["status"]=="COMPLETE" and not row["warmup"] for row in self.rows)
+        expected={"full":"COMPLETE","deferred":"UNVERIFIED","vector":"LIMITED"}[data["config"].get("qa_mode","full")]
+        done=sum(row["status"]==expected and not row["warmup"] for row in self.rows)
         count=data["config"]["counts"][0]
-        self.app.result_var.set(f"{'ГОТОВО' if data['status']=='COMPLETE' else data['status']} · {count} кодов · {done} из {len(self.rows)} запусков")
+        label={"COMPLETE":"ГОТОВО","UNVERIFIED":"СОЗДАНО БЕЗ ПРОВЕРКИ","LIMITED":"ПРОВЕРЕНО ЧАСТИЧНО"}.get(data["status"],data["status"])
+        self.app.result_var.set(f"{label} · {count} кодов · {done} из {len(self.rows)} запусков")
         self.app.result_details.set(recommendation(data))
 
     def turn(self,amount):
@@ -113,10 +117,10 @@ class TestControls:
         pages=max(1,(len(self.rows)+self.page_size-1)//self.page_size); self.page=max(0,min(self.page,pages-1))
         self.table.delete(*self.table.get_children())
         labels={"COMPLETE":"Пройдено","ERROR":"Ошибка","INVALID":"Ошибка QA","NOT_RUN":"Не выполнен",
-                "CANCELLED":"Остановлен","SKIPPED":"Пропущен","LIMITED":"QA неполная","RESOURCE_LIMIT":"Нехватка ресурсов"}
+                "CANCELLED":"Остановлен","SKIPPED":"Пропущен","LIMITED":"QA неполная","RESOURCE_LIMIT":"Нехватка ресурсов","UNVERIFIED":"Без проверки"}
         for row in self.rows[self.page*self.page_size:(self.page+1)*self.page_size]:
             self.table.insert("","end",values=(row["cpu"],row["repeat"],seconds_text(row["production"]),
-                seconds_text(row["qa"]),seconds_text(row["total"]),labels.get(row["status"],row["status"])))
+                "Выкл." if row["qa_mode"]=="deferred" else seconds_text(row["qa"]),seconds_text(row["total"]),labels.get(row["status"],row["status"])))
         if self.rows: self.position.set(f"{self.rows[0]['count']} кодов: результаты {self.page*self.page_size+1}–{min(len(self.rows),(self.page+1)*self.page_size)} из {len(self.rows)}. Все строки — в отчёте ниже.")
         else: self.position.set("После запуска здесь будут все отдельные результаты")
         self.update_buttons()

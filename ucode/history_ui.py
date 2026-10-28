@@ -10,6 +10,7 @@ from .ui_choices import ChoiceMenu
 
 PAGE_SIZE=4
 STATUSES={"PASS":"QA PASS*","COMPLETE":"Завершён","SKIPPED":"Пропущен","UNVERIFIED":"Не подтверждён",
+          "LIMITED":"Частично проверен",
           "CANCELLED":"Остановлен","RUNNING":"Не завершён","NOT_RUN":"Не выполнен","INVALID":"Ошибка проверки",
           "ERROR":"Ошибка","ОШИБКА":"Ошибка чтения","ОТКРОЙТЕ":"Откройте замеры"}
 
@@ -38,6 +39,7 @@ class HistoryView:
         self.table=ttk.Treeview(page,columns=("a","b","c","d","e","f"),show="headings",height=self.rows_per_page,style="History.Treeview",selectmode="browse")
         self.table.pack(fill="both",expand=True,pady=3)
         self.table.tag_configure("good",foreground="#5ce0bd"); self.table.tag_configure("bad",foreground="#f28a8a")
+        self.table.tag_configure("unchecked",foreground="#e9c66b")
         self.table.bind("<<TreeviewSelect>>",lambda event:self.selected())
         self.table.bind("<Double-1>",lambda event:self.show_cases())
         self.details=tk.Text(page,height=2,width=85,wrap="word",font=("Segoe UI",8),relief="flat",borderwidth=0,
@@ -92,7 +94,8 @@ class HistoryView:
         else:
             self.run=value; self.mode="cases"
             data=value["data"]; cpu=_dict(_dict(data.get("hardware")).get("cpu"))
-            self.note=f"{_short(cpu.get('name','CPU неизвестен'),35)} · {_short(data.get('os','ОС неизвестна'),16)} · код {_short(data.get('source_digest','?'),8)} · QA сохранённая."
+            scope={"full":"QA сохранённая","deferred":"Без проверки PDF","vector":"Частичная QA"}.get(data["config"].get("qa_mode","full"),"QA неизвестна")
+            self.note=f"{_short(cpu.get('name','CPU неизвестен'),35)} · {_short(data.get('os','ОС неизвестна'),16)} · код {_short(data.get('source_digest','?'),8)} · {scope}."
             self.app.status_var.set("Сохранённые замеры; прогрев исключён, повторная QA не запускалась")
         self.render(reset=True)
         self.app.fit_window()
@@ -116,7 +119,7 @@ class HistoryView:
         self.visible=self.rows()
         pages=max(1,math.ceil(len(self.visible)/self.rows_per_page)); self.page=max(0,min(self.page,pages-1))
         self.table.delete(*self.table.get_children())
-        headings=("Дата файла","Запуск","Кодов","Статус","","") if self.mode=="runs" else ("Кодов","CPU (факт)","Метод / PDF","Создание, с","С QA, с","Статус")
+        headings=("Дата файла","Запуск","Кодов","Статус","","") if self.mode=="runs" else ("Кодов","CPU (факт)","Метод / PDF","Создание, с","Всего, с","Статус")
         widths=(155,220,90,150,0,0) if self.mode=="runs" else (65,110,230,100,100,140)
         for column,title,width in zip(("a","b","c","d","e","f"),headings,widths):
             self.table.heading(column,text=title); self.table.column(column,width=width,minwidth=0,stretch=width>0)
@@ -132,8 +135,9 @@ class HistoryView:
                 profile="компактный" if case.get("pdf_profile")=="compact" else "обычный"
                 if case.get("activity")=="minimal": profile+=" / минимум"
                 values=(case["count"],cpu,method+" / "+profile,_seconds(summary.get("median_seconds")),
-                        _seconds(summary.get("median_with_qa_seconds")),_status(status))
-            self.table.insert("", "end",iid=str(index),values=values,tags=("good" if status in ("COMPLETE","PASS") else "bad",))
+                        _seconds(summary.get("median_operation_seconds",summary.get("median_with_qa_seconds"))),_status(status))
+            tag="good" if status in ("COMPLETE","PASS") else "unchecked" if status in ("UNVERIFIED","LIMITED") else "bad"
+            self.table.insert("", "end",iid=str(index),values=values,tags=(tag,))
         self.page_label.set(f"{self.page+1}/{pages}")
         children=self.table.get_children()
         if children: self.table.selection_set(children[0])

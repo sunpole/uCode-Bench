@@ -268,5 +268,5 @@ def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
     finally:
         save_report()
     if report["status"]=="COMPLETE" or (qa_mode in ("vector","deferred") and report["status"] in ("LIMITED","UNVERIFIED")):
-        tracker.finish(len(numbers),"Создано без QA" if qa_mode=="deferred" else "Готово")
+        tracker.finish(len(numbers),"Создано без проверки" if qa_mode=="deferred" else "Готово")
     return directory
