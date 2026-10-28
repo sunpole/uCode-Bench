@@ -71,7 +71,7 @@ def build_window(app, help_text):
     app.notebook.grid(row=3, column=0, sticky="nsew", pady=(0, 7))
     app.pages = {}
     for key, title in (("generation", "Генерация"), ("print", "PDF и цвет"),
-                       ("resources", "CPU / RAM"), ("lab", "Тесты"), ("history","История"),
+                       ("resources", "CPU / RAM"), ("lab", "Тесты"), ("search","Подбор ПК"), ("history","История"),
                        ("tests", "Объединение"), ("help", "Справка")):
         page = ttk.Frame(app.notebook, padding=(8, 4))
         app.notebook.add(page, text=title)
@@ -81,6 +81,8 @@ def build_window(app, help_text):
     _resources(app)
     from .lab_ui import build_lab
     build_lab(app)
+    from .search_ui import SearchView
+    app.search_view=SearchView(app)
     from .history_ui import HistoryView
     app.history_view=HistoryView(app)
     page = app.pages["tests"]

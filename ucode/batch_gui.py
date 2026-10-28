@@ -243,7 +243,10 @@ class BatchWindow:
             if widget.winfo_exists():
                 widget.configure(state="disabled" if self.busy else idle_state)
         is_test=self.notebook.select()==str(self.pages["lab"])
-        if is_test:
+        if self.notebook.select()==str(self.pages["search"]):
+            self.generate.configure(text="НАЧАТЬ ПОДБОР",command=self.search_view.start,
+                                    state="normal" if self.search_view.valid and not self.busy else "disabled")
+        elif is_test:
             allowed=self.lab_plan_valid if self.test_controls.expanded else self.test_controls.valid
             self.generate.configure(text="ТЕСТЫ БЕЗ ПРОВЕРКИ" if self.qa_mode_var.get()=="Отложена" else "ЗАПУСТИТЬ ТЕСТЫ",command=self.test_controls.start,
                                     state="normal" if allowed and not self.busy else "disabled")
@@ -264,6 +267,7 @@ class BatchWindow:
     def verification_changed(self,*_):
         self.refresh_plan()
         if hasattr(self,"lab_refresh"): self.lab_refresh()
+        if hasattr(self,"search_view"): self.search_view.refresh()
 
     def show_generation(self):
         self.notebook.select(self.pages["generation"])
@@ -485,6 +489,22 @@ class BatchWindow:
 
     def complete(self, folder):
         self.last_output = folder
+        if (folder/"pc-search.json").is_file():
+            data=json.loads((folder/"pc-search.json").read_text(encoding="utf-8"))
+            self.last_report=folder/"pc-search.html"
+            self.last_pdf=next(folder.glob("t/*/jobs/*/all-*-pages.pdf"),None)
+            self.result_var.set({"COMPLETE":"ПОДБОР ЗАВЕРШЁН","UNVERIFIED":"ПОДБОР ЗАВЕРШЁН · БЕЗ ПРОВЕРКИ","LIMITED":"ПОДБОР · ЧАСТИЧНАЯ ПРОВЕРКА"}.get(data["status"],"ПОДБОР: "+data["status"]))
+            winners=data.get("winners",[])
+            if winners:
+                chosen=max(winners,key=lambda row:row["count"])
+                case=next(row for row in data["cases"] if row["id"]==chosen["case"])
+                trial=next(row for row in case["trials"] if row.get("job"))
+                name=trial["manifest"]["files"]["multipage"]["name"]
+                self.last_pdf=folder/trial["relative_folder"]/trial["job"]/name
+            self.result_details.set(f"{chosen['count']} кодов: {chosen['median_seconds']:.3f}с · {chosen['case']} · сводка всех тиражей в отчёте" if winners else "Нет полного корректного набора; подробности в отчёте")
+            self.status_var.set("Откройте отчёт: лидеры, отдельные повторы, фазы и покрытие движков")
+            if data["status"] in ("COMPLETE","UNVERIFIED","LIMITED"): self.progress["value"]=100
+            return
         if (folder/"audit.json").is_file():
             data=json.loads((folder/"audit.json").read_text(encoding="utf-8"))
             self.last_output=folder.parent.parent

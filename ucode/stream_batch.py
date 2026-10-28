@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 import shutil
 import time
+import tempfile
 
 from .stream_data import DiskPlan,FrameStore
 from .stream_pdf import write_pdf,DiskReader
@@ -27,7 +28,7 @@ class ResourceGuard:
         if free is None or free<self.reserve: raise RuntimeError("Остановлено: исчерпан резерв ОЗУ, частичные файлы сохранены")
 
 
-def verify_stream_outputs(directory,frames,settings,mode,*,raster,cancel=None,on_progress=None,guard=lambda:None):
+def verify_stream_outputs(directory,frames,settings,mode,*,raster,cancel=None,on_progress=None,guard=lambda:None,indexed=True):
     from .quality import check_pdf
     root=Path(directory); qa={}; count=len(frames); samples={0,count//2,count-1}
     if mode in ("multipage","both"):
@@ -35,7 +36,7 @@ def verify_stream_outputs(directory,frames,settings,mode,*,raster,cancel=None,on
         if on_progress: on_progress("Проверка PDF",0,count+(len(samples) if raster else 0))
         qa["multipage"]=check_pdf(path,frames,settings,render_samples=raster,cancel=cancel,
             on_progress=lambda done,total:on_progress("Проверка PDF",done,total) if on_progress else None,
-            reader_factory=lambda:DiskReader(path,root/"pdf-index.sqlite",cancel=cancel,guard=guard))
+            reader_factory=(lambda:DiskReader(path,root/"pdf-index.sqlite",cancel=cancel,guard=guard)) if indexed else None)
     if mode in ("singles","both"):
         done=failed=0; errors=[]; digits=max(4,len(str(count))); total=count+(len(samples) if raster else 0)
         actual=sum(1 for _ in (root/"singles").glob("*.pdf"))
@@ -53,7 +54,7 @@ def verify_stream_outputs(directory,frames,settings,mode,*,raster,cancel=None,on
     return qa
 
 
-def run_stream_batch(input_txt,output_root,*,count_plan,settings,mode,engine,execution,qa_mode,activity,progress,cancel,events):
+def run_stream_batch(input_txt,output_root,*,count_plan,settings,mode,engine,execution,qa_mode,activity,progress,cancel,events,temporary_data=False):
     from .batch import _make_directory,_sha256
     from .generators import get_generator
     from .engines import get_engine
@@ -66,7 +67,7 @@ def run_stream_batch(input_txt,output_root,*,count_plan,settings,mode,engine,exe
     resource=check_resources(output_root,count_plan.total_codes,streaming=True)
     directory=_make_directory(output_root,f"pdf-{count_plan.total_codes}")
     guard=ResourceGuard(directory,cancel); hardware=inspect_hardware(directory)
-    encoder=get_engine(engine); plan=None; started=time.perf_counter()
+    encoder=get_engine(engine); plan=None; scratch=None; started=time.perf_counter()
     report={"schema_version":1,"kind":"txt-batch-pdf","pipeline_contract":2,"streaming":True,
         "status":"RUNNING","generator":"qr","engine":encoder.info().to_dict(),"mode":mode,"count":count_plan.total_codes,
         "input_filename":Path(input_txt).name,"generation":count_plan.to_dict(),"print":get_generator("qr").describe_settings(settings),
@@ -79,7 +80,12 @@ def run_stream_batch(input_txt,output_root,*,count_plan,settings,mode,engine,exe
         if activity=="normal":
             source=directory/"source-codes.txt"; shutil.copyfile(input_txt,source)
             report["files"]["source_txt"]={"name":source.name,"sha256":_sha256(source)}
-        plan=DiskPlan(directory/"data.sqlite",source,copies=count_plan.copies_per_value,policy=count_plan.duplicate_policy,cancel=cancel,guard=guard)
+        if temporary_data:
+            scratch=tempfile.TemporaryDirectory(prefix=".work-",dir=directory)
+            if not Path(scratch.name).resolve().is_relative_to(directory.resolve()): raise ValueError("Папка временного индекса вне результата")
+        data_path=Path(scratch.name)/"data.sqlite" if scratch else directory/"data.sqlite"
+        report["qr_cache_retained"]=not temporary_data
+        plan=DiskPlan(data_path,source,copies=count_plan.copies_per_value,policy=count_plan.duplicate_policy,cancel=cancel,guard=guard)
         if plan.plan.total_codes!=count_plan.total_codes: raise ValueError("Входной TXT изменился после расчёта тиража; повторите загрузку")
         count=plan.plan.total_codes; unique=plan.plan.unique_values; frames=plan.frames()
         first=plan.db.execute("SELECT value FROM rows ORDER BY id LIMIT 1").fetchone()[0]
@@ -138,6 +144,7 @@ def run_stream_batch(input_txt,output_root,*,count_plan,settings,mode,engine,exe
         report.update(status="CANCELLED" if isinstance(exc,(InterruptedError,KeyboardInterrupt)) else "ERROR",errors=[type(exc).__name__+": "+str(exc)])
     finally:
         if plan is not None: plan.close()
+        if scratch is not None: scratch.cleanup()
         report["seconds"]["total_including_qa"]=time.perf_counter()-started
         (directory/"manifest.json").write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
         (directory/"ОТЧЁТ.txt").write_text(human_report(report),encoding="utf-8")
@@ -172,7 +179,7 @@ def audit_stream_job(root,original,*,render_samples=True,cancel=None,events=None
         def observe(stage,done,total):
             if previous[0] is not None and stage!=previous[0]: previous[2]+=previous[1]
             previous[0],previous[1]=stage,total; tracker.step(stage,done,total,previous[2])
-        result["qa"]=verify_stream_outputs(root,plan.frames(),settings,original["mode"],raster=raster,cancel=cancel,on_progress=observe,guard=guard)
+        result["qa"]=verify_stream_outputs(root,plan.frames(),settings,original["mode"],raster=raster,cancel=cancel,on_progress=observe,guard=guard,indexed=original.get("pdf_indexed",True))
         result["status"]=qa_status(result["qa"],raster)
     except (Exception,KeyboardInterrupt) as exc:
         result.update(status="CANCELLED" if isinstance(exc,(InterruptedError,KeyboardInterrupt)) else "ERROR",errors=[str(exc)])

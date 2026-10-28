@@ -7,9 +7,21 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+from contextlib import contextmanager
+from contextvars import ContextVar
 from ..runtime import resolve_executable
 
 from .base import Adapter, MergeError
+
+_DEFAULT_TIMEOUT=object()
+_TIMEOUT=ContextVar("ucode_merge_timeout",default=_DEFAULT_TIMEOUT)
+
+@contextmanager
+def engine_timeout(value):
+    """Explicit tuner scope; legacy scientific/default timeouts stay unchanged."""
+    token=_TIMEOUT.set(value)
+    try: yield
+    finally: _TIMEOUT.reset(token)
 
 
 def creation_flags() -> int:
@@ -54,6 +66,8 @@ def process_metrics(process: subprocess.Popen) -> dict:
 
 def run_engine(argv: list[str], *, stdin_bytes: bytes | None = None, timeout: float = 120, cwd=None) -> dict:
     """Run one foreground engine, killing and reaping it on timeout."""
+    override=_TIMEOUT.get()
+    if override is not _DEFAULT_TIMEOUT: timeout=override
     if os.name == "nt" and len(subprocess.list2cmdline(argv).encode("utf-16-le")) // 2 >= 30_000:
         raise MergeError("Windows command line is too long for this adapter; no shell or partial merge was used")
     try:
