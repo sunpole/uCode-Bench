@@ -281,7 +281,9 @@ class BatchWindow:
                 f"{cpu.get('name') or 'Модель CPU неизвестна'}\n"
                 f"Ядра / логические CPU: {cpu['physical_cores'] or '?'} / {cpu['logical_processors'] or '?'} · доступно {cpu['available_physical'] or '?'} / {cpu['available_logical']} · групп: {cpu['groups'] or '?'}\n"
                 f"RAM: {gib(ram['total_bytes'])}, свободно {gib(ram['available_bytes'])} · диск {disk['bus'] or '?'}, свободно {gib(disk['free_bytes'])}")
-            if hasattr(self, "workers_entry"):
+            if hasattr(self,"worker_picker"):
+                self.worker_picker.set_options([(str(n),str(n)) for n in range(1,cpu["available_logical"]+1)])
+            elif hasattr(self, "workers_entry"):
                 self.workers_entry.configure(values=cpu["presets"])
             if hasattr(self,"lab_refresh"): self.lab_refresh()
             self.refresh_plan()
@@ -522,6 +524,10 @@ class BatchWindow:
     def change_geometry_basis(self):
         value = self.print_settings.module_mm if self.geometry_basis.get() == "module" else self.print_settings.side_mm
         self.geometry_value.set(f"{value:g}")
+        cells=21+2*self.print_settings.quiet_modules
+        self.geometry_entry.configure(from_=.25 if self.geometry_basis.get()=="module" else .25*cells,
+                                      to=2 if self.geometry_basis.get()=="module" else 2*cells,
+                                      increment=.05 if self.geometry_basis.get()=="module" else .5)
         self.preview_print()
 
     def preview_print(self, *_):
@@ -588,6 +594,7 @@ class BatchWindow:
             var = tk.BooleanVar(master=self.root, value=available and (self.selected_engines is None or adapter.name in self.selected_engines))
             self._performance_options.append((adapter.name, var))
             control = ttk.Checkbutton(self.engine_options_frame,
+                style="Choice.TCheckbutton",
                 text=adapter.name + ("" if available else " — недоступен"), variable=var,
                 command=self.apply_performance, state="normal" if available else "disabled")
             self.edit(control, "normal" if available else "disabled").grid(row=index // 3, column=index % 3, sticky="w", padx=(0, 10), pady=2)

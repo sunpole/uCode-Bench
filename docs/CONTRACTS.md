@@ -1,5 +1,11 @@
 # Внутренние контракты
 
+## Button settings (28.10.2026)
+
+`ui_choices.ChoiceMenu` связывает кнопку/русские подписи с прежним StringVar, поддерживает single/multiple и legacy label aliases. Canonical CSV/keys остаются внутренним форматом read_form/preferences; GUI не содержит editable enum/CSV полей. Single menu имеет отдельный Tcl StringVar: trace модели не удаляет menu callback до его вызова. Unknown selected values видны и снимаются, неподдерживаемые CPU не получают рабочего допуска.
+
+`NumberSet` добавляет numeric selections через кнопку, custom RAM GiB преобразует в MiB. after_sync гарантирует актуальность видимого количества до refresh/разрешения запуска. В основном custom_config используется видимое одиночное число; сохранение считает его выбранным количеством, другие advanced axes сохраняются. В expanded режиме CSV набор задаётся меню/Добавить, без потери совместимости read_form. Worker/geometry/QA/ресурсные guards не изменены; основной test-control/2–30rows контракт прежний. BUTTON_SETTINGS.md содержит свежие проверки/ограничения/откат.
+
 ## Custom test controls (28.10.2026)
 
 `test_controls.custom_config(app)` — одно quantity1–10000, selected CPU modes, repeats1–10; один process/backend, auto RAM, multipage с текущими print_settings/profile, normal activity, warmups0. Не использует скрытые advanced lists, одинаковые/недоступные CPU отклоняются до запуска. Numeric CPU сортируются, all-2/all следуют за ними; повторы каждого case последовательны. `read_form/start_lab` остаются для явной расширенной матрицы. LabConfig/scientific defaults3 не изменены, GUI без saved prefs defaults1.
