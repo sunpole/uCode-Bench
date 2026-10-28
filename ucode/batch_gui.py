@@ -236,14 +236,22 @@ class BatchWindow:
         for widget, idle_state in self.edit_controls:
             if widget.winfo_exists():
                 widget.configure(state="disabled" if self.busy else idle_state)
-        self.generate.configure(state="normal" if self.input_valid and self.plan_valid and not self.busy else "disabled")
-        self.generate.configure(text="СОЗДАТЬ PDF (БЕЗ QA)" if self.qa_mode_var.get()=="Отложена" else "СОЗДАТЬ PDF")
+        is_test=self.notebook.select()==str(self.pages["lab"])
+        if is_test:
+            allowed=self.lab_plan_valid if self.test_controls.expanded else self.test_controls.valid
+            self.generate.configure(text="ЗАПУСТИТЬ ТЕСТЫ",command=self.test_controls.start,
+                                    state="normal" if allowed and not self.busy else "disabled")
+        else:
+            self.generate.configure(state="normal" if self.input_valid and self.plan_valid and not self.busy else "disabled",
+                                    command=self.start,text="СОЗДАТЬ PDF (БЕЗ QA)" if self.qa_mode_var.get()=="Отложена" else "СОЗДАТЬ PDF")
         self.audit_button.configure(state="normal" if self.last_output and (self.last_output/"manifest.json").is_file() and not self.busy else "disabled")
         self.stop.configure(state="normal" if self.busy and not self.cancel.is_set() else "disabled")
         self.open.configure(state="normal" if self.last_pdf and not self.busy else "disabled")
         self.folder_button.configure(state="normal" if self.last_output and not self.busy else "disabled")
         self.report_button.configure(state="normal" if self.last_report and not self.busy else "disabled")
         self.report_button.configure(text="Отчёт в браузере" if self.last_report and self.last_report.suffix.lower() in (".html",".htm") else "Посмотреть отчёт")
+        if self.last_report and self.last_report.name=="all-results.html": self.report_button.configure(text=f"Все результаты ({len(self.test_controls.rows)})")
+        self.test_controls.update_buttons()
         if hasattr(self,"history_view"): self.history_view.update_controls()
 
     def show_generation(self):
@@ -253,6 +261,7 @@ class BatchWindow:
     def show_lab(self):
         self.refresh_hardware()
         self.notebook.select(self.pages["lab"])
+        self.update_buttons()
 
     def show_history(self):
         self.notebook.select(self.pages["history"])
@@ -457,6 +466,10 @@ class BatchWindow:
             self.result_details.set(f"Вариантов: {len(result['cases'])} · рекомендации только по полным успешным повторам; откройте отчёт")
             if result["status"]=="COMPLETE": self.progress["value"]=100
             self.elapsed_var.set("Прошло: "+clock_text(result["elapsed_seconds"]))
+            if getattr(self,"lab_simple_run",False):
+                self.last_report=folder/"all-results.html"
+                self.test_controls.complete(result)
+                self.status_var.set("Каждая строка — отдельный запуск; все результаты сохранены")
             return
         manifest = folder / "manifest.json"
         if not manifest.exists():

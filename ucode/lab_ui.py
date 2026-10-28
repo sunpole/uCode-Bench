@@ -109,7 +109,7 @@ def build_lab(app):
     units=tuple(saved.get("cpu_units",("physical",) if app.hardware["cpu"].get("available_physical") else ("logical",)))
     app.lab_units=tk.StringVar(master=app.root,value=next((label for label,value in UNITS.items() if value==units),"Логические CPU"))
     app.lab_ram=var("ram_modes",("auto",))
-    app.lab_repeats=var("repeats",3); app.lab_warmups=var("warmups",0)
+    app.lab_repeats=var("repeats",1); app.lab_warmups=var("warmups",0)
     app.lab_batch=var("batch_size",1); app.lab_workers=var("workers",0)
     app.lab_pdf_profiles=var("pdf_profiles",("standard","compact"))
     app.lab_activities=var("activity_modes",("normal","minimal"))
@@ -120,40 +120,43 @@ def build_lab(app):
         ttk.Label(row,text=label).pack(side="left")
         app.edit(ttk.Entry(row,textvariable=variable,width=width)).pack(side="left",padx=(5,10))
     row=ttk.Frame(page); row.pack(anchor="w")
+    entry(row,"Количество кодов:",app.lab_counts,10)
+    ttk.Label(row,text="Повторов каждого режима:").pack(side="left")
+    app.edit(ttk.Spinbox(row,textvariable=app.lab_repeats,width=4,from_=1,to=10)).pack(side="left",padx=7)
+    app.lab_options_button=app.edit(ttk.Button(row,text="Все параметры…",command=lambda:app.test_controls.toggle()))
+    app.lab_options_button.pack(side="left",padx=7)
+    row=ttk.Frame(page); row.pack(anchor="w")
     app.edit(ttk.Combobox(row,textvariable=app.lab_units,values=tuple(UNITS),state="readonly",width=25),"readonly").pack(side="left",padx=(0,8))
     ttk.Label(row,textvariable=app.lab_hardware,style="Muted.TLabel",wraplength=400).pack(side="left",padx=(0,8))
     app.lab_cpu_row=row
     app.lab_cpu_buttons={}; app.lab_cpu_vars={}
-    row=ttk.Frame(page); row.pack(anchor="w")
-    entry(row,"Кодов:",app.lab_counts,17)
-    size_menu=app.edit(ttk.Menubutton(row,text="Объём ▾")); size_menu.pack(side="left",padx=(0,8))
-    menu=tk.Menu(size_menu,tearoff=False); size_menu.configure(menu=menu)
-    for label,value in (("200","200"),("500","500"),("1 000","1000"),("10 000","10000"),("Все объёмы","200,500,1000,10000")):
-        menu.add_command(label=label,command=lambda text=value:app.lab_counts.set(text))
-    entry(row,"PDF:",app.lab_pdf_profiles,17)
-    entry(row,"Расходы:",app.lab_activities,14)
-    row=ttk.Frame(page); row.pack(anchor="w")
-    entry(row,"Методы:",app.lab_backends,22)
+    app.lab_advanced=ttk.Frame(page)
+    row=ttk.Frame(app.lab_advanced); row.pack(anchor="w")
+    entry(row,"PDF:",app.lab_pdf_profiles,15)
+    entry(row,"Расходы:",app.lab_activities,13)
+    entry(row,"Методы:",app.lab_backends,19)
+    entry(row,"Свой CPU-набор:",app.lab_cpus,14)
+    row=ttk.Frame(app.lab_advanced); row.pack(anchor="w")
     entry(row,"RAM:",app.lab_ram,12)
-    entry(row,"Свой CPU-набор:",app.lab_cpus,18)
-    row=ttk.Frame(page); row.pack(anchor="w")
-    for label,variable,width in (("Замеры (раз):",app.lab_repeats,3),("Прогрев (раз):",app.lab_warmups,3),
+    for label,variable,width in (("Прогрев (раз):",app.lab_warmups,3),
                                  ("Партия:",app.lab_batch,5),("Работники (0=CPU):",app.lab_workers,5)):
-        if variable is app.lab_repeats or variable is app.lab_warmups:
+        if variable is app.lab_warmups:
             ttk.Label(row,text=label).pack(side="left")
             app.edit(ttk.Spinbox(row,textvariable=variable,width=width,from_=0 if variable is app.lab_warmups else 1,
                                 to=3 if variable is app.lab_warmups else 10)).pack(side="left",padx=(5,10))
         else: entry(row,label,variable,width)
-    app.lab_warmup_help=ttk.Label(page,text="Прогрев: пробные PDF перед замерами; в итог не входят. 0 = выключен. Галочки CPU = варианты серии.",
+    app.lab_warmup_help=ttk.Label(app.lab_advanced,text="Прогрев: пробные PDF перед замерами; в итог не входят. 0 = выключен. Галочки CPU = варианты серии.",
                                 style="Muted.TLabel",wraplength=850)
     app.lab_warmup_help.pack(anchor="w")
-    ttk.Label(page,textvariable=app.lab_preview,style="Accent.TLabel",wraplength=850).pack(anchor="w")
-    row=ttk.Frame(page); row.pack(anchor="w",pady=1)
+    ttk.Label(app.lab_advanced,textvariable=app.lab_preview,style="Accent.TLabel",wraplength=850).pack(anchor="w")
+    row=ttk.Frame(app.lab_advanced); row.pack(anchor="w",pady=1)
     app.lab_start_buttons=[]
-    for text,command in (("Первый вариант",lambda:start_lab(app,True)),("Вся выбранная серия",lambda:start_lab(app,False)),
+    for text,command in (("Только первый вариант",lambda:start_lab(app,True)),
                          ("Сравнить PDF (первые)",lambda:start_lab(app,False,True))):
         button=app.edit(ttk.Button(row,text=text,command=command)); button.pack(side="left",padx=(0,7))
         app.lab_start_buttons.append(button)
+    from .test_controls import TestControls
+    app.test_controls=TestControls(app,page)
     def refresh(*_):
         refresh_cpu_buttons(app)
         eligible=False
@@ -162,7 +165,10 @@ def build_lab(app):
             eligible=plan["eligible"]>0
             app.lab_preview.set(f"Вариантов: {plan['configurations']} · прогонов: {plan['runs']} · пропущено: {plan['skipped']} · место ≈ {plan['estimated_disk_bytes']/1024**3:.2f} ГиБ")
         except ValueError as exc: app.lab_preview.set(str(exc))
+        app.lab_plan_valid=eligible
+        app.test_controls.refresh()
         for button in app.lab_start_buttons: _idle_state(app,button,"normal" if eligible else "disabled")
+        if hasattr(app,"generate"): app.update_buttons()
         if hasattr(app,"notebook"): app.fit_window()
     app.lab_refresh=refresh
     for variable in (app.lab_counts,app.lab_cpus,app.lab_units,app.lab_backends,app.lab_ram,app.lab_repeats,app.lab_warmups,app.lab_batch,app.lab_workers,app.lab_pdf_profiles,app.lab_activities):
@@ -185,6 +191,8 @@ def start_lab(app, first=False,optimization=False):
         from .lab_worker import atomic_json
         atomic_json(path,asdict(read_form(app)))
         destination=Path(app.destination_var.get()) if app.destination_var.get() else app.output_root/"jobs"
+        app.lab_simple_run=False
+        app.test_controls.rows=[]; app.test_controls.render()
         app.begin()
         app.launch(lambda: run_lab(destination/"laboratory",config,cancel=app.cancel,
                                   events=lambda value:app.events.put(("progress",value)),

@@ -53,12 +53,15 @@ def build_window(app, help_text):
     settings.add_separator()
     settings.add_command(label="Восстановить стандартные настройки", command=app.restore_defaults)
     tests = app.menu(toolbar, "Тесты")
+    tests.add_command(label="Настроить и запустить тесты",command=app.show_lab)
+    tests.add_command(label="История результатов",command=app.show_history)
+    tests.add_separator()
+    scientific=tk.Menu(tests,tearoff=False)
+    tests.add_cascade(label="Научные тесты объединения",menu=scientific)
     for label, count in (("Быстрый — 200", 200), ("Средний — 1 000", 1000),
                          ("Большой — 10 000", 10000), ("Полный — 200 → 1 000 → 10 000", "all")):
-        tests.add_command(label=label, command=lambda n=count: app.start_test(n))
+        scientific.add_command(label=label, command=lambda n=count: app.start_test(n))
     tests.add_separator()
-    tests.add_command(label="Тесты CPU / PDF — ядра и прогрев", command=app.show_lab)
-    tests.add_command(label="История тестов CPU / PDF", command=app.show_history)
     tests.add_command(label="Выбрать движки объединения", command=app.performance_dialog)
     tests.add_command(label="Предыдущие результаты", command=lambda: app.open_path(app.output_root / "benchmarks"))
     ttk.Button(toolbar, text="Справка", command=app.show_help).pack(side="right")
@@ -67,7 +70,7 @@ def build_window(app, help_text):
     app.notebook.grid(row=3, column=0, sticky="nsew", pady=(0, 7))
     app.pages = {}
     for key, title in (("generation", "Генерация"), ("print", "PDF и цвет"),
-                       ("resources", "CPU / RAM"), ("lab", "Тесты CPU / PDF"), ("history","История"),
+                       ("resources", "CPU / RAM"), ("lab", "Тесты"), ("history","История"),
                        ("tests", "Объединение"), ("help", "Справка")):
         page = ttk.Frame(app.notebook, padding=(8, 4))
         app.notebook.add(page, text=title)
@@ -125,6 +128,7 @@ def build_window(app, help_text):
     app.report_button.pack(side="left")
     app.audit_button=ttk.Button(actions,text="Проверить PDF",command=app.start_audit)
     app.audit_button.pack(side="left",padx=7)
+    app.notebook.bind("<<NotebookTabChanged>>",lambda event:app.update_buttons() if hasattr(app,"generate") else None,add="+")
 
 
 def _generation(app):
