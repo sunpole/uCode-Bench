@@ -30,12 +30,16 @@ def page_encoder(settings):
     return encode
 
 
-def _stage_worker(pipe,stop,cpu,stage,settings):
+def _stage_worker(pipe,stop,cpu,stage,settings,measure_memory=False):
     try:
         verified=apply_affinity([cpu])["verified_cpus"]
         from .engines import get_engine
         engine=get_engine(); engine.prepare_encoding(); prepare=page_encoder(settings)
-        pipe.send(("ready",os.getpid(),verified))
+        baseline=None
+        if measure_memory:
+            from .pipeline_memory import ready_memory
+            baseline=ready_memory()
+        pipe.send(("ready",os.getpid(),verified,baseline))
         while not stop.is_set():
             task=pipe.recv()
             if task is None: break
@@ -64,12 +68,20 @@ def prepared_pages(request,settings,cancel,guard,info,observer=None,on_ready=Non
     assigns each stage its exact fixed range; queue assigns the next free packet.
     This function may restrict its *isolated trial* parent to PDF CPUs.
     """
-    count=request["count"]; qr=request["qr_cpus"]; pdf=request["pdf_cpus"]; batch=request["batch_size"]
-    workers=len(qr)+len(pdf); in_flight=min(count,2*workers*batch)
-    required=256*1024**2+workers*128*1024**2+in_flight*40000
+    from .pipeline_memory import memory_plan
+    factor=request.get("processes_per_cpu",1)
+    if type(factor) is not int or not 1<=factor<=10: raise ValueError("Процессов на CPU: 1–10")
+    count=request["count"]; qr=request["qr_cpus"]*factor; pdf=request["pdf_cpus"]*factor; batch=request["batch_size"]
+    workers=len(qr)+len(pdf)
+    # A lower-bound reservation admits only the first real process. Its measured
+    # startup memory then determines whether the remaining pool may be launched.
+    plan=memory_plan(count,workers,batch,minimum=factor>1)
+    in_flight=plan["bounded_values"]; required=plan["required_bytes"]
     info.update(required_ram_estimate_bytes=required,bounded_values_estimate=in_flight,
                 worker_affinity={},worker_pids=[],worker_tasks={},max_pending_values=0,
-                completed_values=0,qr_service_sum=0.,pdf_service_sum=0.,assembler_active_seconds=0.)
+                completed_values=0,qr_service_sum=0.,pdf_service_sum=0.,assembler_active_seconds=0.,
+                processes_per_cpu=factor,requested_processes=workers,selected_cpu_count=len(request["qr_cpus"])+len(request["pdf_cpus"]),
+                ram_plan=plan)
     if required>request["ram_budget_bytes"]: raise PipelineBudgetError("Безопасного бюджета ОЗУ недостаточно; уменьшите CPU или кодов за шаг")
     context=mp.get_context("spawn"); stop=context.Event(); pool=[]
     tasks=Tasks(count,len(qr),batch,request["schedule"])
@@ -83,16 +95,36 @@ def prepared_pages(request,settings,cancel,guard,info,observer=None,on_ready=Non
         except (OSError,EOFError) as exc: raise RuntimeError("Процесс конвейера завершился без результата") from exc
         if message[0]=="error": raise RuntimeError(message[1])
         return message
+    def ready(worker,msg):
+        _,pid,mask,*extra=msg
+        if cpu_keys(mask)!=cpu_keys([worker["cpu"]]): raise RuntimeError("Привязка процесса к CPU не подтверждена")
+        worker.update(ready=True,pid=pid)
+        info["worker_pids"].append(pid); info["worker_affinity"][str(pid)]=mask
+        info["worker_tasks"][str(pid)]={"stage":worker["stage"],"cpu":mask,"pages":0,"packets":0,"service_seconds":0.}
+        if observer: observer(info)
+        return extra[0] if extra else None
     try:
         for stage,cpus in (("qr" if pdf else "full",qr),("pdf",pdf)):
             for slot,cpu in enumerate(cpus):
                 check(); parent,child=context.Pipe()
-                process=context.Process(target=_stage_worker,args=(child,stop,cpu,stage,settings),name="ucode-pipeline-"+stage)
+                probe=factor>1 and not pool
+                process=context.Process(target=_stage_worker,args=(child,stop,cpu,stage,settings,probe),name="ucode-pipeline-"+stage)
                 try: process.start()
                 except BaseException: parent.close(); child.close(); raise
                 child.close(); pool.append({"process":process,"pipe":parent,"stage":stage,"slot":slot,"cpu":cpu,"ready":False,"active":None})
+                if probe:
+                    while not parent.poll(.05):
+                        check()
+                        if process.exitcode is not None: raise RuntimeError("Процесс калибровки завершился без готовности")
+                    msg=receive(pool[-1])
+                    if msg[0]!="ready": raise RuntimeError("Нет подтверждения готовности процесса калибровки")
+                    observation=ready(pool[-1],msg)
+                    plan=memory_plan(count,workers,batch,(observation or {}).get("baseline_bytes"))
+                    info.update(ram_plan=plan,memory_startup_observation=observation,required_ram_estimate_bytes=plan["required_bytes"])
+                    if plan["required_bytes"]>request["ram_budget_bytes"]:
+                        raise PipelineBudgetError("Измеренный план памяти не помещается в безопасный бюджет; сократите множитель")
         # Spawn while the parent still has the union mask, then reserve PDF CPUs.
-        if pdf: info["assembler_affinity"]=apply_affinity(pdf)
+        if pdf: info["assembler_affinity"]=apply_affinity(request["pdf_cpus"])
         info["assembler_scope"]="Final serial assembler shares PDF CPUs" if pdf else "Final serial assembler shares full-cycle CPUs"
         ready_pages=0; announced=False
         while ready_pages<count:
@@ -102,12 +134,7 @@ def prepared_pages(request,settings,cancel,guard,info,observer=None,on_ready=Non
                 if pipe.poll():
                     changed=True; msg=receive(worker)
                     if msg[0]=="ready":
-                        _,pid,mask=msg
-                        if cpu_keys(mask)!=cpu_keys([worker["cpu"]]): raise RuntimeError("Привязка процесса к CPU не подтверждена")
-                        worker.update(ready=True,pid=pid)
-                        info["worker_pids"].append(pid); info["worker_affinity"][str(pid)]=mask
-                        info["worker_tasks"][str(pid)]={"stage":worker["stage"],"cpu":mask,"pages":0,"packets":0,"service_seconds":0.}
-                        if observer: observer(info)
+                        ready(worker,msg)
                     elif msg[0]=="done":
                         _,start,rows,qr_s,pdf_s,began,ended=msg
                         expected=worker["active"]

@@ -70,6 +70,7 @@ def parser_for(kind):
         p.add_argument("--mergers",default="pypdf")
     if kind=="pipeline":
         p.add_argument("--split",default="cores:1+0"); p.add_argument("--schedule",default="equal,queue")
+        p.add_argument("--processes-per-core",default="1")
     return p
 
 
@@ -100,7 +101,7 @@ def parse_command(line):
         for part in values(a.split):
             unit,numbers=part.split(":",1); qr,pdf_count=numbers.replace(":","+").split("+")
             allocations.append(f"{UNITS[unit]}:{int(qr)}:{int(pdf_count)}")
-        cfg=PipelineConfig(**common,allocations=tuple(allocations),schedules=values(a.schedule),batches=values(a.batch,int),ram_mode=a.ram,telemetry_modes=metrics)
+        cfg=PipelineConfig(**common,allocations=tuple(allocations),schedules=values(a.schedule),batches=values(a.batch,int),ram_mode=a.ram,telemetry_modes=metrics,processes_per_cpu=values(a.processes_per_core,int))
     else:
         if len(metrics)!=1: raise ValueError("search: один режим CPU-замеров на команду")
         cfg=SearchConfig(**common,cpu_counts=values(a.cpu),cpu_units=tuple(UNITS[v] for v in values(a.unit)),all_cpu_counts=a.each_cpu=="on",
@@ -132,6 +133,7 @@ def command_text(command):
     def add(name,value): args.extend(["--"+name,",".join(map(str,value)) if isinstance(value,tuple) else str(value)])
     add("xy",c.timeline_mode)
     if command.kind=="pipeline":
+        add("processes-per-core",c.processes_per_cpu)
         add("pdf",settings.pdf_profile)
         add("split",tuple(("cores" if v.split(":")[0]=="physical" else "smt")+":"+"+".join(v.split(":")[1:]) for v in c.allocations))
         add("schedule",c.schedules); add("batch",c.batches); add("ram",c.ram_mode); add("metrics",c.telemetry_modes)
@@ -149,7 +151,7 @@ def preview_command(command,cpu):
     c=command.config
     if command.kind=="pipeline":
         cases=build_pipeline_cases(c,cpu); ready=[row for row in cases if row["status"]!="SKIPPED"]
-        return {"kind":command.kind,"variants":len(ready),"runs":len(ready)*c.repeats,"skipped":len(cases)-len(ready),"exact":True,
+        return {"kind":command.kind,"variants":len(ready),"runs":len(ready)*c.repeats,"skipped":len(cases)-len(ready),"exact":True,"processes":sorted({row['workers'] for row in ready}),
                 "pages":sum(row["count"] for row in ready)*c.repeats}
     if command.kind=="lab":
         p=lab_preview(c,{"cpu":cpu})

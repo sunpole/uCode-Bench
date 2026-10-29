@@ -71,6 +71,8 @@ def _label(case):
             parts.append(names.get(case[key], str(case[key])))
     if case.get("batch_size"):
         parts.append("порция " + str(case["batch_size"]))
+    if "processes_per_cpu" in case:
+        parts.append(str(case["processes_per_cpu"])+" процессов на CPU · всего "+str(case.get("workers","?")))
     if case.get("strategy") == "split":
         parts.append(str(case.get("part_count")) + " частей / " + str(case.get("part_mode")) + " / " + str(case.get("merger")))
     for key in ("pdf_profile", "activity", "ram_mode"):

@@ -18,14 +18,16 @@ class PipelineConfig:
     telemetry_modes:tuple=("cpu",)
     print_settings:dict=field(default_factory=dict)
     timeline_mode:str="off"
+    processes_per_cpu:tuple=(1,)
 
     def __post_init__(self):
         if self.timeline_mode not in ("on","off"): raise ValueError("XY: on/off")
         from .print_settings import PrintSettings
-        for axis in (self.counts,self.allocations,self.schedules,self.batches,self.telemetry_modes):
+        for axis in (self.counts,self.allocations,self.schedules,self.batches,self.telemetry_modes,self.processes_per_cpu):
             if not isinstance(axis,tuple) or not axis or len(axis)>64: raise ValueError("Выберите от 1 до 64 значений каждого параметра")
         if any(type(n) is not int or n<1 for n in self.counts): raise ValueError("Количество кодов: положительное целое")
         if any(type(n) is not int or not 1<=n<=1000 for n in self.batches): raise ValueError("Кодов за шаг: 1–1000")
+        if any(type(n) is not int or not 1<=n<=10 for n in self.processes_per_cpu): raise ValueError("Процессов на ядро/CPU: 1–10")
         if type(self.repeats) is not int or not 1<=self.repeats<=10: raise ValueError("Повторы: 1–10")
         if set(self.schedules)-{"equal","queue"}: raise ValueError("Выберите равные части или общую очередь")
         if set(self.telemetry_modes)-{"off","cpu"}: raise ValueError("Неверные CPU-замеры")
@@ -75,11 +77,12 @@ class Tasks:
 
 def build_pipeline_cases(config,cpu):
     rows=[]
-    for count,token,schedule,batch,telemetry in itertools.product(dict.fromkeys(config.counts),dict.fromkeys(config.allocations),dict.fromkeys(config.schedules),dict.fromkeys(config.batches),dict.fromkeys(config.telemetry_modes)):
+    for count,token,schedule,batch,telemetry,factor in itertools.product(dict.fromkeys(config.counts),dict.fromkeys(config.allocations),dict.fromkeys(config.schedules),dict.fromkeys(config.batches),dict.fromkeys(config.telemetry_modes),dict.fromkeys(config.processes_per_cpu)):
         row={"id":f"P{len(rows)+1:04d}","count":count,"allocation":token,"schedule":schedule,"batch_size":batch,
-             "telemetry_mode":telemetry,"backend":"pipeline","workers":0,"status":"PENDING","trials":[],"reason":""}
+             "telemetry_mode":telemetry,"processes_per_cpu":factor,"backend":"pipeline","workers":0,"status":"PENDING","trials":[],"reason":""}
         try:
-            row.update(partition(cpu,token)); row["workers"]=len(row["qr_cpus"])+len(row["pdf_cpus"])
+            row.update(partition(cpu,token)); row["workers"]=(len(row["qr_cpus"])+len(row["pdf_cpus"]))*factor
+            if row["workers"]>256: raise ValueError("Больше256 процессов в варианте; сократите CPU или множитель")
         except ValueError as exc: row.update(status="SKIPPED",reason=str(exc))
         rows.append(row)
         if len(rows)>4096: raise ValueError("Более 4096 вариантов; сократите наборы параметров")

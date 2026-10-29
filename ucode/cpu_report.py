@@ -15,7 +15,7 @@ def overhead_pairs(data):
         if len(trials)!=data["config"]["repeats"] or any(t["status"]!=expected or t.get("errors") for t in trials): continue
         times=[t.get("seconds",{}).get("launcher_wall") for t in trials]
         if not all(isinstance(t,(int,float)) and t>0 for t in times): continue
-        key=tuple(str(case.get(k)) for k in ("count","cpu_unit","cpus","backend","workers","ram_mode","pdf_profile","activity","allocation","schedule","batch_size"))
+        key=tuple(str(case.get(k)) for k in ("count","cpu_unit","cpus","backend","workers","ram_mode","pdf_profile","activity","allocation","schedule","batch_size","processes_per_cpu"))
         groups.setdefault(key,{})[mode]=(case,statistics.median(times))
     rows=[]
     for group in groups.values():

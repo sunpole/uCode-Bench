@@ -39,7 +39,7 @@ def run_pipeline_lab(output_root,config,*,cancel=None,events=None):
             for repeat in range(config.repeats):
                 if cancel is not None and cancel.is_set(): raise InterruptedError("Серия конвейера остановлена")
                 request={**frozen,**{k:v for k,v in case.items() if k not in ("trials","status","reason")},
-                         "strategy":"pipeline","backend":"process","workers":len(case["qr_cpus"]),"cpu_unit":case["cpu_unit"],
+                         "strategy":"pipeline","backend":"process","workers":len(case["qr_cpus"])*case.get("processes_per_cpu",1),"cpu_unit":case["cpu_unit"],
                          "warmup":False,"output_mode":"multipage","ram_mode":config.ram_mode,"qa_mode":config.qa_mode,"timeline_mode":config.timeline_mode,
                          "print_settings":config.print_settings,"engine_version":get_engine().info().version}
                 def event(value):
@@ -89,13 +89,16 @@ def write_pipeline_report(folder,data):
                  case["count"]/seconds["launcher_wall"] if seconds.get("launcher_wall") else None,
                  trial.get("pdf_bytes"),trial.get("memory",{}).get("peak_tree_rss_bytes"),
                  seconds.get("qr_service_sum"),seconds.get("pdf_service_sum"),seconds.get("assembler_active"),
-                 info.get("max_pending_values"),len(info.get("worker_pids",[])),"; ".join(trial.get("errors",[])))
+                 info.get("max_pending_values"),len(info.get("worker_pids",[])),"; ".join(trial.get("errors",[])),
+                 case.get("processes_per_cpu",1),case.get("workers"),sum(v.get('pages',0)>0 for v in info.get('worker_tasks',{}).values()),
+                 info.get('required_ram_estimate_bytes'),info.get('memory_startup_observation',{}).get('rss_bytes') if info.get('memory_startup_observation') else None,
+                 info.get('memory_startup_observation',{}).get('private_bytes') if info.get('memory_startup_observation') else None)
             rows.append(row)
             if pdf_name and trial.get("job"): trial["pdf_link"]=(Path("trials")/trial["folder"]/trial["job"]/pdf_name).as_posix()
         s=case.get("summary",{}); wall=s.get("median_launcher_wall_seconds")
         summary.append((case["id"],case["count"],allocation_label(case["allocation"]),label[case["schedule"]],case["batch_size"],case["telemetry_mode"],case["status"],
                         wall,s.get("median_seconds"),case["count"]/wall if wall else None,
-                        min((t["seconds"]["launcher_wall"] for t in case["trials"]),default=None),max((t["seconds"]["launcher_wall"] for t in case["trials"]),default=None),case.get("reason","")))
+                        min((t["seconds"]["launcher_wall"] for t in case["trials"]),default=None),max((t["seconds"]["launcher_wall"] for t in case["trials"]),default=None),case.get("reason",""),case.get("processes_per_cpu",1),case.get("workers")))
     expected="PASS" if data["config"]["qa_mode"]=="full" else {"vector":"LIMITED","deferred":"UNVERIFIED"}[data["config"]["qa_mode"]]
     for count in sorted(set(c["count"] for c in data["cases"])):
         for mode in data["config"]["telemetry_modes"]:
@@ -103,12 +106,14 @@ def write_pipeline_report(folder,data):
             if good:
                 best=min(good,key=lambda c:c["summary"]["median_launcher_wall_seconds"])
                 data["winners"].append({"count":count,"telemetry_mode":mode,"case":best["id"],"median_seconds":best["summary"]["median_launcher_wall_seconds"]})
-    fields=("Вариант","Кодов","QR+PDF CPU","Распределение","Кодов за шаг","Повтор","CPU-замеры","Статус","Весь запуск,с","Создание PDF,с","Проверка,с","Кодов/с всего","PDF,байт","Пик RSS дерева,байт","QR: сумма времени процессов,с","PDF: сумма времени процессов,с","Сборщик: активное время,с","Макс. ожидающих значений","Подтверждено процессов","Ошибка")
+    fields=("Вариант","Кодов","QR+PDF CPU","Распределение","Кодов за шаг","Повтор","CPU-замеры","Статус","Весь запуск,с","Создание PDF,с","Проверка,с","Кодов/с всего","PDF,байт","Пик RSS дерева,байт","QR: сумма времени процессов,с","PDF: сумма времени процессов,с","Сборщик: активное время,с","Макс. ожидающих значений","Подтверждено процессов","Ошибка","Процессов на CPU","Запрошено процессов","Процессов с работой","Оценка RAM,байт","RSS после импорта,байт","Private после импорта,байт")
     with (folder/"pipeline.csv").open("w",encoding="utf-8-sig",newline="") as out:
         writer=csv.writer(out); writer.writerow(fields); writer.writerows(rows)
     notes=["uCode — СРАВНЕНИЕ КОНВЕЙЕРА CPU", "Статус: "+data["status"],
         "QR + PDF: слева CPU для кодирования, справа для геометрии/сжатия страниц. PDF=0: каждый QR-процесс выполняет полный цикл.",
         "Окончательный сборщик один; он разделяет CPU этапа PDF (или общего пула при PDF=0). Это не дополнительное ядро.",
+        "Процессов на CPU — множитель исполнителей на каждом выбранном CPU. Он не добавляет ядра; несколько процессов делят время того же CPU. Для физических ядер используется тот же один SMT-поток на ядро, как при множителе1.",
+        "При множителе>1 первый реальный исполнитель измеряет RSS/private после импортов, до QR-работы. План: родитель256МиБ + max(48МиБ,1.5×наблюдение) на процесс + ограниченные IPC-пакеты; без наблюдения128МиБ. Это оценка, не пик/квота. РезервОС, монитор дерева и WindowsJob сохраняются; при нехватке вариант не ранжируется.",
         "Физические ядра: по одному логическому CPU каждого ядра. SMT: логические CPU делят ресурсы физических ядер; 24+4 не равно 28 физическим ядрам.",
         "Равные части: фиксированный диапазон каждому процессу обоих этапов. Общая очередь: свободный процесс берёт следующую порцию.",
         "Кодов за шаг — размер ограниченного пакета передачи в обоих режимах, а не число процессов. Исходный порядок страниц сохраняется.",
@@ -131,7 +136,7 @@ def write_pipeline_report(folder,data):
     def table(headers,values): return '<div class="scroll"><table><tr>'+''.join('<th>'+esc(v)+'</th>' for v in headers)+'</tr>'+''.join('<tr>'+''.join('<td>'+esc(v)+'</td>' for v in row)+'</tr>' for row in values)+'</table></div>'
     document='<!doctype html><html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>uCode — конвейер CPU</title><style>body{font:16px Segoe UI,Arial;background:#0b1220;color:#edf4fc;margin:24px}a{color:#5ce0bd}th,td{border:1px solid #31445e;padding:7px}table{border-collapse:collapse}pre{white-space:pre-wrap}.scroll{overflow:auto}</style><h1>Конвейер CPU: QR + PDF</h1><p><strong>'+esc(data["status"])+'</strong> · '+esc(data["config"]["qa_mode"])+'</p>'
     if data["status"] not in ("COMPLETE","LIMITED","UNVERIFIED"): document+='<p>Серия не завершена: сравнение всех выбранных вариантов ещё не получено.</p>'
-    document+=table(("Вариант","Кодов","QR+PDF CPU","Распределение","Кодов за шаг","CPU-замеры","Статус","Медиана всего,с","Медиана создания,с","Кодов/с всего","min всего,с","max всего,с","Причина"),summary)
+    document+=table(("Вариант","Кодов","QR+PDF CPU","Распределение","Кодов за шаг","CPU-замеры","Статус","Медиана всего,с","Медиана создания,с","Кодов/с всего","min всего,с","max всего,с","Причина","Процессов на CPU","Всего процессов"),summary)
     document+='<p><a href="cpu-load.html">Загрузка CPU: min / среднее / max</a></p><h2>Каждый повтор</h2>'+table(fields,rows)+'<h2>PDF</h2>'
     document+="<br>".join('<a href="'+quote(t["pdf_link"])+'">'+esc(c["id"]+f" · повтор {i}")+'</a>' for c in data["cases"] for i,t in enumerate(c["trials"],1) if t.get("pdf_link"))
     document+='<h2>Методика</h2><pre>'+html.escape('\n'.join(notes))+'</pre><a href="pipeline.csv">CSV</a> · <a href="ОТЧЁТ.txt">TXT</a></html>'
