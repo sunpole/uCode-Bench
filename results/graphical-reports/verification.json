@@ -1,6 +1,6 @@
 {
   "kind": "graphical-reports-verification",
-  "source_digest": "3644e8f4ff0fe8518dcf171236bbc54762c12903f8cfa485769d1f003d613311",
+  "source_digest": "e2827d11eedef572bd86b3c804ebbec108bdf8463628456df4c3bea85bef8649",
   "scope": "Windows, max 3 pages per real PDF; no large benchmark or visual acceptance",
   "queue_status": "UNVERIFIED",
   "full_qa_pipeline_status": "COMPLETE",
@@ -8,7 +8,7 @@
   "text_archive_records": 3,
   "pdf_in_archive": false,
   "historical": {
-    "view": "old-views\\graphs-72090ad6c5064c1db0d4b6b5732f0d56.html",
+    "view": "old-views\\graphs-a46ad915969a4938a26887460b41f8bf.html",
     "source_unchanged": true,
     "source_sha256": "7b0ce6595c19ebe49ca789acedf6376c8fdd26b482648adb3c49c4c355e7955c",
     "cases": 36,
