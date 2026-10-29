@@ -70,7 +70,10 @@ class ConsoleView:
             parts=[]
             for i,p in enumerate(plans,1):
                 runs="по допуску" if p["runs"] is None else ("до " if not p["exact"] else "")+str(p["runs"])
-                parts.append(f"{i}. {p['kind']}: {runs} запусков"+(f", пропущено {p['skipped']}" if p["skipped"] else ""))
+                name={'lab':'CPU / RAM','pipeline':'Конвейер','search':'Подбор ПК','scientific':'Научный профиль'}[p['kind']]
+                parts.append(f"{i}. {name}: {runs} запусков"+(f", вариантов {p['variants']}" if p['variants'] is not None else '')+
+                             (f", процессов {'/'.join(map(str,p['processes']))}" if p.get('processes') else '')+
+                             (f", пропущено {p['skipped']}" if p["skipped"] else ""))
             self.plan.set("Очередь: "+"; ".join(parts))
             self.valid=all(p["variants"] is None or p["variants"]>0 for p in plans)
             if not self.valid: self.plan.set(self.plan.get()+" · нет доступных вариантов")
@@ -84,12 +87,7 @@ class ConsoleView:
             apply_to_controls(self.app,commands[0])
         except (ValueError,KeyError) as exc: self.plan.set(str(exc))
     def help(self):
-        import html
-        source=Path(__file__).resolve().parents[1]/"docs/TEST_COMMANDS.md"
-        folder=self.app.output_root/"help"; folder.mkdir(parents=True,exist_ok=True)
-        target=folder/"test-commands.html"
-        target.write_text('<!doctype html><html lang="ru"><meta charset="utf-8"><title>uCode — команды тестов</title><style>body{font:16px Segoe UI;margin:24px;max-width:1100px}pre{white-space:pre-wrap;line-height:1.5}</style><pre>'+html.escape(source.read_text(encoding="utf-8"))+'</pre></html>',encoding="utf-8")
-        self.app.open_path(target)
+        self.app.help_view.show('console');self.app.help_view.browser()
     def start(self):
         if self.app.busy: return
         self.preview()

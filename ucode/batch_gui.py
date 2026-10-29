@@ -22,73 +22,7 @@ from .execution import ExecutionOptions, execution_plan
 from .open_reports import open_html_report
 
 PROJECT = Path(__file__).resolve().parents[1]
-HELP_TEXT = """1. База TXT → Открыть: UTF-8, одна строка — ровно 12 цифр.
-2. Либо задайте своё положительное количество; большой тираж обрабатывается порциями.
-3. Укажите экземпляры каждого значения и выберите политику повторов TXT.
-   Например: 200 уникальных × 3 экземпляра = 600 кодов.
-   «Сохранить строки» оставляет все повторяющиеся строки, как в исходном TXT.
-4. «PDF и цвет»: размер, модуль, белое поле, CMYK и формат файлов.
-   Здесь же — экземпляры и повторы TXT.
-   «Генерация»: QR → CPU → Ядра → 1 / Все −2 / Все; это отдельные процессы.
-   Запись одного PDF пока последовательная. Подробные CPU-замеры только в тестах.
-5. СОЗДАТЬ PDF. Дождитесь кодирования, записи и проверки.
-6. Откройте PDF, папку или понятный ОТЧЁТ.txt.
-
-Процент учитывает фактически обработанные коды, страницы и QA.
-100% означает завершение выбранного режима; статус качества указан отдельно.
-Рядом с запуском: «С проверкой», «Без проверки» или «Частично».
-Выбор действует и на генерацию, и на пользовательские тесты.
-«Без проверки» пропускает QA готовых PDF: UNVERIFIED, это не QA PASS.
-«Частично» проверяет структуру без растровых образцов: LIMITED.
-«Проверить PDF» запускает полную проверку готового тиража с отдельным отчётом.
-«Компактный» PDF: общие данные документа, без шрифтов, объединённые контуры.
-«Минимум расходов»: реже обновлять прогресс, без хешей и второй копии TXT.
-Коды, размеры, CMYK, контроль ввода, RAM и отмена при этом сохраняются.
-В лаборатории проверка соответствует кнопке рядом с запуском.
-Скорость без QA показана отдельно и не участвует в проверенном рейтинге.
-Научный профиль объединения всегда с полной QA; для запуска без проверки
-используйте вкладку «Тесты».
-«История» читает выбранную папку лаборатории и показывает сохранённые
-замеры без новой генерации. «Замеры →» открывает варианты запуска;
-«Отчёт в браузере», PDF и папка доступны рядом. Есть поиск и фильтр.
-QA PASS* в истории — сохранённое подтверждение, не повторная проверка
-готового PDF сейчас. Неполные/ошибочные замеры не получают медиану.
-Разные запуски/компьютеры автоматически в общий рейтинг не смешиваются.
-Остановка сохраняет уже созданные файлы. Старые результаты не удаляются.
-
-Сейчас работает QR Code V1-M: 12 цифр в строке.
-Фиксированного лимита страниц нет; большие тиражи и индексы обрабатываются на диске.
-Один код соответствует одной странице. «Оба» сохраняет тираж в двух видах.
-Белое поле минимум 4 модуля. По умолчанию — одна чёрная краска K100.
-Цветной CMYK проверяется по выбранным компонентам; бледные коды могут
-не пройти декодирование. Реальная пробная печать и сканер обязательны
-для проверки вашего носителя. PDF/X пока не сертифицирован.
-
-«Тесты» — отдельная научная методика: 3 повтора, раздельные времена
-создания и объединения, QA. Перед 1000/10000 проверяется допуск.
-Производственные результаты и результаты тестов не смешиваются.
-Сейчас — наблюдаемая скорость по короткому окну (около 3 секунд).
-Средняя этапа — обработанный объём / время с начала данного этапа.
-«CPU / RAM»: физические ядра и логические CPU показаны раздельно.
-«Лаборатория»: выберите физические ядра или логические потоки текущего ПК.
-Галочки 1/2/4/6/8/12/Все −2/Все — отдельные варианты серии, не их сумма.
-«Все −2» исключает два выбранных ядра/потока из теста, но не резервирует
-их исключительно для Windows. Недоступные кнопки отключены.
-Прогрев — дополнительные пробные PDF для файлового кэша перед замерами.
-0 выключает прогрев. Эти запуски сохраняются, но не входят в медиану;
-они добавляются к каждому варианту. Каждый повтор запускается в новом
-процессе, поэтому прогрев не сохраняет Python-пул между замерами.
-«Замеры» — число учитываемых запусков; обычно достаточно трёх.
-Доступные CPU учитывают ограничения процесса. SMT не удваивает число ядер.
-Процессы параллельно кодируют QR; запись PDF и QA пока последовательны.
-«Кодов за один шаг» — размер порции кодов для обработки. Для маленького TXT запуск
-процессов может занять больше времени, чем последовательное кодирование.
-RAM проверяется предварительно с запасом, это не жёсткий лимит потребления.
-Скорость диска не определяется по названию NVMe/SATA. Проверка 32 КиБ —
-проверка возможности записи и fsync, а не тест пропускной способности.
-У стороннего объединителя без обратной связи промежуточных процентов нет:
-секундомер продолжает работать, остановка ожидает возврата этого вызова.
-"""
+from .help_content import HELP_TEXT
 
 
 def clock_text(seconds):
@@ -265,6 +199,8 @@ class BatchWindow:
         elif self.notebook.select()==str(self.pages["tests"]):
             self.generate.configure(text="НАУЧНЫЙ ТЕСТ",command=lambda:self.start_test("all" if self.scientific_size.get()=="all" else int(self.scientific_size.get())),
                                     state="normal" if not self.busy and self.qa_mode_var.get()=="Полная" else "disabled")
+        elif self.notebook.select()==str(self.pages['help']):
+            self.generate.configure(text='СПРАВКА',state='disabled')
         elif self.notebook.select() in (str(self.pages["archive"]),str(self.pages["history"])):
             self.generate.configure(text="ВЫБЕРИТЕ ТЕСТ",state="disabled")
         elif self.notebook.select()==str(self.pages["pipeline"]):
@@ -421,6 +357,7 @@ class BatchWindow:
         self.last_output = self.last_pdf = self.last_report = None
         self.progress["value"] = 0
         self.result_var.set("Выполняется…")
+        self.result_label.configure(style='Result.TLabel')
         self.update_buttons()
 
     def start(self):
@@ -533,6 +470,7 @@ class BatchWindow:
                             archive=json.loads(receipt.read_text(encoding="utf-8"))
                             if archive.get("status")=="ERROR": self.result_details.set(self.result_details.get()+" · АРХИВ НЕ СОХРАНЁН: "+archive.get("error",""))
                     else:
+                        self.result_label.configure(style='Danger.Result.TLabel')
                         self.result_var.set("Операция остановлена" if "InterruptedError" in str(value) else "ОШИБКА")
                         self.status_var.set(str(value))
                         self.result_details.set("Уже созданные файлы сохранены")
@@ -547,6 +485,7 @@ class BatchWindow:
             self.root.after(100, self.poll)
 
     def complete(self, folder):
+        self.result_label.configure(style='Result.TLabel')
         self.last_output = folder
         if hasattr(self,"archive_view"):
             self.archive_view.refresh()
@@ -557,8 +496,7 @@ class BatchWindow:
         if (folder/"commands.json").is_file():
             data=json.loads((folder/"commands.json").read_text(encoding="utf-8"))
             self.last_report=folder/"commands.html"; self.last_pdf=None
-            self.result_var.set("КОНСОЛЬ: "+data["status"])
-            self.result_details.set(f"Выполнено команд: {len(data['runs'])}/{len(data['commands'])} · результаты в отчёте и архиве")
+            self.present_test(data)
             self.console_view.append(self.result_var.get()+" · "+str(self.last_report))
             if data["status"] in ("COMPLETE","LIMITED","UNVERIFIED"): self.progress["value"]=100
             return
@@ -566,10 +504,10 @@ class BatchWindow:
             data=json.loads((folder/"pipeline.json").read_text(encoding="utf-8"))
             self.last_report=folder/"pipeline.html"
             self.last_pdf=next(folder.glob("trials/*/jobs/*/all-*-pages.pdf"),None)
-            self.result_var.set("КОНВЕЙЕР: "+data["status"])
             winners=data.get("winners",[])
-            self.result_details.set(" · ".join(f"{w['count']} кодов: {w['case']} — {w['median_seconds']:.3f} с" for w in winners) or "Полного корректного набора пока нет; откройте отчёт")
-            self.status_var.set("Все повторы, скорость, PDF и загрузка CPU — в отчёте")
+            self.present_test(data)
+            if winners and data['status'] in ('COMPLETE','UNVERIFIED','LIMITED'):
+                self.result_details.set(self.result_details.get()+' · '+ ' · '.join(f"{w['count']} кодов: {w['median_seconds']:.3f} с" for w in winners))
             if data["status"] in ("COMPLETE","UNVERIFIED","LIMITED"): self.progress["value"]=100
             return
         if (folder/"pc-search.json").is_file():
@@ -751,12 +689,12 @@ class BatchWindow:
         self.selected_engines = [name for name, var in self._performance_options if var.get()]
         if hasattr(self,"scientific_engine_button"): self.scientific_engine_button.configure(text=f"Движки: выбрано {len(self.selected_engines)} ▾")
 
-    def open_path(self, path):
+    def open_path(self, path, *, anchor=None):
         path = Path(path)
         if not path.exists():
             self.status_var.set("Файлы ещё не созданы")
         elif path.suffix.lower() in (".html",".htm") and path.is_file():
-            try: open_html_report(path)
+            try: open_html_report(path,anchor=anchor) if anchor else open_html_report(path)
             except (OSError,ValueError) as exc: self.status_var.set(str(exc))
         elif hasattr(os, "startfile"):
             os.startfile(str(path.resolve()))
@@ -775,7 +713,19 @@ class BatchWindow:
         if self.last_report:
             self.open_path(self.last_report)
 
-    def show_help(self):
+    def present_test(self,data):
+        from .result_presentation import test_outcome
+        view=test_outcome(data)
+        self.result_var.set(view['title']);self.result_details.set(view['detail'])
+        self.result_label.configure(style={'warning':'Warning.Result.TLabel','danger':'Danger.Result.TLabel'}.get(view['tone'],'Result.TLabel'))
+        self.status_var.set('Серия завершена · ограничение ОЗУ; готовые результаты сохранены' if view['resource_only'] else
+                            'Серия остановлена: '+view['detail'] if data.get('status')=='CANCELLED' else 'Серия завершена: '+view['detail'])
+        self.speed_var.set('Итоговые секунды и скорость каждого повтора — в отчёте')
+        self.current_event=None
+        if data.get('elapsed_seconds') is not None:self.elapsed_var.set('Прошло: '+clock_text(data['elapsed_seconds']))
+
+    def show_help(self,topic=None):
+        if topic:self.help_view.show(topic)
         self.notebook.select(self.pages["help"])
 
     def close(self):

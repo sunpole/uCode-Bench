@@ -23,12 +23,16 @@ def _windows_browser_executable():
     raise OSError("Не найден браузер по умолчанию для HTTPS/HTTP. Назначьте браузер в настройках Windows.")
 
 
-def open_html_report(path):
+def open_html_report(path, *, anchor=None):
     path=Path(path).resolve()
     if not path.is_file(): raise FileNotFoundError("Отчёт ещё не создан: "+str(path))
     if path.suffix.lower() not in (".html",".htm"): raise ValueError("Ожидается HTML-отчёт")
+    if anchor is not None:
+        import re
+        if not re.fullmatch(r'[a-z0-9-]{1,64}',anchor): raise ValueError('Некорректный якорь справки')
+    url=path.as_uri()+('#'+anchor if anchor else '')
     if sys.platform=="win32":
         executable=_windows_browser_executable()
-        subprocess.Popen([str(executable),path.as_uri()],creationflags=0x08000000,close_fds=True)
-    elif not webbrowser.open_new_tab(path.as_uri()):
+        subprocess.Popen([str(executable),url],creationflags=0x08000000,close_fds=True)
+    elif not webbrowser.open_new_tab(url):
         raise OSError("Не удалось открыть браузер. Откройте отчёт вручную в браузере.")

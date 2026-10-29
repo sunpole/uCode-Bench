@@ -40,7 +40,10 @@ def result_rows(data,prefix=""):
         s=c.get("summary",{}); seconds=s.get("median_launcher_wall_seconds")
         cpu=c.get("allocation",str(c.get("cpu_choice","?"))+" "+("ядер" if c.get("cpu_unit")=="physical" else "CPU"))
         if 'processes_per_cpu' in c: cpu=str(cpu)+f" · {c['processes_per_cpu']} процессов/CPU · всего {c.get('workers','?')}"
-        yield (prefix+str(c.get("id","")),c.get("count"),cpu,STATES.get(c.get("status"),c.get("status")),seconds,"Весь запуск",len(c.get("trials",[])))
+        state=STATES.get(c.get("status"),c.get("status"))
+        from .result_presentation import test_outcome
+        if test_outcome({'status':c.get('status'),'cases':[c]})['resource_only']:state='Ограничение ОЗУ'
+        yield (prefix+str(c.get("id","")),c.get("count"),cpu,state,seconds,"Весь запуск",len(c.get("trials",[])))
     for method in data.get("methods",[]):
         yield (prefix+method.get("name","Метод"),data.get("config",{}).get("count"),"—",STATES.get(method.get("status"),method.get("status")),method.get("median_seconds"),"Метод, без QA",len(method.get("trials",[])))
     for i,run in enumerate(data.get("runs",[]),1):
@@ -86,6 +89,12 @@ def write_text_report(path,data,title):
     """Self-contained escaped text; no links to absent PDFs or executable scripts."""
     raw=json.dumps(data,ensure_ascii=False,indent=2)
     document='<!doctype html><html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>'+html.escape(title)+'</title><style>body{font:16px Segoe UI,Arial;background:#0b1220;color:#edf4fc;margin:24px}a{color:#5ce0bd}pre{white-space:pre-wrap;overflow-wrap:anywhere}table{border-collapse:collapse}td,th{border:1px solid #31445e;padding:6px}</style><h1>'+html.escape(title)+'</h1><p>Статус: '+html.escape(str(data.get("status","?")))+'</p>'
+    if data.get('cases') or data.get('runs'):
+        from .result_presentation import test_outcome
+        view=test_outcome(data)
+        document+='<aside style="padding:16px;border:1px solid #31445e;border-radius:12px"><h2>'+html.escape(view['title'])+'</h2><p>'+html.escape(view['detail'])+'</p>'
+        if view['reason']:document+='<p>'+html.escape(view['reason'])+'</p>'
+        document+='</aside>'
     if data.get("commands"): document+='<h2>Команды</h2><pre>'+html.escape('\n'.join(data['commands']))+'</pre>'
     if data.get("runs") and data.get("kind")=="test-command-queue":
         document+='<h2>Запуски</h2><ol>'+''.join('<li>'+html.escape(str(r.get("status")))+' · '+html.escape(str(r.get("command")))+'</li>' for r in data['runs'])+'</ol>'
@@ -95,7 +104,7 @@ def write_text_report(path,data,title):
         for row in rows:
             document+='<tr>'+''.join('<td>'+html.escape(f"{v:.4f}" if isinstance(v,float) else str(v) if v is not None else "—")+'</td>' for v in row)+'</tr>'
         document+='</table></div>'
-    document+='<h2>Все сохранённые параметры и измерения</h2><pre>'+html.escape(raw)+'</pre></html>'
+    document+='<details><summary>Все сохранённые параметры и измерения · JSON</summary><pre>'+html.escape(raw)+'</pre></details></html>'
     from .graphical_report import embed_graphs
     Path(path).write_text(embed_graphs(document,data),encoding="utf-8")
 

@@ -23,6 +23,8 @@ def build_window(app, help_text):
     body.rowconfigure(3, weight=1)
     header = ttk.Frame(body)
     header.grid(row=0, column=0, sticky="ew")
+    from .brand import install
+    install(app,header)
     ttk.Label(header, text="uCode", style="Title.TLabel").pack(side="left")
     ttk.Label(header, text="QR  /  PDF", style="Accent.TLabel").pack(side="left", padx=12)
     ttk.Label(header, text=f"{app.engine_info.name} {app.engine_info.version}",
@@ -66,7 +68,8 @@ def build_window(app, help_text):
     tests.add_separator()
     tests.add_command(label="Выбрать движки объединения", command=app.performance_dialog)
     tests.add_command(label="Предыдущие результаты", command=lambda: app.open_path(app.output_root / "benchmarks"))
-    ttk.Button(toolbar, text="Справка", command=app.show_help).pack(side="right")
+    app.help_button=ttk.Button(toolbar, text="Справка · F1", command=lambda:app.help_view.context())
+    app.help_button.pack(side="right")
 
     from .test_navigation import HubNotebook
     app.notebook = HubNotebook(body)
@@ -104,13 +107,8 @@ def build_window(app, help_text):
     app.engine_options_frame.pack(fill="both", expand=True, pady=6)
     ttk.Label(app.engine_options_frame, text="Откройте выбор движков, чтобы проверить их доступность.").pack(anchor="w")
     app.edit(ttk.Button(page, text="Выбрать движки", command=app.performance_dialog)).pack(anchor="w")
-    page = app.pages["help"]
-    app.help_text = tk.Text(page, height=7, width=85, wrap="word", borderwidth=0,
-                           background=COLORS["background"], foreground=COLORS["text"],
-                           insertbackground=COLORS["text"], font=("Segoe UI", 9), relief="flat")
-    app.help_text.pack(fill="both", expand=True)
-    app.help_text.insert("1.0", help_text)
-    app.help_text.configure(state="disabled")
+    from .help_ui import HelpView
+    app.help_view=HelpView(app)
 
     ttk.Label(body, textvariable=app.geometry_summary, style="Muted.TLabel", wraplength=900).grid(
         row=4, column=0, sticky="w", pady=(0, 3))
@@ -139,7 +137,8 @@ def build_window(app, help_text):
     ttk.Label(metrics, textvariable=app.speed_var, style="Muted.TLabel").pack(side="right")
     result = ttk.Frame(body, padding=(0, 3, 0, 0))
     result.grid(row=9, column=0, sticky="ew")
-    ttk.Label(result, textvariable=app.result_var, style="Result.TLabel", wraplength=900).pack(anchor="w")
+    app.result_label=ttk.Label(result, textvariable=app.result_var, style="Result.TLabel", wraplength=900)
+    app.result_label.pack(anchor="w")
     ttk.Label(result, textvariable=app.result_details, style="Muted.TLabel", wraplength=900).pack(anchor="w", pady=(1, 2))
     actions = ttk.Frame(result)
     actions.pack(anchor="w")
@@ -151,6 +150,13 @@ def build_window(app, help_text):
     app.report_button.pack(side="left")
     app.audit_button=ttk.Button(actions,text="Проверить PDF",command=app.start_audit)
     app.audit_button.pack(side="left",padx=7)
+    from .ui_hints import Hint
+    app.hints=[Hint(app.help_button,'F1 открывает справку по текущей вкладке. Переходы из справки не запускают задачи.'),
+               Hint(app.brand_button,'uBrand · О программе и контакты автора'),
+               Hint(app.generate,'Действие зависит от текущей вкладки. Во вкладке «Справка» запуск недоступен.'),
+               Hint(app.verification_buttons['deferred'],'Создать PDF без QA. Результат UNVERIFIED; качество не подтверждено.'),
+               Hint(app.verification_buttons['vector'],'Проверка структуры PDF без растрового декодирования.'),
+               Hint(app.stop,'Запрос безопасной остановки. Уже созданные файлы сохраняются.')]
     app.notebook.bind("<<NotebookTabChanged>>",lambda event:app.update_buttons() if hasattr(app,"generate") else None,add="+")
 
 

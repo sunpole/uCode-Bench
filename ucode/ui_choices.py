@@ -12,6 +12,9 @@ class ChoiceMenu:
         self.button=app.edit(ttk.Menubutton(parent))
         self.menu=tk.Menu(self.button,tearoff=False); self.button.configure(menu=self.menu)
         self.set_options(options)
+        from .ui_hints import Hint,HINTS
+        self.hint=Hint(self.button,lambda: (HINTS.get(self.label,'Выберите значение кнопкой меню.')+
+                        (' Выбрано: '+', '.join(dict((value,text) for text,value in self.options).get(v,v) for v in self.selected()) if self.multiple else '')))
         variable.trace_add("write",lambda *_:self.sync())
 
     def selected(self):
