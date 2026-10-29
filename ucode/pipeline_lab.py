@@ -40,7 +40,7 @@ def run_pipeline_lab(output_root,config,*,cancel=None,events=None):
                 if cancel is not None and cancel.is_set(): raise InterruptedError("Серия конвейера остановлена")
                 request={**frozen,**{k:v for k,v in case.items() if k not in ("trials","status","reason")},
                          "strategy":"pipeline","backend":"process","workers":len(case["qr_cpus"]),"cpu_unit":case["cpu_unit"],
-                         "warmup":False,"output_mode":"multipage","ram_mode":config.ram_mode,"qa_mode":config.qa_mode,
+                         "warmup":False,"output_mode":"multipage","ram_mode":config.ram_mode,"qa_mode":config.qa_mode,"timeline_mode":config.timeline_mode,
                          "print_settings":config.print_settings,"engine_version":get_engine().info().version}
                 def event(value):
                     if events: events({**value,"stage":case["id"]+f" · повтор {repeat+1}/{config.repeats} · "+value["stage"],

@@ -1,0 +1,19 @@
+{
+  "kind": "xy-verification",
+  "source_digest": "9dddc65d37491190585660b256c9d39a2a3245854e7477cf0cda191f10c01af7",
+  "scope": "Windows, max 3 real pages; not a throughput measurement",
+  "on_off_pdf_identical": true,
+  "production_full_qa": [
+    "COMPLETE",
+    "COMPLETE"
+  ],
+  "queue_status": "UNVERIFIED",
+  "pipeline_full_qa": "COMPLETE",
+  "archive_records": 3,
+  "historical": {
+    "source_sha256": "f2671f5a44bd102c24d36984f0c194ab618fcb60fd2a8ff3d862c89ea3d3692d",
+    "source_unchanged": true,
+    "no_historical_series": true,
+    "cases": 443
+  }
+}

@@ -17,8 +17,10 @@ class PipelineConfig:
     ram_mode:str="auto"
     telemetry_modes:tuple=("cpu",)
     print_settings:dict=field(default_factory=dict)
+    timeline_mode:str="off"
 
     def __post_init__(self):
+        if self.timeline_mode not in ("on","off"): raise ValueError("XY: on/off")
         from .print_settings import PrintSettings
         for axis in (self.counts,self.allocations,self.schedules,self.batches,self.telemetry_modes):
             if not isinstance(axis,tuple) or not axis or len(axis)>64: raise ValueError("Выберите от 1 до 64 значений каждого параметра")

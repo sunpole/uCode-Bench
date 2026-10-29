@@ -23,6 +23,7 @@ from .resources import check_resources
 from .hardware import inspect_hardware
 from .execution import ExecutionOptions, execution_plan, encode_values
 from . import __version__
+from .progress_series import record_operation
 
 SIZES = (200, 1000, 10000)
 MAX_LINES = 10000
@@ -112,11 +113,12 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+@record_operation
 def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
               settings=None,
               progress: Callable[[str], None] | None = None, cancel=None, events=None,
               generator="qr", engine="reportlab", copies_per_value=1, duplicate_policy="preserve", execution=None,
-              qa_mode="full",activity="normal",force_disk=False,temporary_data=False,execution_observer=None) -> Path:
+              qa_mode="full",activity="normal",force_disk=False,temporary_data=False,execution_observer=None,timeline_mode="off") -> Path:
     """Create actual PDF files and QA evidence, without overwriting old runs.
 
     Encoding and PDF writing are measured separately from quality checks.

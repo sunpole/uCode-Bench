@@ -111,10 +111,10 @@ def chart_model(data):
             good = status in allowed and all(t.get("status") in allowed and not t.get("errors") for t in trials)
         good = good and len(trials) == repeats and bool(trials) and all(number(v) and v > 0 for v in values)
         # Group identity deliberately includes the command/source/profile, never a cross-PC rating.
-        key = json.dumps([path, kind, count, qa, diagnostics, scope, node.get("source_digest"), node.get("comparison_profile_hash", node.get("profile_hash")), cfg.get("output_mode"), cfg.get("print_settings")], sort_keys=True)
+        key = json.dumps([path, kind, count, qa, diagnostics, cfg.get("timeline_mode","off"), scope, node.get("source_digest"), node.get("comparison_profile_hash", node.get("profile_hash")), cfg.get("output_mode"), cfg.get("print_settings")], sort_keys=True)
         group = groups.setdefault(key, {"id": hashlib.sha256(key.encode()).hexdigest()[:16], "count": count, "qa": qa,
             "diagnostics": diagnostics, "scope": scope, "source": str(node.get("source_digest", "не указан"))[:16],
-            "label": f"{path} · {count:,} кодов · {qa} · CPU-замеры {diagnostics} · {scope}".replace(",", " "), "rows": []})
+            "label": f"{path} · {count:,} кодов · {qa} · CPU-замеры {diagnostics} · XY {cfg.get('timeline_mode','off')} · {scope}".replace(",", " "), "rows": []})
         phase_values = [_phases(t, kind, case.get("strategy")) for t in trials] if good and not scientific else []
         phase_keys = list(phase_values[0]) if phase_values and all(phase_values) else []
         phases = {k: statistics.mean(v[k] for v in phase_values) for k in phase_keys}
@@ -149,16 +149,20 @@ def chart_model(data):
             visit(nested, path + f" / {i}", depth + 1)
 
     visit(data, "Серия")
-    return {"schema": 1, "status": str(data.get("status", "UNKNOWN")), "groups": list(groups.values()), "omitted": omitted}
+    from .xy_report import timeline_views
+    timelines,omitted_timelines=timeline_views(data)
+    return {"schema": 2, "status": str(data.get("status", "UNKNOWN")), "groups": list(groups.values()), "omitted": omitted,
+            "timelines":timelines,"omitted_timelines":omitted_timelines}
 
 
 def graphical_section(data):
     """Embed one dependency-free component. Data never becomes HTML or JS source."""
     from .graphical_template import TEMPLATE
+    from .xy_template import XY_FUNCTION
     model = chart_model(data)
     payload = json.dumps(model, ensure_ascii=False, allow_nan=False, separators=(",", ":"))
     payload = payload.replace("&", "\\u0026").replace("<", "\\u003c").replace(">", "\\u003e").replace("\u2028", "\\u2028").replace("\u2029", "\\u2029")
-    return TEMPLATE.replace("__GRAPH_DATA__", payload)
+    return TEMPLATE.replace("__XY_FUNCTION__",XY_FUNCTION).replace("__GRAPH_DATA__", payload)
 
 
 def embed_graphs(document, data):

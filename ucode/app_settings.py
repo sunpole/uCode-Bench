@@ -21,8 +21,10 @@ class GenerationPreferences:
     cpu_choice: str = "legacy"
     cpu_unit: str = "physical"
     ram_mode: str = "auto"
+    timeline_mode: str = "off"
 
     def __post_init__(self):
+        if self.timeline_mode not in ("on","off"): raise ValueError("XY: on/off")
         for value in (self.copies_per_value, self.template_count):
             from .stream_data import positive_count
             positive_count(value)

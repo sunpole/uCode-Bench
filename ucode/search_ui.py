@@ -73,7 +73,7 @@ class SearchView:
         return SearchConfig(counts=tuple(int(n.replace(" ","")) for n in _parts(self.counts.get())),repeats=int(self.repeats.get()),
             cpu_units=_parts(self.units.get()),cpu_counts=_parts(self.cpu_counts.get()),all_cpu_counts=self.all_cpus.get(),
             backends=_parts(self.methods.get()),batches=tuple(map(int,_parts(self.batches.get()))),pdf_profiles=_parts(self.pdf.get()),activities=_parts(self.activities.get()),
-            qa_mode=QA_MODES[app.qa_mode_var.get()],ram_mode=self.ram.get(),search_mode=self.mode.get(),keep_best=int(self.best.get()),telemetry_mode=self.telemetry.get(),
+            qa_mode=QA_MODES[app.qa_mode_var.get()],timeline_mode=app.xy_mode_var.get(),ram_mode=self.ram.get(),search_mode=self.mode.get(),keep_best=int(self.best.get()),telemetry_mode=self.telemetry.get(),
             part_counts=tuple(map(int,_parts(self.parts.get()))),part_modes=_parts(self.part_modes.get()),mergers=_parts(self.mergers.get()),print_settings=asdict(app.print_settings))
 
     def refresh(self):

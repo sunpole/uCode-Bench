@@ -95,7 +95,7 @@ def read_form(app):
                          batch_size=int(app.lab_batch.get()), workers=int(app.lab_workers.get()),
                          output_mode=app.mode_var.get(), print_settings=asdict(app.print_settings),
                          pdf_profiles=tuple(PDF_PROFILES.get(value,value) for value in _parts(app.lab_pdf_profiles.get())),
-                         qa_mode=QA_MODES[app.qa_mode_var.get()],
+                         qa_mode=QA_MODES[app.qa_mode_var.get()],timeline_mode=app.xy_mode_var.get(),
                          telemetry_modes=_parts(app.lab_telemetry.get()),
                          activity_modes=tuple(value.lower().replace("минимум","minimal").replace("обычный","normal") for value in _parts(app.lab_activities.get())))
     except (ValueError, KeyError) as exc:

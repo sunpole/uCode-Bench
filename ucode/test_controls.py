@@ -24,7 +24,7 @@ def custom_config(app):
     config=LabConfig(counts=(count,),cpu_counts=choices,cpu_units=units,backends=("process",),ram_modes=("auto",),
         repeats=repeats,warmups=0,batch_size=min(32,max(1,count//largest)),workers=0,output_mode="multipage",
         print_settings=asdict(app.print_settings),pdf_profiles=(app.print_settings.pdf_profile,),activity_modes=("normal",),
-        qa_mode=QA_MODES[app.qa_mode_var.get()],telemetry_modes=tuple(app.lab_telemetry.get().split(",")))
+        qa_mode=QA_MODES[app.qa_mode_var.get()],timeline_mode=app.xy_mode_var.get(),telemetry_modes=tuple(app.lab_telemetry.get().split(",")))
     for case in build_cases(config,app.hardware["cpu"]):
         if case["status"]=="SKIPPED": raise ValueError("Проверьте выбор ядер: "+case["reason"])
     return config
