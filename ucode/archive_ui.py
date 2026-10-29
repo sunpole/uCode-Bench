@@ -29,8 +29,14 @@ class ArchiveView:
         self.table.bind("<Double-1>",lambda event:self.open_report())
         ttk.Label(page,textvariable=self.note,style="Muted.TLabel",wraplength=900).pack(anchor="w")
         row=ttk.Frame(page); row.pack(anchor="w",pady=1)
-        for text,action in (("‹",lambda:self.turn(-1)),("›",lambda:self.turn(1)),("Открыть отчёт",self.open_report),("Графики",self.open_graphs),("Графики из JSON…",self.choose_graphs),("Открыть папку",lambda:app.open_path(app.archive_root))):
+        for text,action in (("‹",lambda:self.turn(-1)),("›",lambda:self.turn(1)),("Открыть отчёт",self.open_report),("Открыть папку",lambda:app.open_path(app.archive_root))):
             app.edit(ttk.Button(row,text=text,command=action)).pack(side="left",padx=(0,5))
+        graph_button=app.edit(ttk.Menubutton(row,text="Графики ▾"))
+        graph_button.pack(side="left",padx=(0,5))
+        graph_menu=tk.Menu(graph_button,tearoff=False)
+        graph_menu.add_command(label="Выбранный тест",command=self.open_graphs)
+        graph_menu.add_command(label="Из JSON-файла…",command=self.choose_graphs)
+        graph_button.configure(menu=graph_menu)
         self.position=tk.StringVar(master=app.root)
         ttk.Label(row,textvariable=self.position).pack(side="left")
         self.refresh()
@@ -60,7 +66,7 @@ class ArchiveView:
     def open_graphs(self):
         selected=self.table.selection()
         if not selected:
-            self.note.set("Выберите сохранённый тест или нажмите «Графики из JSON…»")
+            self.note.set("Выберите сохранённый тест или «Графики ▾ → Из JSON-файла…»")
             return
         path=(self.app.archive_root/self.visible[int(selected[0])]["file"]).resolve()
         if not path.is_relative_to(self.app.archive_root.resolve()):
