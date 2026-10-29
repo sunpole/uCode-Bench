@@ -55,6 +55,7 @@ def build_window(app, help_text):
     settings.add_command(label="Восстановить стандартные настройки", command=app.restore_defaults)
     tests = app.menu(toolbar, "Тесты")
     tests.add_command(label="Настроить и запустить тесты",command=app.show_lab)
+    tests.add_command(label="Конвейер: QR и PDF на разных CPU",command=lambda:app.notebook.select(app.pages["pipeline"]))
     tests.add_command(label="История результатов",command=app.show_history)
     tests.add_separator()
     scientific=tk.Menu(tests,tearoff=False)
@@ -71,7 +72,7 @@ def build_window(app, help_text):
     app.notebook.grid(row=3, column=0, sticky="nsew", pady=(0, 7))
     app.pages = {}
     for key, title in (("generation", "Генерация"), ("print", "PDF и цвет"),
-                       ("resources", "CPU / RAM"), ("lab", "Тесты"), ("search","Подбор ПК"), ("history","История"),
+                       ("resources", "CPU / RAM"), ("lab", "Тесты"), ("search","Подбор ПК"), ("pipeline","Конвейер"), ("history","История"),
                        ("tests", "Объединение"), ("help", "Справка")):
         page = ttk.Frame(app.notebook, padding=(8, 4))
         app.notebook.add(page, text=title)
@@ -83,6 +84,8 @@ def build_window(app, help_text):
     build_lab(app)
     from .search_ui import SearchView
     app.search_view=SearchView(app)
+    from .pipeline_ui import PipelineView
+    app.pipeline_view=PipelineView(app)
     from .history_ui import HistoryView
     app.history_view=HistoryView(app)
     page = app.pages["tests"]

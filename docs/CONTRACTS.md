@@ -1,5 +1,15 @@
 # Внутренние контракты
 
+## Изолированные тесты конвейера CPU
+
+`PipelineConfig` / `build_pipeline_cases`: явные counts × allocations × schedules × batches × telemetry_modes × repeats, без скрытых прогонов. Allocations физические/логические QR+PDF, PDF=0 полный цикл. CPU-топология, ограничения affinity и пересечение физических ядер валидируются; недоступное SKIPPED с причиной. Equal — фиксированные диапазоны обоих этапов через divmod; queue — следующая свободному. Размер IPC-порции ограничен1–1000 в обоих случаях.
+
+`lab_worker strategy=pipeline` использует собственный `pipeline.prepared_pages` в изолированном процессе, frozen code, RAM/job guards и cooperative cancel. По одному подтверждённому CPU на worker, барьер готовности; только родитель trial может сужать свою маску до PDF-набора. Один окончательный сборщик разделяет набор PDF/общий пул и не получает дополнительного ядра. Нет лимита количества страниц простой константой, есть ограниченные пакеты и дисковый индекс.
+
+`stream_pdf.write_pdf(prepared=...)` принимает `(1-based page index,payload,compressed stream)` вне порядка, проверяет диапазон/уникальность/число страниц и сортирует Kids дисковым индексом. Новый признак inherited_geometry совместим со старыми индексами; DiskReader заново проверяет PDF bytes, геометрию родителя и порядок. Обычный вызов без prepared сохраняет прежний профиль.
+
+`pipeline_wall`/production — создание PDF; launcher_wall включает запуск/импорты/TXT/выбранную QA/завершение. QR/PDF service_sum — перекрывающиеся суммы задач, не wall-фазы; assembler_active — участки записи страниц без ожиданий и хвоста xref. Рейтинг только полных корректных повторов одинакового режима CPU-замеров. Full без raster/при QA FAIL не побеждает; deferred — NOT_RUN/UNVERIFIED/0. Подробности: CPU_PIPELINE.md, WORK_LOG.md.
+
 ## Явные ядра генерации и диагностические CPU-замеры
 
 ExecutionOptions.cpus включает process-only pinning: по одному подтверждённому CPU на дочерний QR-процесс. GUI affinity не меняется. Физические наборы требуют разных core IDs, selected CPUs проверяются по текущему разрешённому набору. Effective pool ограничен числом порций, подтверждение — PID+маска результата. Старая serial/28 мигрирует как1, ручное изменение backend/workers сбрасывает простой выбор. Cache16MiB auto / до512MiB max — полезный SQLite-кэш по safe budget; не принудительная allocation и не production quota.

@@ -15,7 +15,7 @@ def overhead_pairs(data):
         if len(trials)!=data["config"]["repeats"] or any(t["status"]!=expected or t.get("errors") for t in trials): continue
         times=[t.get("seconds",{}).get("launcher_wall") for t in trials]
         if not all(isinstance(t,(int,float)) and t>0 for t in times): continue
-        key=tuple(str(case.get(k)) for k in ("count","cpu_unit","cpus","backend","workers","ram_mode","pdf_profile","activity"))
+        key=tuple(str(case.get(k)) for k in ("count","cpu_unit","cpus","backend","workers","ram_mode","pdf_profile","activity","allocation","schedule","batch_size"))
         groups.setdefault(key,{})[mode]=(case,statistics.median(times))
     rows=[]
     for group in groups.values():
@@ -37,7 +37,7 @@ def write_cpu_report(folder,data):
                 continue
             for phase,value in trace["phases"].items():
                 metrics=[("uCode: занято ядер в среднем",value["busy_core_equivalents"]),("uCode: % выбранных CPU",value["selected_cpu_load_pct"])]
-                metrics.extend((cpu+" — привязанный QR-процесс, %",stat) for cpu,stat in value["per_cpu_pct"].items())
+                metrics.extend((cpu+" — привязанные процессы, %",stat) for cpu,stat in value["per_cpu_pct"].items())
                 for label,stat in metrics:
                     stat=stat or {}
                     rows.append((case["id"],case["count"],index,mode,phase,label,stat.get("min"),stat.get("mean"),stat.get("max"),stat.get("sampled_seconds"),
@@ -49,7 +49,7 @@ def write_cpu_report(folder,data):
     notes=["ЗАГРУЗКА CPU — ДАННЫЕ uCode",
            "В обычной генерации подробный сбор CPU выключен. Эти замеры выполняются только в тестах.",
            "Вся операция и каждый этап: min/среднее по времени/max наблюдаемых интервалов. 1,0 занятого ядра означает CPU-время одного полностью занятого CPU.",
-           "Проценты отдельного CPU относятся только к подтверждённому процессу QR, привязанному к этому CPU; это не общая загрузка Windows и не загрузка всего физического ядра с обоими SMT.",
+           "Проценты отдельного CPU относятся только к подтверждённым процессам, привязанным к этому CPU; это не общая загрузка Windows и не загрузка всего физического ядра с обоими SMT.",
            "Пустое значение = нет атрибуции/замеров. CPU родителя/непривязанных процессов учитывается в общей нагрузке, но не приписывается произвольному ядру.",
            "Порог занятости привязанного CPU >=20% за интервал. Все заняты,с — подтверждённое время, не обещание 100% загрузки каждого ядра.",
            "Шаг наблюдения 0,5с; короткие процессы и мгновенные пики могут быть пропущены. Короткий тест не подтверждает длительную полную загрузку.",

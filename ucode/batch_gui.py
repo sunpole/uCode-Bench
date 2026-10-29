@@ -256,7 +256,10 @@ class BatchWindow:
             if widget.winfo_exists():
                 widget.configure(state="disabled" if self.busy else idle_state)
         is_test=self.notebook.select()==str(self.pages["lab"])
-        if self.notebook.select()==str(self.pages["search"]):
+        if self.notebook.select()==str(self.pages["pipeline"]):
+            self.generate.configure(text="ЗАПУСТИТЬ КОНВЕЙЕР",command=self.pipeline_view.start,
+                                    state="normal" if self.pipeline_view.valid and not self.busy else "disabled")
+        elif self.notebook.select()==str(self.pages["search"]):
             self.generate.configure(text="НАЧАТЬ ПОДБОР",command=self.search_view.start,
                                     state="normal" if self.search_view.valid and not self.busy else "disabled")
         elif is_test:
@@ -281,6 +284,7 @@ class BatchWindow:
         self.refresh_plan()
         if hasattr(self,"lab_refresh"): self.lab_refresh()
         if hasattr(self,"search_view"): self.search_view.refresh()
+        if hasattr(self,"pipeline_view"): self.pipeline_view.refresh()
 
     def show_generation(self):
         self.notebook.select(self.pages["generation"])
@@ -335,6 +339,7 @@ class BatchWindow:
                 self.workers_entry.configure(values=cpu["presets"])
             if hasattr(self,"lab_refresh"): self.lab_refresh()
             if hasattr(self,"generation_cpu"): self.generation_cpu.refresh()
+            if hasattr(self,"pipeline_view"): self.pipeline_view.refresh()
             self.refresh_plan()
         except (ValueError, OSError) as exc:
             self.hardware_summary.set(f"Ресурсы не определены: {exc}")
@@ -514,6 +519,16 @@ class BatchWindow:
 
     def complete(self, folder):
         self.last_output = folder
+        if (folder/"pipeline.json").is_file():
+            data=json.loads((folder/"pipeline.json").read_text(encoding="utf-8"))
+            self.last_report=folder/"pipeline.html"
+            self.last_pdf=next(folder.glob("trials/*/jobs/*/all-*-pages.pdf"),None)
+            self.result_var.set("КОНВЕЙЕР: "+data["status"])
+            winners=data.get("winners",[])
+            self.result_details.set(" · ".join(f"{w['count']} кодов: {w['case']} — {w['median_seconds']:.3f} с" for w in winners) or "Полного корректного набора пока нет; откройте отчёт")
+            self.status_var.set("Все повторы, скорость, PDF и загрузка CPU — в отчёте")
+            if data["status"] in ("COMPLETE","UNVERIFIED","LIMITED"): self.progress["value"]=100
+            return
         if (folder/"pc-search.json").is_file():
             data=json.loads((folder/"pc-search.json").read_text(encoding="utf-8"))
             self.last_report=folder/"pc-search.html"
