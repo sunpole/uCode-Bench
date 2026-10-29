@@ -256,7 +256,15 @@ class BatchWindow:
             if widget.winfo_exists():
                 widget.configure(state="disabled" if self.busy else idle_state)
         is_test=self.notebook.select()==str(self.pages["lab"])
-        if self.notebook.select()==str(self.pages["pipeline"]):
+        if self.notebook.select()==str(self.pages["console"]):
+            self.generate.configure(text="ЗАПУСТИТЬ КОМАНДЫ",command=self.console_view.start,
+                                    state="normal" if self.console_view.valid and not self.busy else "disabled")
+        elif self.notebook.select()==str(self.pages["tests"]):
+            self.generate.configure(text="НАУЧНЫЙ ТЕСТ",command=lambda:self.start_test("all" if self.scientific_size.get()=="all" else int(self.scientific_size.get())),
+                                    state="normal" if not self.busy and self.qa_mode_var.get()=="Полная" else "disabled")
+        elif self.notebook.select() in (str(self.pages["archive"]),str(self.pages["history"])):
+            self.generate.configure(text="ВЫБЕРИТЕ ПАРАМЕТРЫ ТЕСТА",state="disabled")
+        elif self.notebook.select()==str(self.pages["pipeline"]):
             self.generate.configure(text="ЗАПУСТИТЬ КОНВЕЙЕР",command=self.pipeline_view.start,
                                     state="normal" if self.pipeline_view.valid and not self.busy else "disabled")
         elif self.notebook.select()==str(self.pages["search"]):
@@ -285,6 +293,7 @@ class BatchWindow:
         if hasattr(self,"lab_refresh"): self.lab_refresh()
         if hasattr(self,"search_view"): self.search_view.refresh()
         if hasattr(self,"pipeline_view"): self.pipeline_view.refresh()
+        if hasattr(self,"console_view"): self.console_view.preview()
 
     def show_generation(self):
         self.notebook.select(self.pages["generation"])
@@ -462,7 +471,9 @@ class BatchWindow:
     def launch(self, action):
         def work():
             try:
-                self.events.put(("done", Path(action())))
+                from .test_archive import archive_scope
+                with archive_scope(self.archive_root): folder=Path(action())
+                self.events.put(("done",folder))
             except Exception as exc:
                 self.events.put(("error", f"{type(exc).__name__}: {exc}"))
         self.worker = threading.Thread(target=work, name="ucode-operator", daemon=False)
@@ -475,6 +486,7 @@ class BatchWindow:
                 if kind == "status":
                     self.status_var.set(str(value))
                 elif kind == "progress":
+                    if hasattr(self,"console_view"): self.console_view.observe(value)
                     self.current_event = value
                     self.progress["value"] = value["percent"]
                     counts = f"{value['done']:,} / {value['total']:,}".replace(",", " ")
@@ -494,6 +506,11 @@ class BatchWindow:
                         state=value["execution"]; writing="Кодирование" not in value["stage"]
                         self.generation_cpu.summary.set(f"{'PDF: 1 процесс' if writing else 'QR: подтверждено процессов '+str(state['confirmed_processes'])} · выбрано CPU: {state['selected_cpu_count']} · замеры CPU в тестах")
                     self.speed_var.set(text.replace(".", ","))
+                elif kind in ("archive_import","archive_error"):
+                    self.busy=False
+                    self.archive_view.refresh()
+                    self.archive_view.note.set(f"Добавлено: {value['saved']} · ошибок: {value['errors']}" if kind=="archive_import" else str(value))
+                    self.update_buttons()
                 elif kind in ("history","history_error"):
                     self.busy=False
                     if kind=="history": self.history_view.receive(*value)
@@ -503,6 +520,10 @@ class BatchWindow:
                     self.busy = False
                     if kind == "done":
                         self.complete(Path(value))
+                        receipt=Path(value)/"archive-status.json"
+                        if receipt.is_file():
+                            archive=json.loads(receipt.read_text(encoding="utf-8"))
+                            if archive.get("status")=="ERROR": self.result_details.set(self.result_details.get()+" · АРХИВ НЕ СОХРАНЁН: "+archive.get("error",""))
                     else:
                         self.result_var.set("Операция остановлена" if "InterruptedError" in str(value) else "ОШИБКА")
                         self.status_var.set(str(value))
@@ -519,6 +540,20 @@ class BatchWindow:
 
     def complete(self, folder):
         self.last_output = folder
+        if hasattr(self,"archive_view"):
+            self.archive_view.refresh()
+            receipt=folder/"archive-status.json"
+            if receipt.is_file():
+                saved=json.loads(receipt.read_text(encoding="utf-8"))
+                self.archive_view.note.set("Текстовый архив сохранён: "+saved.get("id","") if saved["status"]=="SAVED" else "Ошибка архива: "+saved.get("error",""))
+        if (folder/"commands.json").is_file():
+            data=json.loads((folder/"commands.json").read_text(encoding="utf-8"))
+            self.last_report=folder/"commands.html"; self.last_pdf=None
+            self.result_var.set("КОНСОЛЬ: "+data["status"])
+            self.result_details.set(f"Выполнено команд: {len(data['runs'])}/{len(data['commands'])} · результаты в отчёте и архиве")
+            self.console_view.append(self.result_var.get()+" · "+str(self.last_report))
+            if data["status"] in ("COMPLETE","LIMITED","UNVERIFIED"): self.progress["value"]=100
+            return
         if (folder/"pipeline.json").is_file():
             data=json.loads((folder/"pipeline.json").read_text(encoding="utf-8"))
             self.last_report=folder/"pipeline.html"
@@ -686,20 +721,27 @@ class BatchWindow:
         for child in self.engine_options_frame.winfo_children():
             child.destroy()
         self._performance_options = []
+        self.scientific_engine_button=self.edit(ttk.Menubutton(self.engine_options_frame,text="Движки объединения ▾"))
+        self.scientific_engine_button.pack(anchor="w")
+        menu=tk.Menu(self.scientific_engine_button,tearoff=False); self.scientific_engine_button.configure(menu=menu)
+        available_flags=[]
         for index, adapter in enumerate(available_adapters()):
             available = adapter.probe()["available"]
             var = tk.BooleanVar(master=self.root, value=available and (self.selected_engines is None or adapter.name in self.selected_engines))
             self._performance_options.append((adapter.name, var))
-            control = ttk.Checkbutton(self.engine_options_frame,
-                style="Choice.TCheckbutton",
-                text=adapter.name + ("" if available else " — недоступен"), variable=var,
-                command=self.apply_performance, state="normal" if available else "disabled")
-            self.edit(control, "normal" if available else "disabled").grid(row=index // 3, column=index % 3, sticky="w", padx=(0, 10), pady=2)
+            available_flags.append((var,available))
+            menu.add_checkbutton(label=adapter.name+("" if available else " — недоступен"),variable=var,command=self.apply_performance,state="normal" if available else "disabled")
+        def select_all(enabled):
+            for var,available in available_flags: var.set(enabled and available)
+            self.apply_performance()
+        menu.add_separator(); menu.add_command(label="Все доступные",command=lambda:select_all(True)); menu.add_command(label="Снять все",command=lambda:select_all(False))
+        ttk.Label(self.engine_options_frame,text=f"Доступно {sum(ok for _,ok in available_flags)} из {len(available_flags)}. Direct PDF входит всегда.",style="Muted.TLabel").pack(anchor="w")
         self._performance_loaded = True
         self.fit_window()
 
     def apply_performance(self):
         self.selected_engines = [name for name, var in self._performance_options if var.get()]
+        if hasattr(self,"scientific_engine_button"): self.scientific_engine_button.configure(text=f"Движки: выбрано {len(self.selected_engines)} ▾")
 
     def open_path(self, path):
         path = Path(path)

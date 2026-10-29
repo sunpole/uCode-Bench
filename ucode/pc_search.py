@@ -118,6 +118,10 @@ def next_stage_candidates(leaders,config):
     return [{**case,"status":"PENDING","trials":[]} for case in selected]
 
 
+from .test_archive import archived_test
+
+
+@archived_test
 def run_search(output_root,config,*,cancel=None,events=None):
     from .search_report import write_search_report
     hardware=inspect_hardware(output_root); catalog=inspect_catalog()

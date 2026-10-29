@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -193,6 +194,7 @@ def check_pdf(path: Path, frames: list[QRFrame], config: Experiment, *, render_s
         "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
         "geometry_tolerance_points": PT_TOLERANCE,
     }
+    scratch=None
     try:
         if not frames:
             raise ValueError("Expected frames are empty")
@@ -232,15 +234,32 @@ def check_pdf(path: Path, frames: list[QRFrame], config: Experiment, *, render_s
                 raise ValueError("pdftoppm unavailable: rendered control decoding cannot be verified")
             render_dir = path.parent / f"qa_{path.stem}_{uuid.uuid4().hex[:10]}"
             render_dir.mkdir(exist_ok=False)
+            work=render_dir
+            source="../"+path.name
+            if os.name=="nt" and len(str(render_dir.resolve()))>200:
+                # Poppler's PNG writer/Windows process cwd can retain MAX_PATH
+                # limits. Render the original PDF via an extended input path
+                # into a short project-owned scratch, then retain the PNGs
+                # beside the original PDF using Python's long-path support.
+                from tempfile import TemporaryDirectory
+                from .runtime import ROOT
+                base=ROOT/"output"; base.mkdir(parents=True,exist_ok=True)
+                scratch=TemporaryDirectory(prefix=".qa-",dir=base)
+                work=Path(scratch.name).resolve()
+                if not work.is_relative_to(base.resolve()): raise ValueError("QA scratch находится вне проекта")
+                absolute=str(path.resolve())
+                source=("\\\\?\\UNC\\"+absolute[2:]) if absolute.startswith("\\\\") else "\\\\?\\"+absolute
             for sample_index, index in enumerate(control_indices, 1):
                 if cancel is not None and cancel.is_set():
                     raise InterruptedError("Проверка образцов остановлена")
                 prefix = render_dir / f"page_{index + 1:04d}"
                 completed = subprocess.run(
                     [renderer, "-f", str(index + 1), "-l", str(index + 1), "-singlefile",
-                     "-r", "1016", "-png", str(path.resolve()), str(prefix.resolve())],
-                    capture_output=True, timeout=30, check=False,
+                     "-r", "1016", "-png", source, prefix.name],
+                    cwd=work.resolve(),capture_output=True, timeout=30, check=False,
                 )
+                if work!=render_dir and (work/(prefix.name+".png")).is_file():
+                    shutil.copyfile(work/(prefix.name+".png"),prefix.with_suffix(".png"))
                 if completed.returncode:
                     detail = completed.stderr.decode("utf-8", errors="replace")[:500]
                     raise ValueError(f"pdftoppm exited {completed.returncode}: {detail}")
@@ -257,5 +276,6 @@ def check_pdf(path: Path, frames: list[QRFrame], config: Experiment, *, render_s
     except Exception as exc:
         result["errors"].append(f"{type(exc).__name__}: {exc}")
     finally:
+        if scratch is not None: scratch.cleanup()
         if reader_factory and "reader" in locals(): reader.close()
     return result

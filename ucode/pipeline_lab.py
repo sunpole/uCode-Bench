@@ -14,6 +14,10 @@ from .pipeline_plan import build_pipeline_cases,allocation_label
 from .lab_worker import atomic_json
 
 
+from .test_archive import archived_test
+
+
+@archived_test
 def run_pipeline_lab(output_root,config,*,cancel=None,events=None):
     from .resource_lab import _run_trial
     from .frozen_runtime import snapshot_runtime,assert_trial_integrity

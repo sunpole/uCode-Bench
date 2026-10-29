@@ -221,6 +221,10 @@ def write_comparison(result, directory):
         stream.write(html_text)
 
 
+from .test_archive import archived_test
+
+
+@archived_test
 def run_suite(output_root, progress=None):
     """Run an explicitly authorized two-size experiment, keeping the QA gate."""
     progress = progress or (lambda message: None)

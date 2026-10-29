@@ -6,7 +6,7 @@ import tkinter as tk
 from tkinter import ttk
 
 from .pc_search import SearchConfig,preview_search,run_search
-from .ui_choices import ChoiceMenu,NumberSet
+from .ui_choices import ChoiceMenu,NumberSet,NumericChoiceMenu
 from .ui_layout import QA_MODES
 from .mergers import available_adapters
 
@@ -32,6 +32,7 @@ class SearchView:
         self.ram=variable("ram_mode","auto")
         self.telemetry=variable("telemetry_mode","cpu")
         self.all_cpus=tk.BooleanVar(master=root,value=saved.get("all_cpu_counts",True))
+        self.cpu_counts=variable("cpu_counts",tuple(app.lab_cpus.get().split(",")))
         self.plan=tk.StringVar(master=root)
         row=ttk.Frame(page); row.pack(anchor="w")
         ttk.Label(row,text="Тиражи:").pack(side="left")
@@ -42,8 +43,11 @@ class SearchView:
         row=ttk.Frame(page); row.pack(anchor="w",pady=2)
         ChoiceMenu(app,row,self.units,"CPU",[("Физические ядра","physical"),("Потоки SMT","logical"),("Ядра и SMT","physical,logical")]).button.pack(side="left")
         app.edit(ttk.Checkbutton(row,text="Все количества CPU этого ПК",variable=self.all_cpus,style="Choice.TCheckbutton")).pack(side="left",padx=6)
+        self.cpu_picker=ChoiceMenu(app,row,self.cpu_counts,"CPU",[(str(n),str(n)) for n in range(1,app.hardware['cpu']['available_logical']+1)]+[("Все −2","all-2"),("Все","all")],multiple=True)
+        self.cpu_picker.button.pack(side="left",padx=3)
         ChoiceMenu(app,row,self.methods,"Способы",[("По очереди","serial"),("Процессы","process"),("Потоки Python","thread")],multiple=True).button.pack(side="left")
-        ChoiceMenu(app,row,self.ram,"ОЗУ",[("Авто","auto"),("Макс. с резервом","max"),("Половина","50%")]).button.pack(side="left",padx=5)
+        self.ram_picker=NumericChoiceMenu(app,row,self.ram,"ОЗУ",[("Авто","auto"),("Макс. с резервом","max"),("Половина","50%"),("80% бюджета","80%")],minimum=256,maximum=max(256,(app.hardware['ram'].get('total_bytes') or 128*1024**3)//1024**2),suffix="MiB")
+        self.ram_picker.button.pack(side="left",padx=5)
         row=ttk.Frame(page); row.pack(anchor="w")
         ChoiceMenu(app,row,self.mode,"Поиск",[("Отбор + крайние CPU-наборы","staged"),("Прямой PDF: все варианты","full")]).button.pack(side="left")
         ttk.Label(row,text="Лидеров:").pack(side="left",padx=5)
@@ -51,24 +55,23 @@ class SearchView:
         ChoiceMenu(app,row,self.pdf,"PDF",[("Обычный","standard"),("Компактный","compact")],multiple=True).button.pack(side="left",padx=6)
         ChoiceMenu(app,row,self.activities,"Расходы",[("Обычные","normal"),("Минимум","minimal")],multiple=True).button.pack(side="left")
         row=ttk.Frame(page); row.pack(anchor="w",pady=2)
-        ChoiceMenu(app,row,self.batches,"Кодов за шаг",[(str(n),str(n)) for n in (1,8,32,128,512,1000)],multiple=True).button.pack(side="left")
-        ChoiceMenu(app,row,self.parts,"Частей",[(str(n),str(n)) for n in (2,4,10,20,100)],multiple=True).button.pack(side="left",padx=5)
+        NumericChoiceMenu(app,row,self.batches,"Кодов за шаг",[(str(n),str(n)) for n in (1,8,32,128,512,1000)],multiple=True).button.pack(side="left")
+        NumericChoiceMenu(app,row,self.parts,"Частей",[(str(n),str(n)) for n in (2,4,10,14,20,28,100)],multiple=True,minimum=2,maximum=1024).button.pack(side="left",padx=5)
         ChoiceMenu(app,row,self.part_modes,"Части",[("По очереди","sequential"),("Одновременно","parallel")],multiple=True).button.pack(side="left")
         ChoiceMenu(app,row,self.mergers,"Объединение",[(row.name,row.name) for row in available_adapters()],multiple=True).button.pack(side="left",padx=5)
         ChoiceMenu(app,row,self.telemetry,"CPU-замеры",[("ВКЛ","cpu"),("ВЫКЛ","off")]).button.pack(side="left")
         ttk.Label(page,textvariable=self.plan,style="Accent.TLabel",wraplength=900).pack(anchor="w",pady=3)
-        ttk.Label(page,text="Без галочки CPU — выбор из «Тестов». Итог один PDF. Детали — в отчёте.",
+        ttk.Label(page,text="С галочкой — все количества CPU; без неё — выбранные здесь. Итог один PDF.",
                   style="Muted.TLabel",wraplength=900).pack(anchor="w")
-        for var in (self.counts,self.repeats,self.units,self.methods,self.pdf,self.activities,self.batches,self.parts,self.part_modes,self.mergers,self.mode,self.best,self.all_cpus,self.ram,self.telemetry):
+        for var in (self.counts,self.repeats,self.units,self.methods,self.pdf,self.activities,self.batches,self.parts,self.part_modes,self.mergers,self.mode,self.best,self.all_cpus,self.ram,self.telemetry,self.cpu_counts):
             var.trace_add("write",lambda *_:self.refresh())
-        app.lab_cpus.trace_add("write",lambda *_:self.refresh())
         self.refresh()
 
     def config(self):
         from .lab_ui import _parts
         app=self.app
         return SearchConfig(counts=tuple(int(n.replace(" ","")) for n in _parts(self.counts.get())),repeats=int(self.repeats.get()),
-            cpu_units=_parts(self.units.get()),cpu_counts=_parts(app.lab_cpus.get()),all_cpu_counts=self.all_cpus.get(),
+            cpu_units=_parts(self.units.get()),cpu_counts=_parts(self.cpu_counts.get()),all_cpu_counts=self.all_cpus.get(),
             backends=_parts(self.methods.get()),batches=tuple(map(int,_parts(self.batches.get()))),pdf_profiles=_parts(self.pdf.get()),activities=_parts(self.activities.get()),
             qa_mode=QA_MODES[app.qa_mode_var.get()],ram_mode=self.ram.get(),search_mode=self.mode.get(),keep_best=int(self.best.get()),telemetry_mode=self.telemetry.get(),
             part_counts=tuple(map(int,_parts(self.parts.get()))),part_modes=_parts(self.part_modes.get()),mergers=_parts(self.mergers.get()),print_settings=asdict(app.print_settings))

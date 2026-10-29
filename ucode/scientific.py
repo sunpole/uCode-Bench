@@ -9,6 +9,10 @@ from .print_settings import format_duration
 from .resources import check_resources
 
 
+from .test_archive import archived_test
+
+
+@archived_test
 def run_scientific(output_root, size, *, cancel=None, events=None, progress=None, methods=None):
     if size not in (200, 1000, 10000, "all"):
         raise ValueError("Выберите 200, 1000, 10000 или полный тест")

@@ -156,6 +156,10 @@ def _run_trial(folder, request, cancel, on_progress, timeout=None, cancel_grace=
     return result
 
 
+from .test_archive import archived_test
+
+
+@archived_test
 def run_lab(output_root, config, *, cancel=None, events=None, progress=None):
     hardware = inspect_hardware(output_root)
     cases = build_cases(config, hardware["cpu"])
