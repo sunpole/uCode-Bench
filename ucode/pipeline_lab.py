@@ -135,5 +135,6 @@ def write_pipeline_report(folder,data):
     document+='<p><a href="cpu-load.html">Загрузка CPU: min / среднее / max</a></p><h2>Каждый повтор</h2>'+table(fields,rows)+'<h2>PDF</h2>'
     document+="<br>".join('<a href="'+quote(t["pdf_link"])+'">'+esc(c["id"]+f" · повтор {i}")+'</a>' for c in data["cases"] for i,t in enumerate(c["trials"],1) if t.get("pdf_link"))
     document+='<h2>Методика</h2><pre>'+html.escape('\n'.join(notes))+'</pre><a href="pipeline.csv">CSV</a> · <a href="ОТЧЁТ.txt">TXT</a></html>'
-    (folder/"pipeline.html").write_text(document,encoding="utf-8")
+    from .graphical_report import embed_graphs
+    (folder/"pipeline.html").write_text(embed_graphs(document,data),encoding="utf-8")
     atomic_json(folder/"pipeline.json",data)

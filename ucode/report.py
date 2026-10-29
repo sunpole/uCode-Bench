@@ -176,7 +176,8 @@ def _html(result):
         "<p><a href='report.json'>JSON с полными данными</a> · <a href='report.csv'>CSV с повторами</a></p>",
         "</main></html>",
     ])
-    return "".join(parts)
+    from .graphical_report import embed_graphs
+    return embed_graphs("".join(parts),result)
 
 
 def write_reports(result: dict, directory: Path) -> None:

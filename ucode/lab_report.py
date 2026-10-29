@@ -189,4 +189,5 @@ def write_reports(folder, data):
     if (folder/"all-results.html").is_file():
         document=document.replace('<h2>Основные результаты</h2>','<p><a href="all-results.html">Все отдельные запуски и времена</a></p><h2>Основные результаты</h2>')
     document=document.replace('<h2>Основные результаты</h2>','<p><a href="cpu-load.html">Загрузка CPU: min / среднее / max и стоимость замеров</a></p><h2>Основные результаты</h2>')
-    (folder / "comparison.html").write_text(document, encoding="utf-8")
+    from .graphical_report import embed_graphs
+    (folder / "comparison.html").write_text(embed_graphs(document,data), encoding="utf-8")

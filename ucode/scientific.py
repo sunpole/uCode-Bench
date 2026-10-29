@@ -73,6 +73,8 @@ def run_scientific(output_root, size, *, cancel=None, events=None, progress=None
     rows.extend(result["errors"])
     with (folder / "ОТЧЁТ.txt").open("x", encoding="utf-8") as stream:
         stream.write("\n".join(rows))
+    from .test_archive import write_text_report
+    write_text_report(folder/"scientific.html",result,"uCode — научный тест")
     if events and result["status"] == "COMPLETE":
         events({"stage": "Тесты завершены", "done": completed, "total": sum(sizes), "percent": 100,
                 "elapsed": time.perf_counter() - started, "speed": completed / max(.001, time.perf_counter() - started)})

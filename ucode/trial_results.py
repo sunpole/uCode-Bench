@@ -94,4 +94,5 @@ def write_trial_results(folder,data):
     text+=table_html(headings,table)
     text+='<h2>Сводка завершённых режимов</h2>'+table_html(("Кодов","CPU","Создание: медиана, сек","Всего: среднее, сек","Всего: минимум, сек","Всего: максимум, сек"),summary)
     text+='<p><a href="all-results.csv">Все строки CSV</a> · <a href="comparison.html">Полные параметры и фазы</a> · <a href="ОТЧЁТ.txt">Текстовый отчёт</a></p></html>'
-    with (folder/"all-results.html").open("x",encoding="utf-8") as stream: stream.write(text)
+    from .graphical_report import embed_graphs
+    with (folder/"all-results.html").open("x",encoding="utf-8") as stream: stream.write(embed_graphs(text,data))

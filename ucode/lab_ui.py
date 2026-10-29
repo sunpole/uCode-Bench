@@ -155,7 +155,7 @@ def build_lab(app):
     for key,label,value in (("physical","Ядра процессора","Физические: 1 поток/ядро"),("logical","Потоки SMT","Логические CPU")):
         button=app.edit(ttk.Radiobutton(row,text=label,value=value,variable=app.lab_units,style="Choice.TRadiobutton"))
         button.pack(side="left",padx=(0,6)); app.lab_unit_buttons[key]=button
-    ttk.Label(row,textvariable=app.lab_hardware,style="Muted.TLabel",wraplength=400).pack(side="left",padx=(0,8))
+    ttk.Label(row,textvariable=app.lab_hardware,style="Muted.TLabel",wraplength=260).pack(side="left",padx=(0,8))
     app.lab_cpu_picker=ChoiceMenu(app,row,app.lab_cpus,"Выбор",(),multiple=True)
     app.lab_cpu_picker.button.pack(side="left",padx=(0,6))
     app.lab_cpu_row=row
