@@ -1,0 +1,7 @@
+{
+  "wheel_sha256": "7890277171e650089e604566c5c870e585d0d93189e02638005ae68b804894f4",
+  "wheel_crc": "PASS",
+  "isolated_help_and_logo": "PASS",
+  "new_dependencies_installed": false,
+  "build_backend": "bundled setuptools 84.1.0"
+}

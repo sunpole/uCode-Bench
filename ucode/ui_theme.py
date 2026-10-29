@@ -30,6 +30,9 @@ def apply_dark_theme(root):
     style.configure("Accent.TLabel", foreground=c["accent"])
     style.configure("Title.TLabel", font=("Segoe UI", 16, "bold"))
     style.configure("Result.TLabel", font=("Segoe UI", 11, "bold"), foreground=c["accent"])
+    style.configure("Warning.Result.TLabel",font=("Segoe UI",11,"bold"),foreground="#f3ca78")
+    style.configure("Danger.Result.TLabel",font=("Segoe UI",11,"bold"),foreground=c["danger"])
+    style.configure("Brand.TButton",padding=(0,0),background=c['background'],foreground=c['muted'])
     style.configure("TButton", background=c["surface"], padding=(9, 3), relief="flat")
     style.map("TButton", background=[("active", c["raised"]), ("disabled", c["surface"])],
               foreground=[("disabled", c["muted"])])

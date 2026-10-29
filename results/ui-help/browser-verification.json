@@ -1,0 +1,17 @@
+{
+  "sections": 13,
+  "logo": "loaded",
+  "search": "PASS",
+  "anchors": "PASS",
+  "queue": "10000 / 50 = 200 packets; 14 CPU / 28 processes",
+  "qr": "33mm at module1/quiet6",
+  "copy": "PASS",
+  "viewports": [
+    1366,
+    780,
+    360
+  ],
+  "network_requests": 0,
+  "js_errors": [],
+  "visual_acceptance": "USER-CHECK"
+}
