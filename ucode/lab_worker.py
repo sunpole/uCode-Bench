@@ -49,6 +49,8 @@ def main(request_path):
     result = {"status": "RUNNING", "seconds": {}, "errors": [], "warmup": request.get("warmup", False),"runtime_code_root":str(Path(__file__).resolve().parents[1])}
     cancel = threading.Event(); watcher_stop = threading.Event(); monitor = None
     started = time.perf_counter()
+    from .progress_series import ProgressSeries
+    timeline=ProgressSeries() if request.get("timeline_mode","off")=="on" else None
     def watch():
         while not watcher_stop.wait(.05):
             if (folder / "cancel.flag").exists(): cancel.set()
@@ -87,6 +89,7 @@ def main(request_path):
                 stream.write(f"{(200000000000+i)%10**12:012d}\n")
         last_update = [0.0]
         def progress(value):
+            if timeline: timeline.observe(value)
             if telemetry: telemetry.set_phase(value["stage"])
             now = time.perf_counter()
             if now-last_update[0] >= .05 or value["percent"] == 100:
@@ -145,6 +148,7 @@ def main(request_path):
         try: result["storage_total_bytes"]=sum(path.stat().st_size for path in folder.rglob("*") if path.is_file())
         except OSError: result["storage_total_bytes"]=None
         result["seconds"]["worker_wall"] = time.perf_counter() - started
+        if timeline: result["timeline"]=timeline.data(result["status"])
         atomic_json(folder / "trial.json", result)
     return 0 if result["status"] in ("COMPLETE","UNVERIFIED","LIMITED") else 2
 

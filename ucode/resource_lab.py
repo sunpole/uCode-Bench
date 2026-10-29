@@ -39,8 +39,10 @@ class LabConfig:
     activity_modes: tuple = ("normal",)
     qa_mode: str = "full"
     telemetry_modes: tuple = ("cpu",)
+    timeline_mode: str = "off"
 
     def __post_init__(self):
+        if self.timeline_mode not in ("on","off"): raise ValueError("XY: on/off")
         if self.qa_mode not in ("full","vector","deferred"): raise ValueError("Неверный режим проверки PDF")
         axes = (self.counts, self.cpu_counts, self.cpu_units, self.backends, self.ram_modes,self.pdf_profiles,self.activity_modes,self.telemetry_modes)
         if any(not isinstance(axis, tuple) or not axis or len(axis) > 64 for axis in axes):
@@ -194,7 +196,7 @@ def run_lab(output_root, config, *, cancel=None, events=None, progress=None):
                 if progress: progress(f"{case['id']} · {case['count']} кодов · CPU {case['cpu_choice']} {case['cpu_unit']} · {case['backend']} · {case['pdf_profile']}/{case['activity']} · {'прогрев' if warmup else 'повтор'} {repeat+1}")
                 request={"count": case["count"], "cpus": case["cpus"], "backend": case["backend"],"cpu_unit":case["cpu_unit"],
                          **frozen,"telemetry_mode":case["telemetry_mode"],
-                         "qa_mode":config.qa_mode,
+                         "qa_mode":config.qa_mode,"timeline_mode":config.timeline_mode,
                          "workers": case["workers"], "batch_size": config.batch_size, "ram_mode": case["ram_mode"],
                          "output_mode": config.output_mode, "print_settings": config.print_settings, "warmup": warmup,
                          "pdf_profile":case["pdf_profile"],"activity":case["activity"],

@@ -126,6 +126,8 @@ def build_window(app, help_text):
         button=app.edit(ttk.Radiobutton(controls,text=label,value=value,variable=app.qa_mode_var,
                                        style="Choice.TRadiobutton",command=app.remember))
         button.pack(side="left",padx=2); app.verification_buttons[key]=button
+    app.xy_picker=ChoiceMenu(app,controls,app.xy_mode_var,"XY",[("Выкл","off"),("Записывать","on")],command=app.remember)
+    app.xy_picker.button.pack(side="left",padx=5)
     ttk.Label(controls, text="1 код = 1 страница", style="Muted.TLabel").pack(side="right")
     app.phase_label = ttk.Label(body, textvariable=app.status_var, wraplength=900)
     app.phase_label.grid(row=6, column=0, sticky="w")

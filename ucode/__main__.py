@@ -36,6 +36,7 @@ def main(argv=None):
     parser.add_argument("--pdf-profile",choices=("standard","compact"),default="standard")
     parser.add_argument("--qa",choices=("full","vector","deferred"),default="full")
     parser.add_argument("--activity",choices=("normal","minimal"),default="normal")
+    parser.add_argument("--xy",choices=("on","off"),default="off",help="Запись фактических наблюдений XY")
     parser.add_argument("--pdf-profiles",default="standard")
     parser.add_argument("--activity-modes",default="normal")
     parser.add_argument("--search-counts",default="200,1000,10000,100000")
@@ -87,7 +88,7 @@ def main(argv=None):
                 parser.error("Для команды generate требуется --input path/to/codes.txt")
             root = args.output if args.output != Path(__file__).resolve().parent.parent / "output" / "runs" else Path(__file__).resolve().parent.parent / "output" / "jobs"
             directory = run_batch(args.input, root, mode=args.mode, copies_per_value=args.copies,
-                                  settings=PrintSettings(pdf_profile=args.pdf_profile),qa_mode=args.qa,activity=args.activity,
+                                  settings=PrintSettings(pdf_profile=args.pdf_profile),qa_mode=args.qa,activity=args.activity,timeline_mode=args.xy,
                                   duplicate_policy=args.duplicate_policy,
                                   execution=ExecutionOptions(args.backend, 1 if args.workers is None else args.workers,
                                                              32 if args.batch_size is None else args.batch_size),
@@ -107,7 +108,7 @@ def main(argv=None):
             cfg=SearchConfig(counts=tuple(map(int,args.search_counts.split(","))),repeats=args.repeats,
                 cpu_units=("logical","physical") if args.cpu_unit=="both" else (args.cpu_unit,),cpu_counts=tuple(args.cpu_counts.split(",")),
                 all_cpu_counts=args.all_cpu_counts,backends=tuple(args.backends.split(",")),pdf_profiles=tuple(args.pdf_profiles.split(",")),
-                activities=tuple(args.activity_modes.split(",")),qa_mode=args.qa,ram_mode=args.ram_modes,
+                activities=tuple(args.activity_modes.split(",")),qa_mode=args.qa,timeline_mode=args.xy,ram_mode=args.ram_modes,
                 search_mode=args.search_mode,keep_best=args.keep_best,part_counts=tuple(map(int,args.parts.split(","))),mergers=tuple(n.strip() for n in args.mergers.split(",")))
             folder=run_search(args.output,cfg,events=lambda value:print(value,flush=True))
             print(folder/"pc-search.html")
@@ -119,7 +120,7 @@ def main(argv=None):
                 cpu_counts=tuple(args.cpu_counts.split(",")),cpu_units=("logical","physical") if args.cpu_unit=="both" else (args.cpu_unit,),
                 backends=tuple(args.backends.split(",")),ram_modes=tuple(args.ram_modes.split(",")),
                 repeats=args.repeats,warmups=args.warmups,workers=0 if args.workers is None else args.workers,
-                batch_size=1 if args.batch_size is None else args.batch_size,output_mode=args.mode,qa_mode=args.qa)
+                batch_size=1 if args.batch_size is None else args.batch_size,output_mode=args.mode,qa_mode=args.qa,timeline_mode=args.xy)
             from dataclasses import replace
             config=replace(config,pdf_profiles=tuple(args.pdf_profiles.split(",")),activity_modes=tuple(args.activity_modes.split(",")))
             default=Path(__file__).resolve().parent.parent/"output"/"runs"

@@ -47,6 +47,7 @@ def apply_to_controls(app,command):
         for name,var in getattr(app,"_performance_options",[]): var.set(name in c["methods"])
         app.notebook.select(app.pages["tests"]); return
     app.print_settings=PrintSettings(**c.print_settings)
+    app.xy_mode_var.set(c.timeline_mode)
     app.pdf_profile_var.set(next(label for label,value in PDF_PROFILES.items() if value==app.print_settings.pdf_profile))
     app.qa_mode_var.set(next(label for label,value in QA_MODES.items() if value==c.qa_mode))
     app.geometry_basis.set("side"); app.geometry_value.set(f"{app.print_settings.side_mm:g}"); app.quiet_var.set(str(app.print_settings.quiet_modules))

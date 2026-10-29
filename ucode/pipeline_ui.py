@@ -69,7 +69,7 @@ class PipelineView:
         parts=lambda var:tuple(v.strip() for v in var.get().split(",") if v.strip())
         return PipelineConfig(counts=tuple(map(int,parts(self.counts))),allocations=parts(self.allocations),schedules=parts(self.schedules),
             batches=tuple(map(int,parts(self.batches))),repeats=int(self.repeats.get()),qa_mode=QA_MODES[self.app.qa_mode_var.get()],
-            ram_mode=self.ram.get(),telemetry_modes=parts(self.telemetry),print_settings=asdict(self.app.print_settings))
+            ram_mode=self.ram.get(),telemetry_modes=parts(self.telemetry),print_settings=asdict(self.app.print_settings),timeline_mode=self.app.xy_mode_var.get())
 
     def add(self):
         from .pipeline_plan import partition

@@ -39,8 +39,10 @@ class SearchConfig:
     part_modes:tuple=("sequential","parallel")
     mergers:tuple=("qpdf","MuPDF (mutool)","PyMuPDF","pikepdf","pypdf","pdfrw","PDFium (pypdfium2)","pdfcpu","Apache PDFBox","pdf-lib (Node.js)","PDFsharp (.NET)")
     print_settings:dict=field(default_factory=dict)
+    timeline_mode:str="off"
 
     def __post_init__(self):
+        if self.timeline_mode not in ("on","off"): raise ValueError("XY: on/off")
         from .print_settings import PrintSettings
         for axis in (self.counts,self.cpu_units,self.cpu_counts,self.backends,self.batches,self.pdf_profiles,self.activities,self.part_counts,self.part_modes,self.mergers):
             if not isinstance(axis,tuple) or not axis or len(axis)>64: raise ValueError("Выберите непустые наборы параметров, до64 значений")
@@ -148,7 +150,7 @@ def run_search(output_root,config,*,cancel=None,events=None):
         for repeat in range(config.repeats):
             stopped()
             request={"count":count,"cpus":case["cpus"],"backend":case["backend"],"workers":case["workers"],"batch_size":case["batch_size"],
-                     **frozen,"cpu_unit":case["cpu_unit"],"telemetry_mode":config.telemetry_mode,
+                     **frozen,"cpu_unit":case["cpu_unit"],"telemetry_mode":config.telemetry_mode,"timeline_mode":config.timeline_mode,
                      "pdf_profile":case["pdf_profile"],"activity":case["activity"],"ram_mode":config.ram_mode,"qa_mode":config.qa_mode,
                      "warmup":False,"output_mode":"multipage","print_settings":config.print_settings,"temporary_data":True,
                      "source_digest":data["source_digest"],"engine_version":catalog["encoders"][0]["version"],

@@ -90,10 +90,10 @@ def write_text_report(path,data,title):
         document+='<h2>Запуски</h2><ol>'+''.join('<li>'+html.escape(str(r.get("status")))+' · '+html.escape(str(r.get("command")))+'</li>' for r in data['runs'])+'</ol>'
     rows=list(result_rows(data))
     if rows:
-        document+='<h2>Варианты</h2><table><tr><th>Вариант</th><th>Кодов</th><th>CPU</th><th>Статус</th><th>Медиана, с</th><th>Что измерено</th><th>Повторов</th></tr>'
+        document+='<h2>Варианты</h2><div style="overflow:auto;max-width:100%"><table><tr><th>Вариант</th><th>Кодов</th><th>CPU</th><th>Статус</th><th>Медиана, с</th><th>Что измерено</th><th>Повторов</th></tr>'
         for row in rows:
             document+='<tr>'+''.join('<td>'+html.escape(f"{v:.4f}" if isinstance(v,float) else str(v) if v is not None else "—")+'</td>' for v in row)+'</tr>'
-        document+='</table>'
+        document+='</table></div>'
     document+='<h2>Все сохранённые параметры и измерения</h2><pre>'+html.escape(raw)+'</pre></html>'
     from .graphical_report import embed_graphs
     Path(path).write_text(embed_graphs(document,data),encoding="utf-8")

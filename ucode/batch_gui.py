@@ -126,6 +126,7 @@ class BatchWindow:
         self.pdf_profile_var=tk.StringVar(master=self.root,value=next(label for label,key in PDF_PROFILES.items() if key==self.print_settings.pdf_profile))
         self.qa_mode_var=tk.StringVar(master=self.root,value=next(label for label,key in QA_MODES.items() if key==self.generation_preferences.qa_mode))
         self.activity_var=tk.StringVar(master=self.root,value=self.generation_preferences.activity)
+        self.xy_mode_var=tk.StringVar(master=self.root,value=self.generation_preferences.timeline_mode)
         self.copies_var = tk.StringVar(master=self.root, value=str(self.generation_preferences.copies_per_value))
         self.duplicates_var = tk.StringVar(master=self.root, value=next(label for label, value in POLICIES.items() if value == self.generation_preferences.duplicate_policy))
         self.custom_count_var = tk.StringVar(master=self.root, value=str(self.generation_preferences.template_count))
@@ -200,7 +201,7 @@ class BatchWindow:
         return GenerationPreferences(copies, POLICIES.get(self.duplicates_var.get(), ""), count,
                                      self.destination_var.get(), EXECUTION_METHODS.get(self.backend_var.get(), ""), workers, batch_size,
                                      QA_MODES.get(self.qa_mode_var.get(),""),self.activity_var.get(),
-                                     control.choice.get() if control else "legacy",control.unit.get() if control else "physical",control.ram.get() if control else "auto")
+                                     control.choice.get() if control else "legacy",control.unit.get() if control else "physical",control.ram.get() if control else "auto",self.xy_mode_var.get())
 
     def refresh_plan(self, *_):
         self.plan_valid = False
@@ -256,6 +257,8 @@ class BatchWindow:
             if widget.winfo_exists():
                 widget.configure(state="disabled" if self.busy else idle_state)
         is_test=self.notebook.select()==str(self.pages["lab"])
+        xy_unavailable=self.notebook.select() in tuple(str(self.pages[k]) for k in ("tests","console","archive","history","help"))
+        self.xy_picker.button.configure(state="disabled" if self.busy or xy_unavailable else "normal")
         if self.notebook.select()==str(self.pages["console"]):
             self.generate.configure(text="ЗАПУСТИТЬ КОМАНДЫ",command=self.console_view.start,
                                     state="normal" if self.console_view.valid and not self.busy else "disabled")
@@ -263,7 +266,7 @@ class BatchWindow:
             self.generate.configure(text="НАУЧНЫЙ ТЕСТ",command=lambda:self.start_test("all" if self.scientific_size.get()=="all" else int(self.scientific_size.get())),
                                     state="normal" if not self.busy and self.qa_mode_var.get()=="Полная" else "disabled")
         elif self.notebook.select() in (str(self.pages["archive"]),str(self.pages["history"])):
-            self.generate.configure(text="ВЫБЕРИТЕ ПАРАМЕТРЫ ТЕСТА",state="disabled")
+            self.generate.configure(text="ВЫБЕРИТЕ ТЕСТ",state="disabled")
         elif self.notebook.select()==str(self.pages["pipeline"]):
             self.generate.configure(text="ЗАПУСТИТЬ КОНВЕЙЕР",command=self.pipeline_view.start,
                                     state="normal" if self.pipeline_view.valid and not self.busy else "disabled")
@@ -438,7 +441,7 @@ class BatchWindow:
                     copies_per_value=options.copies_per_value, duplicate_policy=options.duplicate_policy,
                     generator=self.generator_key, engine=self.engine_key,
                     execution=execution,
-                    qa_mode=options.qa_mode,activity=options.activity,
+                    qa_mode=options.qa_mode,activity=options.activity,timeline_mode=options.timeline_mode,
                     progress=lambda s: self.events.put(("status", s)), events=lambda e: self.events.put(("progress", e))))
 
     def start_audit(self):
@@ -624,7 +627,7 @@ class BatchWindow:
         status, count = report["status"], report["count"]
         seconds = report.get("seconds", {}).get("total_including_qa", 0)
         self.elapsed_var.set("Прошло: " + clock_text(seconds))
-        self.last_report = folder / "ОТЧЁТ.txt"
+        self.last_report = folder / ("production.html" if (folder/"production.html").is_file() else "ОТЧЁТ.txt")
         output = report.get("files", {}).get("multipage", {}).get("name")
         self.last_pdf = folder / output if output and status in ("COMPLETE", "LIMITED","UNVERIFIED") else None
         if self.last_pdf is None and status in ("COMPLETE", "LIMITED","UNVERIFIED"):
@@ -699,7 +702,7 @@ class BatchWindow:
             return
         self.print_settings = PrintSettings()
         self.pdf_profile_var.set("Обычный")
-        self.qa_mode_var.set("Полная"); self.activity_var.set("normal")
+        self.qa_mode_var.set("Полная"); self.activity_var.set("normal"); self.xy_mode_var.set("off")
         self.mode_var.set("multipage")
         self.copies_var.set("1")
         self.duplicates_var.set(next(label for label, value in POLICIES.items() if value == "preserve"))
