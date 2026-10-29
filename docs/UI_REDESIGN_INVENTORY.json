@@ -1,0 +1,637 @@
+{
+  "source_commit": "4c6f08fa612699f968a33a3f87904914f1b0708b",
+  "scope": "Static inventory, not end-to-end parity proof",
+  "configuration_classes": [
+    {
+      "file": "ucode/app_settings.py",
+      "class": "GenerationPreferences",
+      "fields": [
+        "copies_per_value",
+        "duplicate_policy",
+        "template_count",
+        "output_directory",
+        "execution_backend",
+        "workers",
+        "batch_size",
+        "qa_mode",
+        "activity",
+        "cpu_choice",
+        "cpu_unit",
+        "ram_mode",
+        "timeline_mode"
+      ]
+    },
+    {
+      "file": "ucode/print_settings.py",
+      "class": "PrintSettings",
+      "fields": [
+        "module_mm",
+        "quiet_modules",
+        "ink",
+        "pdf_profile"
+      ]
+    },
+    {
+      "file": "ucode/execution.py",
+      "class": "ExecutionOptions",
+      "fields": [
+        "backend",
+        "workers",
+        "batch_size",
+        "cpus",
+        "cpu_unit",
+        "ram_mode"
+      ]
+    },
+    {
+      "file": "ucode/resource_lab.py",
+      "class": "LabConfig",
+      "fields": [
+        "counts",
+        "cpu_counts",
+        "cpu_units",
+        "backends",
+        "ram_modes",
+        "repeats",
+        "warmups",
+        "batch_size",
+        "workers",
+        "output_mode",
+        "print_settings",
+        "pdf_profiles",
+        "activity_modes",
+        "qa_mode",
+        "telemetry_modes",
+        "timeline_mode"
+      ]
+    },
+    {
+      "file": "ucode/pipeline_plan.py",
+      "class": "PipelineConfig",
+      "fields": [
+        "counts",
+        "allocations",
+        "schedules",
+        "batches",
+        "repeats",
+        "qa_mode",
+        "ram_mode",
+        "telemetry_modes",
+        "print_settings",
+        "timeline_mode",
+        "processes_per_cpu"
+      ]
+    },
+    {
+      "file": "ucode/pc_search.py",
+      "class": "SearchConfig",
+      "fields": [
+        "counts",
+        "repeats",
+        "cpu_units",
+        "cpu_counts",
+        "all_cpu_counts",
+        "backends",
+        "batches",
+        "pdf_profiles",
+        "activities",
+        "qa_mode",
+        "ram_mode",
+        "telemetry_mode",
+        "search_mode",
+        "keep_best",
+        "part_counts",
+        "part_modes",
+        "mergers",
+        "print_settings",
+        "timeline_mode"
+      ]
+    }
+  ],
+  "literal_control_labels": [
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 36,
+      "label": "Открыть TXT…"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 37,
+      "label": "Проверить выбранный файл"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 42,
+      "label": "Другое количество…"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 50,
+      "label": "Экземпляры и повторы TXT"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 51,
+      "label": "Размер PDF и белое поле"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 52,
+      "label": "Размер модуля"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 53,
+      "label": "Цвет CMYK и формат PDF"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 54,
+      "label": "CPU, RAM и диск"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 55,
+      "label": "Печать K100"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 57,
+      "label": "Восстановить стандартные настройки"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 59,
+      "label": "Настроить и запустить тесты"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 60,
+      "label": "Конвейер: QR и PDF на разных CPU"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 61,
+      "label": "История результатов"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 64,
+      "label": "Научный профиль — всегда с проверкой"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 69,
+      "label": "Выбрать движки объединения"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 70,
+      "label": "Предыдущие результаты"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 71,
+      "text": "Справка · F1"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 117,
+      "text": "СОЗДАТЬ PDF"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 119,
+      "text": "Остановить"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 145,
+      "text": "Открыть PDF"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 147,
+      "text": "Открыть папку"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 149,
+      "text": "Посмотреть отчёт"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 151,
+      "text": "Проверить PDF"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 263,
+      "text": "Для создания PDF выберите ядра прямо во вкладке «Генерация».\nПроцессы кодируют QR параллельно. Запись общего PDF пока последовательная."
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 238,
+      "text": "Выбрать ядра для теста →"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 249,
+      "text": "Дополнительные настройки…"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 28,
+      "text": "uCode"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 29,
+      "text": "QR  /  PDF"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 102,
+      "text": "Научный профиль: 3 повтора · QR V1-M · K100\nНастройки и экземпляры обычной генерации на него не влияют."
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 108,
+      "text": "Откройте выбор движков, чтобы проверить их доступность."
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 121,
+      "text": "PDF:"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 129,
+      "text": "1 код = 1 страница"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 174,
+      "text": "Новая база:"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 187,
+      "text": "Папка PDF:"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 197,
+      "text": "Экземпляров каждого:"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 209,
+      "text": "Поле, модулей:"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 213,
+      "text": "CMYK, %:"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 243,
+      "text": "Дополнительные настройки…"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 246,
+      "text": "Скрыть дополнительные настройки"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 259,
+      "text": "Кодов за один шаг:"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 98,
+      "text": "В консоль →"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 109,
+      "text": "Выбрать движки"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 170,
+      "text": "Открыть TXT…"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 177,
+      "text": "Создать TXT"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 189,
+      "text": "Выбрать…"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 217,
+      "text": "K100"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 226,
+      "text": "Минимум расходов"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 230,
+      "text": "Применить размер и цвет"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 231,
+      "text": "Стандартные настройки"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 268,
+      "text": "Обновить ресурсы"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 269,
+      "text": "Проверить запись 32 КиБ"
+    },
+    {
+      "file": "ucode/ui_layout.py",
+      "line": 270,
+      "text": "Сохранить"
+    },
+    {
+      "file": "ucode/generation_cpu.py",
+      "line": 25,
+      "text": "QR:"
+    },
+    {
+      "file": "ucode/generation_cpu.py",
+      "line": 35,
+      "text": "PDF: 1 процесс"
+    },
+    {
+      "file": "ucode/lab_ui.py",
+      "line": 169,
+      "text": "Добавить объём"
+    },
+    {
+      "file": "ucode/lab_ui.py",
+      "line": 185,
+      "text": "Прогрев: пробные PDF перед замерами; в итог не входят. 0 = выключен. Галочки CPU = варианты серии."
+    },
+    {
+      "file": "ucode/lab_ui.py",
+      "line": 147,
+      "text": "Все параметры…"
+    },
+    {
+      "file": "ucode/lab_ui.py",
+      "line": 138,
+      "text": "Количество кодов:"
+    },
+    {
+      "file": "ucode/lab_ui.py",
+      "line": 145,
+      "text": "Повторов каждого режима:"
+    },
+    {
+      "file": "ucode/lab_ui.py",
+      "line": 176,
+      "text": "Свой лимит, ГиБ:"
+    },
+    {
+      "file": "ucode/lab_ui.py",
+      "line": 183,
+      "text": "Кодов за один шаг:"
+    },
+    {
+      "file": "ucode/pipeline_ui.py",
+      "line": 53,
+      "text": "Добавить"
+    },
+    {
+      "file": "ucode/pipeline_ui.py",
+      "line": 67,
+      "text": "Равные части — свой диапазон; очередь — свободному. PDF=0: полный цикл. Сборщик один."
+    },
+    {
+      "file": "ucode/search_ui.py",
+      "line": 38,
+      "text": "Тиражи:"
+    },
+    {
+      "file": "ucode/search_ui.py",
+      "line": 41,
+      "text": "Повторов:"
+    },
+    {
+      "file": "ucode/search_ui.py",
+      "line": 53,
+      "text": "Лидеров:"
+    },
+    {
+      "file": "ucode/search_ui.py",
+      "line": 64,
+      "text": "С галочкой — все количества CPU; без неё — выбранные здесь. Итог один PDF."
+    },
+    {
+      "file": "ucode/search_ui.py",
+      "line": 45,
+      "text": "Все количества CPU этого ПК"
+    },
+    {
+      "file": "ucode/test_controls.py",
+      "line": 47,
+      "text": "‹"
+    },
+    {
+      "file": "ucode/test_controls.py",
+      "line": 48,
+      "text": "›"
+    },
+    {
+      "file": "ucode/test_controls.py",
+      "line": 71,
+      "text": "К простому управлению"
+    },
+    {
+      "file": "ucode/test_controls.py",
+      "line": 74,
+      "text": "Все параметры…"
+    },
+    {
+      "file": "ucode/test_console_ui.py",
+      "line": 20,
+      "label": "Загрузить команды…"
+    },
+    {
+      "file": "ucode/test_console_ui.py",
+      "line": 21,
+      "label": "Сохранить команды…"
+    },
+    {
+      "file": "ucode/test_console_ui.py",
+      "line": 18,
+      "text": "Файл ▾"
+    },
+    {
+      "file": "ucode/archive_ui.py",
+      "line": 37,
+      "label": "Выбранный тест"
+    },
+    {
+      "file": "ucode/archive_ui.py",
+      "line": 38,
+      "label": "Из JSON-файла…"
+    },
+    {
+      "file": "ucode/archive_ui.py",
+      "line": 34,
+      "text": "Графики ▾"
+    },
+    {
+      "file": "ucode/history_ui.py",
+      "line": 37,
+      "text": "Поиск:"
+    },
+    {
+      "file": "ucode/batch_gui.py",
+      "line": 683,
+      "label": "Все доступные"
+    },
+    {
+      "file": "ucode/batch_gui.py",
+      "line": 683,
+      "label": "Снять все"
+    },
+    {
+      "file": "ucode/batch_gui.py",
+      "line": 197,
+      "text": "ЗАПУСТИТЬ КОМАНДЫ"
+    },
+    {
+      "file": "ucode/batch_gui.py",
+      "line": 670,
+      "text": "Движки объединения ▾"
+    },
+    {
+      "file": "ucode/batch_gui.py",
+      "line": 200,
+      "text": "НАУЧНЫЙ ТЕСТ"
+    },
+    {
+      "file": "ucode/batch_gui.py",
+      "line": 203,
+      "text": "СПРАВКА"
+    },
+    {
+      "file": "ucode/batch_gui.py",
+      "line": 205,
+      "text": "ВЫБЕРИТЕ ТЕСТ"
+    },
+    {
+      "file": "ucode/batch_gui.py",
+      "line": 207,
+      "text": "ЗАПУСТИТЬ КОНВЕЙЕР"
+    },
+    {
+      "file": "ucode/batch_gui.py",
+      "line": 210,
+      "text": "НАЧАТЬ ПОДБОР"
+    },
+    {
+      "file": "ucode/help_ui.py",
+      "line": 18,
+      "text": "Полная справка в браузере"
+    },
+    {
+      "file": "ucode/help_ui.py",
+      "line": 68,
+      "text": "Белое поле ≥ 4 модуля · модуль = клетка QR"
+    },
+    {
+      "file": "ucode/help_ui.py",
+      "line": 69,
+      "text": "(21 + 2 × 4) × 0,5 мм = 14,5 мм · схема областей"
+    },
+    {
+      "file": "ucode/help_ui.py",
+      "line": 16,
+      "text": "Назад"
+    },
+    {
+      "file": "ucode/help_ui.py",
+      "line": 17,
+      "text": "Далее"
+    },
+    {
+      "file": "ucode/gui.py",
+      "line": 40,
+      "text": "Создать 200 QR"
+    },
+    {
+      "file": "ucode/gui.py",
+      "line": 41,
+      "text": "Запустить бенчмарк"
+    },
+    {
+      "file": "ucode/gui.py",
+      "line": 42,
+      "text": "Открыть результаты"
+    },
+    {
+      "file": "ucode/gui.py",
+      "line": 43,
+      "text": "Перейти к 1000"
+    },
+    {
+      "file": "ucode/gui.py",
+      "line": 44,
+      "text": "TXT → реальные PDF (200 / 1 000 / 10 000)"
+    },
+    {
+      "file": "ucode/gui.py",
+      "line": 57,
+      "text": "Отменить после текущего шага"
+    },
+    {
+      "file": "ucode/gui.py",
+      "line": 34,
+      "text": "uCode"
+    },
+    {
+      "file": "ucode/gui.py",
+      "line": 35,
+      "text": "Локальная лаборатория QR и PDF"
+    },
+    {
+      "file": "ucode/gui.py",
+      "line": 36,
+      "text": "200 номеров · QR Code M · 0,5 мм · поле 4 модуля · CMYK K100\nТри повтора. Допуск к 1000: QA PASS и медиана <120 с."
+    }
+  ],
+  "modules": [
+    "ui_layout.py",
+    "generation_cpu.py",
+    "lab_ui.py",
+    "pipeline_ui.py",
+    "search_ui.py",
+    "test_controls.py",
+    "test_console_ui.py",
+    "archive_ui.py",
+    "history_ui.py",
+    "batch_gui.py",
+    "help_ui.py",
+    "gui.py"
+  ]
+}
