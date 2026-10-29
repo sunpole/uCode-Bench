@@ -7,7 +7,7 @@ import zlib
 from .compact_pdf import _number,_rectangles
 
 
-def write_pdf(frames,path,settings,index_path,*,cancel=None,on_progress=None,guard=lambda:None):
+def write_pdf(frames,path,settings,index_path,*,cancel=None,on_progress=None,guard=lambda:None,prepared=None):
     count=len(frames); db=sqlite3.connect(str(index_path))
     db.execute("PRAGMA cache_size=-2048")
     db.executescript("CREATE TABLE objects(id INTEGER PRIMARY KEY,off INTEGER,size INTEGER); CREATE TABLE pages(n INTEGER PRIMARY KEY,ref INTEGER); CREATE TABLE meta(key TEXT PRIMARY KEY,value INTEGER); CREATE TABLE contents(value TEXT PRIMARY KEY,ref INTEGER)")
@@ -24,32 +24,39 @@ def write_pdf(frames,path,settings,index_path,*,cancel=None,on_progress=None,gua
             obj(1,b"<< /Type /Catalog /Pages 2 0 R >>")
             obj(3,b"<< /Creator (uCode DiskPDF/1) >>")
             next_id=4
-            for number,frame in enumerate(frames,1):
+            saved=0
+            source=((n,frame.payload,frame,None) for n,frame in enumerate(frames,1)) if prepared is None else ((n,payload,None,data) for n,payload,data in prepared)
+            for number,payload,frame,data in source:
                 check()
-                if frame.version!=1 or frame.error!="M" or frame.size!=21 or any(len(row)!=21 for row in frame.matrix):
+                if not 1<=number<=count: raise ValueError("Номер страницы вне тиража")
+                if frame is not None and (frame.version!=1 or frame.error!="M" or frame.size!=21 or any(len(row)!=21 for row in frame.matrix)):
                     raise ValueError("Только QR V1-M")
-                cached=db.execute("SELECT ref FROM contents WHERE value=?",(frame.payload,)).fetchone() if settings.pdf_profile=="compact" else None
+                cached=db.execute("SELECT ref FROM contents WHERE value=?",(payload,)).fetchone() if settings.pdf_profile=="compact" else None
                 content=cached[0] if cached else next_id
                 if not cached:
-                    lines=[" ".join(_number(v/100,9) for v in settings.ink)+" k\nn\n"]
-                    rects=_rectangles(frame.matrix) if settings.pdf_profile=="compact" else ((x,y,1,1) for y,row in enumerate(reversed(frame.matrix)) for x,dark in enumerate(row) if dark)
-                    for x,y,w,h in rects:
-                        lines.append(f"{_number((x+settings.quiet_modules)*unit)} {_number((y+settings.quiet_modules)*unit)} {_number(w*unit)} {_number(h*unit)} re\n")
-                    data=zlib.compress(("".join(lines)+"f\n").encode())
+                    if data is None:
+                        lines=[" ".join(_number(v/100,9) for v in settings.ink)+" k\nn\n"]
+                        rects=_rectangles(frame.matrix) if settings.pdf_profile=="compact" else ((x,y,1,1) for y,row in enumerate(reversed(frame.matrix)) for x,dark in enumerate(row) if dark)
+                        for x,y,w,h in rects:
+                            lines.append(f"{_number((x+settings.quiet_modules)*unit)} {_number((y+settings.quiet_modules)*unit)} {_number(w*unit)} {_number(h*unit)} re\n")
+                        data=zlib.compress(("".join(lines)+"f\n").encode())
                     obj(content,f"<< /Length {len(data)} /Filter /FlateDecode >>\nstream\n".encode()+data+b"\nendstream")
-                    db.execute("INSERT OR IGNORE INTO contents VALUES (?,?)",(frame.payload,content))
+                    db.execute("INSERT OR IGNORE INTO contents VALUES (?,?)",(payload,content))
                     next_id+=1
                 page=next_id; next_id+=1
-                obj(page,f"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {side} {side}] /Resources << >> /Contents {content} 0 R >>".encode())
+                geometry=f" /MediaBox [0 0 {side} {side}] /Resources << >>" if prepared is None else ""
+                obj(page,f"<< /Type /Page /Parent 2 0 R{geometry} /Contents {content} 0 R >>".encode())
                 db.execute("INSERT INTO pages VALUES (?,?)",(number,page))
-                if number%256==0: db.commit()
-                if on_progress: on_progress(number,count)
-            if number!=count: raise ValueError("Количество записанных страниц не совпало с планом")
+                saved+=1
+                if saved%256==0: db.commit()
+                if on_progress: on_progress(saved,count)
+            if saved!=count: raise ValueError("Количество записанных страниц не совпало с планом")
             offset=out.tell()
             prefix=f"2 0 obj\n<< /Type /Pages /Count {count} /Kids [".encode(); out.write(prefix)
             for ref, in db.execute("SELECT ref FROM pages ORDER BY n"):
                 check(); out.write(f"{ref} 0 R ".encode())
-            out.write(b"] >>\nendobj\n"); db.execute("INSERT INTO objects VALUES (2,?,?)",(offset,out.tell()-offset))
+            ending=f"] /MediaBox [0 0 {side} {side}] /Resources << >> >>\nendobj\n".encode() if prepared is not None else b"] >>\nendobj\n"
+            out.write(ending); db.execute("INSERT INTO objects VALUES (2,?,?)",(offset,out.tell()-offset))
             check(); xref=out.tell(); size=next_id
             out.write(f"xref\n0 {size}\n0000000000 65535 f \n".encode())
             for ident,offset in db.execute("SELECT id,off FROM objects ORDER BY id"):
@@ -58,6 +65,7 @@ def write_pdf(frames,path,settings,index_path,*,cancel=None,on_progress=None,gua
                 out.write(f"{offset:010d} 00000 n \n".encode())
             out.write(f"trailer\n<< /Size {size} /Root 1 0 R /Info 3 0 R >>\nstartxref\n{xref}\n%%EOF\n".encode())
             db.executemany("INSERT INTO meta VALUES (?,?)",(("count",count),("xref",xref),("size",size)))
+            db.execute("INSERT INTO meta VALUES ('inherited_geometry',?)",(int(prepared is not None),))
             db.commit()
     finally: db.close()
 
@@ -100,7 +108,15 @@ class DiskReader:
             for ref, in self.db.execute("SELECT ref FROM pages ORDER BY n"):
                 self.check(); expected=f"{ref} 0 R ".encode()
                 if stream.read(len(expected))!=expected: raise ValueError("PDF page order повреждён")
-            ending=b"] >>\nendobj\n"
+            if self.meta.get("inherited_geometry"):
+                # Parent geometry is parsed independently below, not trusted from the index.
+                tail=stream.readline()
+                if not tail.startswith(b"] /MediaBox [") or not tail.endswith(b" /Resources << >> >>\n") or stream.readline()!=b"endobj\n":
+                    raise ValueError("PDF parent geometry повреждена")
+                from pypdf.generic import read_object
+                self.inherited=read_object(io.BytesIO(b"<< "+tail[2:]),self)
+                ending=b""
+            else: ending=b"] >>\nendobj\n"
             if stream.read(len(ending))!=ending: raise ValueError("PDF page tree завершён неверно")
         catalog=self.get_object_id(1)
         if str(catalog.get("/Type"))!="/Catalog" or catalog.raw_get("/Pages").idnum!=2: raise ValueError("Неверный PDF catalog")
@@ -115,7 +131,12 @@ class DiskReader:
         indirect=IndirectObject(ref,0,self)
         raw=self.get_object(indirect)
         if str(raw.get("/Type"))!="/Page" or raw.raw_get("/Parent").idnum!=2: raise ValueError("Неверная ссылка страницы PDF")
-        page=PageObject(self,indirect); page.update(raw); return page
+        page=PageObject(self,indirect); page.update(raw)
+        if self.meta.get("inherited_geometry"):
+            from pypdf.generic import NameObject
+            for name in ("/MediaBox","/Resources"):
+                if name not in page: page[NameObject(name)]=self.inherited[name]
+        return page
     def get_object(self,ref): return self.get_object_id(ref.idnum)
     def get_object_id(self,ident):
         from pypdf.generic import read_object

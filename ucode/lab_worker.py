@@ -97,10 +97,14 @@ def main(request_path):
         workers = request["workers"] if request["backend"] != "serial" else 1
         options=ExecutionOptions(request["backend"],workers,request["batch_size"],
                                  tuple(request["cpus"]) if request["backend"]=="process" else (),request.get("cpu_unit","logical"))
-        estimated=execution_plan(options,count,inspect_cpu(),memory_info()["available_bytes"],buffered=count>10000)
-        if estimated["required_ram_estimate_bytes"]>budget["budget_bytes"]:
-            raise ValueError("Выбранный RAM budget меньше предварительной оценки; уменьшите работников или увеличьте бюджет")
-        if request.get("strategy")=="split":
+        if request.get("strategy")!="pipeline":
+            estimated=execution_plan(options,count,inspect_cpu(),memory_info()["available_bytes"],buffered=count>10000)
+            if estimated["required_ram_estimate_bytes"]>budget["budget_bytes"]:
+                raise ValueError("Выбранный RAM budget меньше предварительной оценки; уменьшите работников или увеличьте бюджет")
+        if request.get("strategy")=="pipeline":
+            from .pipeline import run_pipeline_trial
+            result.update(run_pipeline_trial(folder,request,settings,cancel,progress,budget,telemetry.bind if telemetry else None))
+        elif request.get("strategy")=="split":
             from .batch_strategies import run_split_trial
             result.update(run_split_trial(folder,request,settings,cancel,progress,budget))
         else:

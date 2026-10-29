@@ -119,7 +119,7 @@ class OperatorWindowTests(unittest.TestCase):
                 app.search_view.mode.set("full")
                 for mode in ("full","deferred","vector"):
                     app.verification_buttons[mode].invoke()
-                    for tab in ("generation","lab","resources","search"):
+                    for tab in ("generation","lab","resources","search","pipeline"):
                         app.notebook.select(app.pages[tab]); app.update_buttons(); window.update_idletasks()
                         self.assertLessEqual(window.winfo_reqwidth(),1326)
                         self.assertLessEqual(window.winfo_reqheight(),668)
