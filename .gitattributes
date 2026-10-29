@@ -1,0 +1,2 @@
+# Preserve the user-supplied CorelDRAW SVG byte-for-byte on Windows and Linux.
+ucode/assets/ubrand.svg -text
