@@ -100,7 +100,8 @@ class RealCoreTests(unittest.TestCase):
             self.assertEqual(len(data["telemetry_overhead_pairs"]),1)
             self.assertTrue((folder/"cpu-load.html").is_file())
             self.assertEqual(code_fingerprint(folder/".runtime/ucode"),data["source_digest"])
-            self.assertEqual(Path(on["trials"][0]["runtime_code_root"]),folder/".runtime")
+            # Windows runners may spell the same TEMP directory as RUNNER~1/runneradmin.
+            self.assertTrue(Path(on["trials"][0]["runtime_code_root"]).samefile(folder/".runtime"))
             # Corrupt only this test-owned frozen copy: a new trial must refuse it.
             from ucode.resource_lab import _run_trial
             request=json.loads(next((folder/"trials").glob("*/request.json")).read_text(encoding="utf-8"))
