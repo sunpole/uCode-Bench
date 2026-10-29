@@ -139,6 +139,17 @@ def chart_model(data):
     def visit(node, path, depth=0):
         if depth > 8:
             return
+        if node.get('kind')=='txt-batch-pdf':
+            # One production run is its own scope, never a three-repeat benchmark.
+            trial={**node,'memory':node.get('runtime_statistics',{}),
+                   'pdf_bytes':sum(v.get('bytes',0) for k,v in node.get('files',{}).items() if k in ('singles','multipage'))}
+            qa=node.get('qa_mode','deferred')
+            if isinstance(qa,dict):qa=qa.get('mode','deferred')
+            config={'count':node.get('count'),'repeats':1,'qa_mode':qa,
+                    'timeline_mode':node.get('timeline',{}).get('mode','off') if isinstance(node.get('timeline'),dict) else 'off',
+                    'telemetry_mode':'cpu' if node.get('runtime_statistics',{}).get('cpu_telemetry') else 'off'}
+            add({'kind':'txt-batch-pdf','config':config},{'id':'Производственный запуск','count':node.get('count'),
+                 'qa_mode':qa,'status':node.get('status'),'trials':[trial]},path+' / Создание PDF')
         for case in node.get("cases", []):
             add(node, case, path)
         for method in node.get("methods", []):

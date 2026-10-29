@@ -31,7 +31,7 @@ def clock_text(seconds):
 
 
 class BatchWindow:
-    def __init__(self, root, output_root=None):
+    def __init__(self, root, output_root=None, *, layout_builder=None):
         self.root = root
         self.output_root = Path(output_root or PROJECT / "output")
         self.preferences_path = self.output_root.parent / ".local-state" / "user-settings.json"
@@ -84,7 +84,7 @@ class BatchWindow:
         self.speed_var = tk.StringVar(master=self.root, value="Скорость: — кодов/сек")
         self.result_var = tk.StringVar(master=self.root, value="Здесь появится результат создания PDF")
         self.result_details = tk.StringVar(master=self.root, value="Данные и прежние результаты сохраняются локально")
-        build_window(self, HELP_TEXT)
+        (layout_builder or build_window)(self, HELP_TEXT)
         self.refresh_hardware()
         self.update_geometry()
         self.refresh_plan()

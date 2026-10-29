@@ -192,4 +192,23 @@ def human_report(report: dict) -> str:
         details.append(f"Файл {item.get('file')}: {item.get('errors')}")
     if details:
         rows.extend(["ПРИЧИНЫ ОСТАНОВКИ / ОШИБОК", *map(str, details), ""])
+    launcher=values.get('launcher_wall')
+    if launcher and launcher>0:
+        rows.extend(['','ВЕСЬ ЗАПУСК С ПОДГОТОВКОЙ ПРОЦЕССА',
+                     format_duration(launcher),f"Скорость всего запуска: {report.get('count',0)/launcher:.2f} кодов/сек",
+                     'Включает запуск процесса, создание, выбранную QA и завершение замеров. Финальная запись HTML/архива исключена.'])
+    runtime=report.get('runtime_statistics')
+    if runtime and runtime.get('cpu_telemetry'):
+        rows=[row for row in rows if 'Подробная загрузка CPU min/среднее/max' not in row]
+        trace=runtime['cpu_telemetry']
+        rows.extend(['','ПОДРОБНАЯ СТАТИСТИКА СОБСТВЕННЫХ ПРОЦЕССОВ',
+                     f"Состояние замеров: {trace['status']} · интервал {trace['interval_seconds']} сек · наблюдений {trace['samples']}",
+                     f"Пик RAM дерева (RSS): {runtime.get('peak_tree_rss_bytes',0)/1024**2:.2f} МиБ; private: {runtime.get('peak_tree_private_bytes')}",
+                     f"Максимум наблюдённых процессов: {runtime.get('max_observed_processes')}",
+                     f"Подтверждённых привязок к CPU: {trace.get('bound_worker_count')}",
+                     'CPU min/среднее/max — интервальные наблюдения своих процессов, не мгновенный пик всего ПК.'])
+        for name,phase in trace.get('phases',{}).items():
+            load=phase['selected_cpu_load_pct']
+            rows.append(f"{name}: CPU % min/среднее/max = {load['min']} / {load['mean']} / {load['max']}")
+        rows.extend(['Подробные данные: runtime-statistics.json; интервалы: cpu-samples.csv.',trace.get('scope',''),''])
     return "\n".join(rows)

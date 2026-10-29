@@ -14,16 +14,17 @@ import uuid
 ROOT=ContextVar("ucode_test_archive",default=None)
 DEPTH=ContextVar("ucode_archive_depth",default=0)
 PENDING=ContextVar("ucode_archive_pending",default=None)
-REPORTS=("commands.json","pipeline.json","pc-search.json","lab.json","scientific.json","comparison.json","report.json")
+REPORTS=("commands.json","pipeline.json","pc-search.json","lab.json","scientific.json","comparison.json","report.json","manifest.json")
 MAX_JSON=64*1024**2
 DROP={"payload","matrix","frames","first_code","last_code","first","last","decoded_samples","source_txt","input_filename",
       "username","hostname","python_executable","runtime_code_root","asset_root","runtime_root","pid","worker_pids","worker_affinity"}
-KINDS={"resource-lab":"CPU / RAM","cpu-pipeline-lab":"Конвейер","pc-performance-search":"Подбор ПК","scientific-3-repeat":"Научный тест","comparison":"200 → 1000","report":"Научный этап","test-command-queue":"Консоль"}
+KINDS={"resource-lab":"CPU / RAM","cpu-pipeline-lab":"Конвейер","pc-performance-search":"Подбор ПК","scientific-3-repeat":"Научный тест","comparison":"200 → 1000","report":"Научный этап","test-command-queue":"Консоль","txt-batch-pdf":"Создание PDF"}
 STATES={"COMPLETE":"Завершён","PASS":"QA PASS","UNVERIFIED":"Без проверки","LIMITED":"Частичная проверка","CANCELLED":"Остановлен","ERROR":"Ошибка","INVALID":"Ошибка проверки","PARTIAL":"Не все варианты","SKIPPED":"Пропущен","RUNNING":"Выполняется"}
 
 
 def test_counts(data):
     numbers=set()
+    if data.get('kind')=='txt-batch-pdf' and type(data.get('count')) is int:numbers.add(data['count'])
     cfg=data.get("config",{})
     for n in [*cfg.get("counts",[]),cfg.get("count")]:
         if type(n) is int and n>0: numbers.add(n)
@@ -36,6 +37,11 @@ def test_counts(data):
 
 
 def result_rows(data,prefix=""):
+    if data.get('kind')=='txt-batch-pdf':
+        execution=data.get('execution',{})
+        yield (prefix+'Создание PDF',data.get('count'),str(execution.get('backend','?')),
+               STATES.get(data.get('status'),data.get('status')),data.get('seconds',{}).get('launcher_wall'),
+               'Один производственный запуск',1)
     for c in data.get("cases",[]):
         s=c.get("summary",{}); seconds=s.get("median_launcher_wall_seconds")
         cpu=c.get("allocation",str(c.get("cpu_choice","?"))+" "+("ядер" if c.get("cpu_unit")=="physical" else "CPU"))

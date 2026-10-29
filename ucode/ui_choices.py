@@ -9,8 +9,10 @@ class ChoiceMenu:
         self.aliases=dict(aliases or {})
         self.options=(); self.values={}; self.flags={}
         self.single_value=tk.StringVar(master=app.root)
-        self.button=app.edit(ttk.Menubutton(parent))
-        self.menu=tk.Menu(self.button,tearoff=False); self.button.configure(menu=self.menu)
+        self.cyclic=bool(getattr(app,'cyclic_controls',False) and not multiple)
+        self.button=app.edit(ttk.Button(parent,command=self.cycle) if self.cyclic else ttk.Menubutton(parent))
+        self.menu=tk.Menu(self.button,tearoff=False)
+        if not self.cyclic:self.button.configure(menu=self.menu)
         self.set_options(options)
         from .ui_hints import Hint,HINTS
         self.hint=Hint(self.button,lambda: (HINTS.get(self.label,'Выберите значение кнопкой меню.')+
@@ -48,7 +50,13 @@ class ChoiceMenu:
             self.menu.add_command(label="Снять все",command=lambda:(self.variable.set(""),self.changed()))
         names={value:text for text,value in options}
         caption=names.get(selected[0],"Выбрать") if len(selected)==1 else f"выбрано {len(selected)}" if selected else "выбрать…"
-        self.button.configure(text=f"{self.label}: {caption} ▾")
+        self.button.configure(text=f"{self.label}: {caption}"+('' if self.cyclic else ' ▾'))
+
+    def cycle(self):
+        if self.app.busy or not self.options:return
+        values=[value for _,value in self.options];current=self.variable.get()
+        index=values.index(current) if current in values else -1
+        self.choose(values[(index+1)%len(values)])
 
     def toggle(self,value):
         selected=self.selected()

@@ -31,7 +31,7 @@ def ram_budget(mode, available):
             "scope": "Useful QR/PDF data only; no artificial RAM fill"}
 
 
-def create_owned_job(limit):
+def create_owned_job(limit,process_handle=None):
     """Windows nested job: own trial + inherited children, no global changes.
 
     Retain returned handle until process exit. Closing it kills this job's tree.
@@ -57,9 +57,16 @@ def create_owned_job(limit):
     limits = Limits(); limits.basic.flags = 0x2000 | 0x200; limits.job_memory = limit
     if not api.SetInformationJobObject(handle, 9, ctypes.byref(limits), ctypes.sizeof(limits)):
         api.CloseHandle(handle); raise ctypes.WinError(ctypes.get_last_error())
-    if not api.AssignProcessToJobObject(handle, api.GetCurrentProcess()):
+    if not api.AssignProcessToJobObject(handle, process_handle if process_handle is not None else api.GetCurrentProcess()):
         api.CloseHandle(handle); raise ctypes.WinError(ctypes.get_last_error())
     return handle
+
+
+def close_owned_job(handle):
+    if handle is not None and os.name=='nt':
+        from ctypes import wintypes as w
+        api=ctypes.WinDLL('kernel32',use_last_error=True);api.CloseHandle.argtypes=(w.HANDLE,)
+        if not api.CloseHandle(handle):raise ctypes.WinError(ctypes.get_last_error())
 
 
 def _windows_processes():

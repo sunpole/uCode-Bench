@@ -19,7 +19,7 @@ def main(argv=None):
         except (ValueError,KeyError,TypeError,OSError) as exc:
             print("uCode test: "+str(exc),file=sys.stderr); return 1
     parser = argparse.ArgumentParser(prog="uCode", description="Локальный QR/PDF бенчмарк")
-    parser.add_argument("command", choices=("doctor", "create", "benchmark", "suite", "gui", "batch", "template", "generate", "lab","audit","pc-search"), nargs="?", default="gui")
+    parser.add_argument("command", choices=("doctor", "create", "benchmark", "suite", "gui", "gui-legacy", "batch", "template", "generate", "lab","audit","pc-search"), nargs="?", default="gui")
     parser.add_argument("--count", type=int, default=200)
     parser.add_argument("--copies", type=int, default=1, help="Экземпляров каждого значения в обычной генерации")
     parser.add_argument("--duplicate-policy", choices=("preserve", "unique"), default="preserve")
@@ -58,9 +58,10 @@ def main(argv=None):
             result = inspect_environment()
             print(json.dumps(result, ensure_ascii=False, indent=2))
             return 0 if result["core_ready"] else 2
-        if args.command == "gui":
+        if args.command in ("gui","gui-legacy"):
             try:
-                from .batch_gui import main as gui_main
+                if args.command=='gui-legacy':from .batch_gui import main as gui_main
+                else:from .operator_window import main as gui_main
                 gui_main()
             except Exception as exc:
                 if sys.platform == "win32":
