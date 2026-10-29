@@ -79,7 +79,11 @@ class HelpContracts(unittest.TestCase):
             with patch('ucode.open_reports._windows_browser_executable',return_value=Path('browser.exe')),patch('ucode.open_reports.subprocess.Popen') as win,patch('ucode.open_reports.webbrowser.open_new_tab',return_value=True) as other:
                 open_html_report(p,anchor='queue')
                 url=win.call_args.args[0][1] if sys.platform=='win32' else other.call_args.args[0]
-                self.assertEqual(url,p.as_uri()+'#queue')
+                from urllib.parse import urlsplit
+                from urllib.request import url2pathname
+                parts=urlsplit(url)
+                self.assertEqual((parts.scheme,parts.fragment),('file','queue'))
+                self.assertTrue(Path(url2pathname(parts.path)).samefile(p))
             with self.assertRaises(ValueError):open_html_report(p,anchor='../../bad')
 
 
