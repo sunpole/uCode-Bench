@@ -176,7 +176,9 @@ time.sleep(60)
             from ucode.lab_report import write_reports
             data["cases"][0]["reason"]="<script>alert(1)</script>"
             write_reports(folder,data)
-            self.assertNotIn("<script>",(folder/"comparison.html").read_text(encoding="utf-8"))
+            document=(folder/"comparison.html").read_text(encoding="utf-8")
+            self.assertEqual(document.count("<script>"),1)  # fixed offline chart code only
+            self.assertNotIn("<script>alert(1)</script>",document)
         self.assertEqual(inspect_cpu()["available_cpus"],before)
 
     def test_live_cancel_preserves_partial_series_and_reaps_trial_tree(self):

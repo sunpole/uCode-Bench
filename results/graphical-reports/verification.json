@@ -1,0 +1,17 @@
+{
+  "kind": "graphical-reports-verification",
+  "source_digest": "beb09e211bad4d35d1a930d00174b6037ec6fa0317d6757de12bdfecffe7e7b3",
+  "scope": "Windows, max 3 pages per real PDF; no large benchmark or visual acceptance",
+  "queue_status": "UNVERIFIED",
+  "full_qa_pipeline_status": "COMPLETE",
+  "cases": 4,
+  "text_archive_records": 3,
+  "pdf_in_archive": false,
+  "historical": {
+    "view": "old-views\\graphs-32ef38300b66487caf1a1e5ee265a5fe.html",
+    "source_unchanged": true,
+    "source_sha256": "7b0ce6595c19ebe49ca789acedf6376c8fdd26b482648adb3c49c4c355e7955c",
+    "cases": 36,
+    "trials": 108
+  }
+}

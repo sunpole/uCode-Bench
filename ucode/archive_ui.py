@@ -29,7 +29,7 @@ class ArchiveView:
         self.table.bind("<Double-1>",lambda event:self.open_report())
         ttk.Label(page,textvariable=self.note,style="Muted.TLabel",wraplength=900).pack(anchor="w")
         row=ttk.Frame(page); row.pack(anchor="w",pady=1)
-        for text,action in (("‹",lambda:self.turn(-1)),("›",lambda:self.turn(1)),("Открыть отчёт",self.open_report),("Открыть папку",lambda:app.open_path(app.archive_root))):
+        for text,action in (("‹",lambda:self.turn(-1)),("›",lambda:self.turn(1)),("Открыть отчёт",self.open_report),("Графики",self.open_graphs),("Графики из JSON…",self.choose_graphs),("Открыть папку",lambda:app.open_path(app.archive_root))):
             app.edit(ttk.Button(row,text=text,command=action)).pack(side="left",padx=(0,5))
         self.position=tk.StringVar(master=app.root)
         ttk.Label(row,textvariable=self.position).pack(side="left")
@@ -57,6 +57,30 @@ class ArchiveView:
         path=(self.app.archive_root/self.visible[int(selected[0])]["file"]).resolve()
         if not path.is_relative_to(self.app.archive_root.resolve()): self.note.set("Ссылка выходит за папку архива"); return
         self.app.open_path(path)
+    def open_graphs(self):
+        selected=self.table.selection()
+        if not selected:
+            self.note.set("Выберите сохранённый тест или нажмите «Графики из JSON…»")
+            return
+        path=(self.app.archive_root/self.visible[int(selected[0])]["file"]).resolve()
+        if not path.is_relative_to(self.app.archive_root.resolve()):
+            self.note.set("Ссылка выходит за папку архива"); return
+        self.create_graphs(path.with_name("report.json"))
+    def choose_graphs(self):
+        if self.app.busy: return
+        chosen=filedialog.askopenfilename(parent=self.app.root,title="Сохранённый JSON-отчёт теста uCode",initialdir=str(self.app.output_root),filetypes=[("Отчёт uCode","*.json")])
+        if chosen: self.create_graphs(Path(chosen))
+    def create_graphs(self,source):
+        if self.app.busy: return
+        from .graphical_report import write_graphical_copy
+        self.app.busy=True; self.app.started=None; self.app.update_buttons()
+        self.note.set("Подготовка графиков из сохранённых измерений…")
+        def work():
+            try:
+                report=write_graphical_copy(source,self.app.archive_root/"views")
+                self.app.events.put(("archive_graph",str(report)))
+            except Exception as exc: self.app.events.put(("archive_error",str(exc)))
+        self.app.worker=threading.Thread(target=work,name="ucode-graphs",daemon=False); self.app.worker.start()
     def import_old(self):
         if self.app.busy: return
         source=filedialog.askdirectory(parent=self.app.root,title="Папка с предыдущими результатами uCode",initialdir=str(self.app.output_root))

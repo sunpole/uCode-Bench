@@ -64,7 +64,8 @@ class IndividualResultsTests(unittest.TestCase):
             self.assertEqual(len(rows),31)
             document=(folder/"all-results.html").read_text(encoding="utf-8")
             self.assertIn("Все результаты: 30",document)
-            self.assertNotIn("<script>",document)
+            self.assertEqual(document.count("<script>"),1)  # fixed offline chart code only
+            self.assertNotIn("<script>bad()</script>",document)
             self.assertIn("&lt;script&gt;",document)
 
 

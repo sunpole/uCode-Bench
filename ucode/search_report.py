@@ -124,4 +124,5 @@ def write_search_report(folder,data):
                 path=Path(trial["relative_folder"])/trial["job"]/name
                 links.append('<a href="'+quote(path.as_posix())+'">'+html.escape(case["id"]+' · PDF')+'</a>')
     document+='<details><summary>Готовые PDF</summary>'+"<br>".join(links)+'</details></html>'
-    (folder/"pc-search.html").write_text(document,encoding="utf-8")
+    from .graphical_report import embed_graphs
+    (folder/"pc-search.html").write_text(embed_graphs(document,data),encoding="utf-8")

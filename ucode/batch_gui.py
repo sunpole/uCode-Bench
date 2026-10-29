@@ -506,6 +506,11 @@ class BatchWindow:
                         state=value["execution"]; writing="Кодирование" not in value["stage"]
                         self.generation_cpu.summary.set(f"{'PDF: 1 процесс' if writing else 'QR: подтверждено процессов '+str(state['confirmed_processes'])} · выбрано CPU: {state['selected_cpu_count']} · замеры CPU в тестах")
                     self.speed_var.set(text.replace(".", ","))
+                elif kind=="archive_graph":
+                    self.busy=False
+                    self.archive_view.note.set("Графический отчёт сохранён отдельно; исходный тест не изменён")
+                    self.update_buttons()
+                    self.open_path(Path(value))
                 elif kind in ("archive_import","archive_error"):
                     self.busy=False
                     self.archive_view.refresh()
@@ -607,7 +612,7 @@ class BatchWindow:
             return
         manifest = folder / "manifest.json"
         if not manifest.exists():
-            self.last_report = folder / "ОТЧЁТ.txt"
+            self.last_report = folder / ("scientific.html" if (folder/"scientific.html").is_file() else "ОТЧЁТ.txt")
             self.last_pdf = None
             result = json.loads((folder / "scientific.json").read_text(encoding="utf-8"))
             self.result_var.set("ТЕСТЫ ЗАВЕРШЕНЫ" if result["status"] == "COMPLETE" else "ТЕСТЫ: " + result["status"])

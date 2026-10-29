@@ -8,6 +8,11 @@ from .config import Experiment
 
 def main(argv=None):
     command_args=list(sys.argv[1:] if argv is None else argv)
+    if command_args[:1]==["graphs"]:
+        from .graphical_report import cli_main
+        try: return cli_main(command_args[1:])
+        except (ValueError,KeyError,TypeError,OSError) as exc:
+            print("uCode graphs: "+str(exc),file=sys.stderr); return 1
     if command_args[:1]==["test"]:
         from .test_commands import cli_main
         try: return cli_main(command_args[1:])
