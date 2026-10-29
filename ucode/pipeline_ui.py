@@ -16,7 +16,7 @@ class PipelineView:
         saved={}
         try:
             raw=json.loads(self.path.read_text(encoding="utf-8"))
-            saved=asdict(PipelineConfig(**{k:tuple(v) if k in ("counts","allocations","schedules","batches","telemetry_modes") else v for k,v in raw.items()}))
+            saved=asdict(PipelineConfig(**{k:tuple(v) if k in ("counts","allocations","schedules","batches","telemetry_modes","processes_per_cpu") else v for k,v in raw.items()}))
         except (OSError,ValueError,TypeError): pass
         def var(key,default):
             value=saved.get(key,default)
@@ -33,6 +33,7 @@ class PipelineView:
         self.counts=var("counts",(1000,)); self.allocations=var("allocations",default)
         self.schedules=var("schedules",("equal","queue")); self.batches=var("batches",(32,))
         self.repeats=var("repeats",3); self.ram=var("ram_mode","auto"); self.telemetry=var("telemetry_modes",("cpu",))
+        self.processes=var("processes_per_cpu",(1,))
         self.unit=tk.StringVar(master=app.root,value="physical"); self.qr=tk.StringVar(master=app.root,value=max(1,physical-2)); self.pdf=tk.StringVar(master=app.root,value=min(2,max(0,physical-1)))
         self.plan=tk.StringVar(master=app.root); self.hardware=tk.StringVar(master=app.root)
         page=app.pages["pipeline"]
@@ -60,16 +61,18 @@ class PipelineView:
         row=ttk.Frame(page); row.pack(anchor="w",pady=1)
         ChoiceMenu(app,row,self.ram,"ОЗУ",[("Авто","auto"),("Макс. с резервом","max"),("Половина","50%"),("80% бюджета","80%")]).button.pack(side="left")
         self.telemetry_picker=ChoiceMenu(app,row,self.telemetry,"Замеры CPU",[("ВКЛ","cpu"),("ВЫКЛ","off"),("Сравнить ВКЛ/ВЫКЛ","off,cpu")]); self.telemetry_picker.button.pack(side="left",padx=4)
+        self.process_picker=ChoiceMenu(app,row,self.processes,"Процессов на ядро",[(str(n),str(n)) for n in range(1,11)],multiple=True)
+        self.process_picker.button.pack(side="left",padx=4)
         ttk.Label(page,textvariable=self.plan,style="Accent.TLabel",wraplength=900).pack(anchor="w",pady=2)
         ttk.Label(page,text="Равные части — свой диапазон; очередь — свободному. PDF=0: полный цикл. Сборщик один.",style="Muted.TLabel",wraplength=900).pack(anchor="w")
-        for var in (self.counts,self.allocations,self.schedules,self.batches,self.repeats,self.ram,self.telemetry): var.trace_add("write",lambda *_:self.refresh())
+        for var in (self.counts,self.allocations,self.schedules,self.batches,self.repeats,self.ram,self.telemetry,self.processes): var.trace_add("write",lambda *_:self.refresh())
         self.refresh()
 
     def config(self):
         parts=lambda var:tuple(v.strip() for v in var.get().split(",") if v.strip())
         return PipelineConfig(counts=tuple(map(int,parts(self.counts))),allocations=parts(self.allocations),schedules=parts(self.schedules),
             batches=tuple(map(int,parts(self.batches))),repeats=int(self.repeats.get()),qa_mode=QA_MODES[self.app.qa_mode_var.get()],
-            ram_mode=self.ram.get(),telemetry_modes=parts(self.telemetry),print_settings=asdict(self.app.print_settings),timeline_mode=self.app.xy_mode_var.get())
+            ram_mode=self.ram.get(),telemetry_modes=parts(self.telemetry),print_settings=asdict(self.app.print_settings),timeline_mode=self.app.xy_mode_var.get(),processes_per_cpu=tuple(map(int,parts(self.processes))))
 
     def add(self):
         from .pipeline_plan import partition
@@ -88,7 +91,8 @@ class PipelineView:
             cfg=self.config(); cases=build_pipeline_cases(cfg,cpu); ready=[c for c in cases if c["status"]!="SKIPPED"]
             runs=len(ready)*cfg.repeats; pages=sum(c["count"] for c in ready)*cfg.repeats
             self.valid=bool(ready)
-            self.plan.set(f"Вариантов: {len(ready)} · повторов каждого: {cfg.repeats} · результатов: {runs} · пропущено: {len(cases)-len(ready)} · PDF-страниц: {pages:,}".replace(","," "))
+            counts='/'.join(map(str,sorted({c['workers'] for c in ready})))
+            self.plan.set(f"Вариантов: {len(ready)} · повторов каждого: {cfg.repeats} · результатов: {runs} · процессов: {counts} · пропущено: {len(cases)-len(ready)} · PDF-страниц: {pages:,}".replace(","," "))
         except (ValueError,KeyError) as exc: self.plan.set(str(exc))
         if hasattr(self.app,"generate"): self.app.update_buttons()
 

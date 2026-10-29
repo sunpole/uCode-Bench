@@ -63,7 +63,7 @@ def apply_to_controls(app,command):
         mapping=((view.counts,c.counts),(view.repeats,c.repeats),(view.ram,c.ram_mode))
         for var,value in mapping: put(var,value)
         if command.kind=="pipeline":
-            for var,value in ((view.allocations,c.allocations),(view.schedules,c.schedules),(view.batches,c.batches),(view.telemetry,c.telemetry_modes)): put(var,value)
+            for var,value in ((view.allocations,c.allocations),(view.schedules,c.schedules),(view.batches,c.batches),(view.telemetry,c.telemetry_modes),(view.processes,c.processes_per_cpu)): put(var,value)
             from .pipeline_plan import allocation_label
             view.options=list(dict.fromkeys(view.options+list(c.allocations))); view.alloc_picker.set_options([(allocation_label(v),v) for v in view.options])
         else:

@@ -28,8 +28,9 @@ def timeline_views(data):
         if depth>8: return
         add(node.get('timeline'),prefix,node.get('status','UNKNOWN'))
         for case in node.get('cases',[]):
+            factor=f" · {case['processes_per_cpu']} процессов/CPU" if 'processes_per_cpu' in case else ''
             for i,trial in enumerate(case.get('trials',[]),1):
-                if not trial.get('warmup'): add(trial.get('timeline'),f"{prefix} · {case.get('count','?')} кодов · {case.get('id','?')} · повтор {i}",trial.get('status','UNKNOWN'))
+                if not trial.get('warmup'): add(trial.get('timeline'),f"{prefix} · {case.get('count','?')} кодов · {case.get('id','?')}{factor} · повтор {i}",trial.get('status','UNKNOWN'))
         for i,run in enumerate(node.get('runs',[]),1):
             visit(run.get('result') or {},prefix+f' / команда {i}',depth+1)
     visit(data,'Серия')

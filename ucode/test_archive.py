@@ -39,6 +39,7 @@ def result_rows(data,prefix=""):
     for c in data.get("cases",[]):
         s=c.get("summary",{}); seconds=s.get("median_launcher_wall_seconds")
         cpu=c.get("allocation",str(c.get("cpu_choice","?"))+" "+("ядер" if c.get("cpu_unit")=="physical" else "CPU"))
+        if 'processes_per_cpu' in c: cpu=str(cpu)+f" · {c['processes_per_cpu']} процессов/CPU · всего {c.get('workers','?')}"
         yield (prefix+str(c.get("id","")),c.get("count"),cpu,STATES.get(c.get("status"),c.get("status")),seconds,"Весь запуск",len(c.get("trials",[])))
     for method in data.get("methods",[]):
         yield (prefix+method.get("name","Метод"),data.get("config",{}).get("count"),"—",STATES.get(method.get("status"),method.get("status")),method.get("median_seconds"),"Метод, без QA",len(method.get("trials",[])))

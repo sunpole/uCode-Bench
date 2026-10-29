@@ -1,0 +1,44 @@
+{
+  "kind": "processes-per-core-verification",
+  "source_digest": "b4cce6d11bf894409807acef801865c3d975bd5c29e21daaa60e398f0135885c",
+  "scope": "Small PDFs, max4pages/4pool-processes; no 10000/70/140-process run",
+  "real": [
+    {
+      "allocation": "physical:1:0",
+      "factor": 1,
+      "confirmed_processes": 1,
+      "used_processes": 1,
+      "qa": "PASS"
+    },
+    {
+      "allocation": "physical:1:0",
+      "factor": 2,
+      "confirmed_processes": 2,
+      "used_processes": 2,
+      "qa": "PASS"
+    },
+    {
+      "allocation": "physical:1:1",
+      "factor": 1,
+      "confirmed_processes": 2,
+      "used_processes": 2,
+      "qa": "PASS"
+    },
+    {
+      "allocation": "physical:1:1",
+      "factor": 2,
+      "confirmed_processes": 4,
+      "used_processes": 3,
+      "qa": "PASS"
+    }
+  ],
+  "planned_runs": 8,
+  "planned_processes": [
+    14,
+    28,
+    70,
+    140
+  ],
+  "archive_without_pdf": true,
+  "command": "test pipeline --codes 10000 --split cores:14+0 --processes-per-core 1,2,5,10 --schedule queue --batch 32 --repeats 2 --metrics cpu --ram max --pdf compact --qa off --xy on"
+}
