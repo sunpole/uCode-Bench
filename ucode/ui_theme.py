@@ -58,6 +58,7 @@ def apply_dark_theme(root):
     style.configure("TNotebook.Tab", background=c["surface"], padding=(12, 3))
     style.map("TNotebook.Tab", background=[("selected", c["raised"])],
               foreground=[("selected", c["accent"])])
+    style.configure("Tests.TNotebook.Tab",padding=(7,1))
     style.configure("Horizontal.TProgressbar", background=c["accent"], troughcolor=c["surface"],
                     borderwidth=0, thickness=8)
     style.configure("History.Treeview",background=c["surface"],fieldbackground=c["surface"],foreground=c["text"],rowheight=20)

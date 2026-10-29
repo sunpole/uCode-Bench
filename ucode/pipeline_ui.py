@@ -58,10 +58,10 @@ class PipelineView:
         self.batch_control.spin.configure(width=4); self.batch_control.spin.pack(side="left")
         self.batch_control.add_button.pack(side="left",padx=4)
         row=ttk.Frame(page); row.pack(anchor="w",pady=1)
-        ChoiceMenu(app,row,self.ram,"ОЗУ",[("Авто","auto"),("Макс. с резервом","max"),("Половина","50%")]).button.pack(side="left")
+        ChoiceMenu(app,row,self.ram,"ОЗУ",[("Авто","auto"),("Макс. с резервом","max"),("Половина","50%"),("80% бюджета","80%")]).button.pack(side="left")
         self.telemetry_picker=ChoiceMenu(app,row,self.telemetry,"Замеры CPU",[("ВКЛ","cpu"),("ВЫКЛ","off"),("Сравнить ВКЛ/ВЫКЛ","off,cpu")]); self.telemetry_picker.button.pack(side="left",padx=4)
         ttk.Label(page,textvariable=self.plan,style="Accent.TLabel",wraplength=900).pack(anchor="w",pady=2)
-        ttk.Label(page,text="Равные части: каждому свой диапазон. Очередь: следующая порция свободному. Итоговый PDF собирает один процесс.",style="Muted.TLabel",wraplength=900).pack(anchor="w")
+        ttk.Label(page,text="Равные части — свой диапазон; очередь — свободному. PDF=0: полный цикл. Сборщик один.",style="Muted.TLabel",wraplength=900).pack(anchor="w")
         for var in (self.counts,self.allocations,self.schedules,self.batches,self.repeats,self.ram,self.telemetry): var.trace_add("write",lambda *_:self.refresh())
         self.refresh()
 

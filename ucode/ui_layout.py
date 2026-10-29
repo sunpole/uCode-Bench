@@ -17,7 +17,7 @@ def build_window(app, help_text):
     root.title("uCode — QR / PDF · кнопочные настройки")
     root.protocol("WM_DELETE_WINDOW", app.close)
     app.edit_controls = []
-    body = ttk.Frame(root, padding=(14, 8))
+    body = ttk.Frame(root, padding=(14, 4))
     body.pack(fill="both", expand=True)
     body.columnconfigure(0, weight=1)
     body.rowconfigure(3, weight=1)
@@ -28,7 +28,7 @@ def build_window(app, help_text):
     ttk.Label(header, text=f"{app.engine_info.name} {app.engine_info.version}",
               style="Muted.TLabel").pack(side="right")
     toolbar = ttk.Frame(body)
-    toolbar.grid(row=2, column=0, sticky="ew", pady=(5, 5))
+    toolbar.grid(row=2, column=0, sticky="ew", pady=(3, 3))
     app.menus = []
     base = app.menu(toolbar, "База TXT")
     base.add_command(label="Открыть TXT…", command=app.choose)
@@ -68,15 +68,17 @@ def build_window(app, help_text):
     tests.add_command(label="Предыдущие результаты", command=lambda: app.open_path(app.output_root / "benchmarks"))
     ttk.Button(toolbar, text="Справка", command=app.show_help).pack(side="right")
 
-    app.notebook = ttk.Notebook(body)
-    app.notebook.grid(row=3, column=0, sticky="nsew", pady=(0, 7))
+    from .test_navigation import HubNotebook
+    app.notebook = HubNotebook(body)
+    app.notebook.grid(row=3, column=0, sticky="nsew", pady=(0, 3))
     app.pages = {}
-    for key, title in (("generation", "Генерация"), ("print", "PDF и цвет"),
-                       ("resources", "CPU / RAM"), ("lab", "Тесты"), ("search","Подбор ПК"), ("pipeline","Конвейер"), ("history","История"),
-                       ("tests", "Объединение"), ("help", "Справка")):
-        page = ttk.Frame(app.notebook, padding=(8, 4))
+    for key,title in (("generation","Генерация"),("print","PDF и цвет"),("resources","CPU / RAM"),("testing","Тесты"),("help","Справка")):
+        page = ttk.Frame(app.notebook, padding=0 if key=="testing" else (8,4))
         app.notebook.add(page, text=title)
         app.pages[key] = page
+    app.test_notebook=app.notebook.test_hub(app.pages["testing"])
+    for key,title in (("lab","CPU / RAM"),("pipeline","Конвейер"),("search","Подбор ПК"),("tests","Научный"),("console","Консоль"),("archive","Архив"),("history","История")):
+        page=ttk.Frame(app.test_notebook,padding=(8,2)); app.test_notebook.add(page,text=title); app.pages[key]=page
     _generation(app)
     _print(app)
     _resources(app)
@@ -86,11 +88,18 @@ def build_window(app, help_text):
     app.search_view=SearchView(app)
     from .pipeline_ui import PipelineView
     app.pipeline_view=PipelineView(app)
+    from .test_console_ui import ConsoleView,copy_current
+    app.console_view=ConsoleView(app)
+    from .archive_ui import ArchiveView
+    app.archive_view=ArchiveView(app)
+    app.edit(ttk.Button(app.pages["testing"],text="В консоль →",command=lambda:copy_current(app))).place(relx=1,x=-3,y=0,anchor="ne")
     from .history_ui import HistoryView
     app.history_view=HistoryView(app)
     page = app.pages["tests"]
     ttk.Label(page, text="Научный профиль: 3 повтора · QR V1-M · K100\n"
               "Настройки и экземпляры обычной генерации на него не влияют.", style="Muted.TLabel").pack(anchor="w")
+    app.scientific_size=tk.StringVar(master=root,value="200")
+    ChoiceMenu(app,page,app.scientific_size,"Размер",[("200 кодов","200"),("200 → 1000","1000"),("200 → 1000 → 10000","10000"),("Полный","all")]).button.pack(anchor="w",pady=2)
     app.engine_options_frame = ttk.Frame(page)
     app.engine_options_frame.pack(fill="both", expand=True, pady=6)
     ttk.Label(app.engine_options_frame, text="Откройте выбор движков, чтобы проверить их доступность.").pack(anchor="w")
@@ -104,9 +113,9 @@ def build_window(app, help_text):
     app.help_text.configure(state="disabled")
 
     ttk.Label(body, textvariable=app.geometry_summary, style="Muted.TLabel", wraplength=900).grid(
-        row=4, column=0, sticky="w", pady=(0, 6))
+        row=4, column=0, sticky="w", pady=(0, 3))
     controls = ttk.Frame(body)
-    controls.grid(row=5, column=0, sticky="ew", pady=(0, 5))
+    controls.grid(row=5, column=0, sticky="ew", pady=(0, 3))
     app.generate = ttk.Button(controls, text="СОЗДАТЬ PDF", style="Primary.TButton", command=app.start)
     app.generate.pack(side="left")
     app.stop = ttk.Button(controls, text="Остановить", style="Danger.TButton", command=app.request_cancel)
@@ -121,15 +130,15 @@ def build_window(app, help_text):
     app.phase_label = ttk.Label(body, textvariable=app.status_var, wraplength=900)
     app.phase_label.grid(row=6, column=0, sticky="w")
     app.progress = ttk.Progressbar(body, mode="determinate", maximum=100)
-    app.progress.grid(row=7, column=0, sticky="ew", pady=(6, 5))
+    app.progress.grid(row=7, column=0, sticky="ew", pady=(3, 3))
     metrics = ttk.Frame(body)
     metrics.grid(row=8, column=0, sticky="ew")
     ttk.Label(metrics, textvariable=app.elapsed_var, style="Muted.TLabel").pack(side="left")
     ttk.Label(metrics, textvariable=app.speed_var, style="Muted.TLabel").pack(side="right")
-    result = ttk.Frame(body, padding=(0, 6, 0, 0))
+    result = ttk.Frame(body, padding=(0, 3, 0, 0))
     result.grid(row=9, column=0, sticky="ew")
     ttk.Label(result, textvariable=app.result_var, style="Result.TLabel", wraplength=900).pack(anchor="w")
-    ttk.Label(result, textvariable=app.result_details, style="Muted.TLabel", wraplength=900).pack(anchor="w", pady=(2, 4))
+    ttk.Label(result, textvariable=app.result_details, style="Muted.TLabel", wraplength=900).pack(anchor="w", pady=(1, 2))
     actions = ttk.Frame(result)
     actions.pack(anchor="w")
     app.open = ttk.Button(actions, text="Открыть PDF", command=app.open_pdf)

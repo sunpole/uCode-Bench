@@ -210,6 +210,10 @@ def create_inputs(output_root, config=Experiment(), progress=None, cancel=None):
     return directory
 
 
+from .test_archive import archived_test
+
+
+@archived_test
 def run_experiment(output_root, config=Experiment(), progress=None, cancel=None, allowed_methods=None, events=None):
     if config.count in (1000, 10000) and not allowed_methods:
         raise ValueError("Large tests require qualifying methods from a verified preceding report")

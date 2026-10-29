@@ -39,6 +39,10 @@ class ChoiceMenu:
                 self.menu.add_checkbutton(label=text,variable=flag,command=lambda key=value:self.toggle(key))
             else:
                 self.menu.add_radiobutton(label=text,variable=self.single_value,value=value,command=lambda key=value:self.choose(key))
+        if self.multiple:
+            self.menu.add_separator()
+            self.menu.add_command(label="Выбрать все",command=lambda:(self.variable.set(",".join(value for _,value in self.options)),self.changed()))
+            self.menu.add_command(label="Снять все",command=lambda:(self.variable.set(""),self.changed()))
         names={value:text for text,value in options}
         caption=names.get(selected[0],"Выбрать") if len(selected)==1 else f"выбрано {len(selected)}" if selected else "выбрать…"
         self.button.configure(text=f"{self.label}: {caption} ▾")
@@ -56,6 +60,31 @@ class ChoiceMenu:
 
     def changed(self):
         if self.command: self.command()
+
+
+class NumericChoiceMenu(ChoiceMenu):
+    """Compact menu with a custom-number button, no permanent extra field."""
+    def __init__(self,*args,minimum=1,maximum=1000,suffix="",**kwargs):
+        self.minimum=minimum; self.maximum=maximum; self.suffix=suffix
+        super().__init__(*args,**kwargs)
+    def sync(self):
+        known={v for _,v in self.options}
+        for token in self.selected():
+            raw=token[:-len(self.suffix)] if self.suffix and token.endswith(self.suffix) else token if not self.suffix else ""
+            if raw.isdigit() and self.minimum<=int(raw)<=self.maximum and token not in known:
+                self.options+=((token,token),); known.add(token)
+        super().sync()
+        self.menu.add_separator(); self.menu.add_command(label="Своё число…",command=self.custom)
+    def add_value(self,value):
+        if type(value) is not int or not self.minimum<=value<=self.maximum: raise ValueError(f"Число: {self.minimum}–{self.maximum}")
+        token=str(value)+self.suffix; self.set_options(self.options+((token,token),))
+        if self.multiple:
+            self.variable.set(",".join(dict.fromkeys(self.selected()+[token]))); self.changed()
+        else: self.choose(token)
+    def custom(self):
+        from tkinter.simpledialog import askinteger
+        value=askinteger(self.label,"Укажите своё число"+(", "+self.suffix if self.suffix else ""),parent=self.app.root,minvalue=self.minimum,maxvalue=self.maximum)
+        if value is not None: self.add_value(value)
 
 
 class NumberSet:
