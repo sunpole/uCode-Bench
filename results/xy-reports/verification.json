@@ -1,6 +1,6 @@
 {
   "kind": "xy-verification",
-  "source_digest": "9dddc65d37491190585660b256c9d39a2a3245854e7477cf0cda191f10c01af7",
+  "source_digest": "61ab242019f765682a4c1db1412fc82c60282d164a3745bfbd17c2fbfe7574e6",
   "scope": "Windows, max 3 real pages; not a throughput measurement",
   "on_off_pdf_identical": true,
   "production_full_qa": [

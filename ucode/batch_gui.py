@@ -266,7 +266,7 @@ class BatchWindow:
             self.generate.configure(text="НАУЧНЫЙ ТЕСТ",command=lambda:self.start_test("all" if self.scientific_size.get()=="all" else int(self.scientific_size.get())),
                                     state="normal" if not self.busy and self.qa_mode_var.get()=="Полная" else "disabled")
         elif self.notebook.select() in (str(self.pages["archive"]),str(self.pages["history"])):
-            self.generate.configure(text="ВЫБЕРИТЕ ПАРАМЕТРЫ ТЕСТА",state="disabled")
+            self.generate.configure(text="ВЫБЕРИТЕ ТЕСТ",state="disabled")
         elif self.notebook.select()==str(self.pages["pipeline"]):
             self.generate.configure(text="ЗАПУСТИТЬ КОНВЕЙЕР",command=self.pipeline_view.start,
                                     state="normal" if self.pipeline_view.valid and not self.busy else "disabled")
