@@ -55,7 +55,7 @@ def audit_job(directory,*,render_samples=True,cancel=None,events=None,progress=N
         from .stream_batch import audit_stream_job
         return audit_stream_job(root,original,render_samples=render_samples,cancel=cancel,events=events)
     cfg=original["print"]
-    settings=PrintSettings(cfg["module_mm"],cfg["quiet_modules"],tuple(cfg["ink"]),pdf_profile=cfg.get("pdf_profile","standard"))
+    settings=PrintSettings(cfg["module_mm"],cfg["quiet_modules"],tuple(cfg["ink"]),pdf_profile=cfg.get("pdf_profile","standard"),background_mode=cfg.get('background_mode','white'),background_ink=tuple(cfg.get('background_ink',(0,0,0,0))))
     numbers=load_codes(root/"codes.txt",generator=original.get("generator","qr"),cancel=cancel)
     if len(numbers)!=original["count"]: raise ValueError("codes.txt не совпадает с числом страниц manifest")
     module=get_generator(original.get("generator","qr"))

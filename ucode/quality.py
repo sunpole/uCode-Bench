@@ -65,6 +65,8 @@ def _page_matrix(page, reader, frame: QRFrame, config: Experiment, cache=None,sh
     rectangles = []
     in_text = False
     painted = False
+    colored_paper=getattr(config,'background_mode','white')=='color'
+    paper_painted=False
     contents = page.get_contents()
     if contents is None:
         raise ValueError("Page content is missing")
@@ -91,6 +93,14 @@ def _page_matrix(page, reader, frame: QRFrame, config: Experiment, cache=None,sh
                 raise ValueError("Invalid rectangle")
             rectangles.append(tuple(float(v) for v in operands))
         elif operator in (b"f", b"f*"):
+            if colored_paper and not paper_painted and not painted:
+                background=tuple(v/100 for v in config.background_ink)
+                if fill is None or any(abs(a-b)>0.000001 for a,b in zip(fill,background)):
+                    raise ValueError('Page background does not match configured CMYK')
+                if in_text or len(rectangles)!=1 or not all(_near(v,e) for v,e in zip(rectangles[0],(0,0,side,side))):
+                    raise ValueError('Background must be exactly one full-page rectangle before the QR')
+                rectangles=[];paper_painted=True
+                continue
             expected_ink = tuple(v / 100 for v in getattr(config, "ink", (0, 0, 0, 100)))
             if fill is None or any(abs(a - b) > 0.000001 for a, b in zip(fill, expected_ink)):
                 raise ValueError(f"Painted fill must be the configured DeviceCMYK {expected_ink}")
@@ -129,7 +139,7 @@ def _page_matrix(page, reader, frame: QRFrame, config: Experiment, cache=None,sh
                 raise ValueError("Text setup outside text object")
         else:
             raise ValueError(f"Unsupported PDF operator {operator!r}; only CMYK rectangles are accepted")
-    if saved or in_text or rectangles or not painted:
+    if saved or in_text or rectangles or not painted or (colored_paper and not paper_painted):
         raise ValueError("Incomplete/unbalanced page content")
     result = tuple(tuple(row) for row in matrix)
     if result != frame.matrix:
@@ -151,6 +161,13 @@ def _decode_image(image_path: Path, config: Experiment, size=21):
         if abs(image.width - image.height) > 1 or min(image.size) < cells * 8:
             raise DecodeError("Rendered symbol is too small or not square")
         full_matrix = []
+        colored_paper=getattr(config,'background_mode','white')=='color'
+        def center(row,col):
+            return image.getpixel((round((col+.5)*image.width/cells),round((row+.5)*image.height/cells)))
+        paper_level=center(0,0)
+        code_level=center(config.quiet_modules,config.quiet_modules)
+        if colored_paper and abs(paper_level-code_level)<32:
+            raise DecodeError('Rendered foreground/background contrast is insufficient')
         for row in range(cells):
             values = []
             for col in range(cells):
@@ -162,6 +179,16 @@ def _decode_image(image_path: Path, config: Experiment, size=21):
                     round((row + 0.75) * image.height / cells),
                 )
                 low, high = image.crop(box).getextrema()
+                if colored_paper:
+                    # Known finder corner and quiet zone calibrate the actual
+                    # renderer colors. Uniformity and the independent decoder
+                    # remain mandatory; inversion is explicit, not guessed.
+                    if max(abs(low-code_level),abs(high-code_level))<=12:
+                        values.append(True)
+                    elif max(abs(low-paper_level),abs(high-paper_level))<=12:
+                        values.append(False)
+                    else: raise DecodeError('Rendered module differs from both configured colors')
+                    continue
                 dark_limit = 90 if getattr(config, "ink", (0, 0, 0, 100)) == (0, 0, 0, 100) else 230
                 if high < dark_limit:
                     values.append(True)
@@ -174,7 +201,7 @@ def _decode_image(image_path: Path, config: Experiment, size=21):
         for r in range(cells):
             for c in range(cells):
                 if (r < quiet or c < quiet or r >= quiet + size or c >= quiet + size) and full_matrix[r][c]:
-                    raise DecodeError("Rendered quiet zone is not white")
+                    raise DecodeError("Rendered quiet zone differs from configured substrate")
         matrix = tuple(tuple(row[quiet:quiet + size]) for row in full_matrix[quiet:quiet + size])
         return decode_numeric_v1_m(matrix)
 

@@ -61,7 +61,8 @@ def write_pdf(frames,path,config,*,on_progress=None,cancel=None):
             flags=b" /Filter /FlateDecode" if compress else b""
             obj(ident,b"<< /Length "+str(len(data)).encode()+flags+b" >>\nstream\n"+data+b"\nendstream")
         obj(3,b"<< >>")
-        content(4,(" ".join(_number(value/100,9) for value in ink)+" k\nn\n").encode())
+        from .print_background import background_operators
+        content(4,(background_operators(config,side)+" ".join(_number(value/100,9) for value in ink)+" k\nn\n").encode())
         content(5,b"f\n")
         obj(6,f"<< /Creator (uCode CompactPDF/1) /Title (uCode QR {len(frames)}) >>".encode())
         for index,frame in enumerate(frames,1):

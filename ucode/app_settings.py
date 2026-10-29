@@ -50,7 +50,8 @@ def load_user_preferences(path):
         if not isinstance(fields, dict):
             raise ValueError("Неверная структура настроек печати")
         settings = PrintSettings(module_mm=fields["module_mm"], quiet_modules=fields["quiet_modules"],
-                                 ink=tuple(fields.get("ink", [0, 0, 0, 100])),pdf_profile=fields.get("pdf_profile","standard"))
+                                 ink=tuple(fields.get("ink", [0, 0, 0, 100])),pdf_profile=fields.get("pdf_profile","standard"),
+                                 background_mode=fields.get('background_mode','white'),background_ink=tuple(fields.get('background_ink',(0,0,0,0))))
         fields = value.get("generation", {})
         if not isinstance(fields, dict):
             raise ValueError("Неверные параметры генерации")
@@ -79,6 +80,7 @@ def save_preferences(path, settings, mode, *, generation=None):
     temporary = path.with_name(path.name + ".tmp-" + uuid.uuid4().hex)
     with temporary.open("x", encoding="utf-8") as stream:
         json.dump({"schema_version": 2, "settings": {"module_mm": settings.module_mm,
-                  "quiet_modules": settings.quiet_modules, "ink": settings.ink,"pdf_profile":settings.pdf_profile}, "mode": mode,
+                  "quiet_modules": settings.quiet_modules, "ink": settings.ink,"pdf_profile":settings.pdf_profile,
+                  "background_mode":settings.background_mode,"background_ink":settings.background_ink}, "mode": mode,
                   "generation": asdict(generation)}, stream)
     temporary.replace(path)

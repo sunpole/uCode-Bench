@@ -35,7 +35,8 @@ def write_pdf(frames,path,settings,index_path,*,cancel=None,on_progress=None,gua
                 content=cached[0] if cached else next_id
                 if not cached:
                     if data is None:
-                        lines=[" ".join(_number(v/100,9) for v in settings.ink)+" k\nn\n"]
+                        from .print_background import background_operators
+                        lines=[background_operators(settings,side)," ".join(_number(v/100,9) for v in settings.ink)+" k\nn\n"]
                         rects=_rectangles(frame.matrix) if settings.pdf_profile=="compact" else ((x,y,1,1) for y,row in enumerate(reversed(frame.matrix)) for x,dark in enumerate(row) if dark)
                         for x,y,w,h in rects:
                             lines.append(f"{_number((x+settings.quiet_modules)*unit)} {_number((y+settings.quiet_modules)*unit)} {_number(w*unit)} {_number(h*unit)} re\n")

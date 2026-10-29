@@ -166,7 +166,7 @@ def audit_stream_job(root,original,*,render_samples=True,cancel=None,events=None
     from .audit import qa_status
     from .progress import ProgressTracker
     root=Path(root); folder=_make_directory(root/"audits","qa"); guard=ResourceGuard(folder,cancel)
-    cfg=original["print"]; settings=PrintSettings(cfg["module_mm"],cfg["quiet_modules"],tuple(cfg["ink"]),pdf_profile=cfg.get("pdf_profile","standard"))
+    cfg=original["print"]; settings=PrintSettings(cfg["module_mm"],cfg["quiet_modules"],tuple(cfg["ink"]),pdf_profile=cfg.get("pdf_profile","standard"),background_mode=cfg.get('background_mode','white'),background_ink=tuple(cfg.get('background_ink',(0,0,0,0))))
     started=time.perf_counter(); plan=None
     result={"kind":"pdf-audit","status":"RUNNING","qa":{},"errors":[],"source_job":"../..","streaming":True}
     try:

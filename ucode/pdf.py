@@ -26,6 +26,9 @@ def write_pdf(frames: list[QRFrame], path: Path, config: Experiment, *, on_progr
             raise InterruptedError("Запись PDF остановлена; прежние файлы сохранены")
         if frame.size != 21 or any(len(row) != 21 for row in frame.matrix) or frame.version != 1 or frame.error != "M":
             raise ValueError("Only ordinary QR V1-M frames are supported")
+        if getattr(config,'background_mode','white')=='color':
+            canvas.setFillColorCMYK(*(v/100 for v in config.background_ink))
+            canvas.rect(0,0,side,side,stroke=0,fill=1)
         canvas.setFillColorCMYK(*(v / 100 for v in getattr(config, "ink", (0, 0, 0, 100))))
         for row_index, row in enumerate(frame.matrix):
             column = 0

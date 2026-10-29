@@ -10,6 +10,8 @@ class PrintSettings:
     quiet_modules: int = 4
     ink: tuple = (0, 0, 0, 100)
     pdf_profile: str = "standard"
+    background_mode: str = "white"
+    background_ink: tuple = (0, 0, 0, 0)
 
     def __post_init__(self):
         if self.pdf_profile not in ("standard","compact"):
@@ -25,18 +27,26 @@ class PrintSettings:
         if not math.isfinite(module) or not 0.25 <= module <= 2.0:
             raise ValueError("Размер одного модуля должен быть от 0,25 до 2,0 мм.")
         object.__setattr__(self, "module_mm", module)
+        if self.background_mode not in ('white','color','transparent'):
+            raise ValueError('Подложка: белая, цветная или прозрачная')
+        if not isinstance(self.background_ink,(tuple,list)) or len(self.background_ink)!=4 or any(
+            isinstance(v,bool) or not isinstance(v,(int,float)) or not math.isfinite(v) or not 0<=v<=100 for v in self.background_ink):
+            raise ValueError('Подложка CMYK: четыре числа 0–100%')
+        object.__setattr__(self,'background_ink',tuple(float(v) for v in self.background_ink))
         if not isinstance(self.ink, (tuple, list)) or len(self.ink) != 4 or any(
             isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v) or not 0 <= v <= 100 for v in self.ink
-        ) or not any(self.ink):
+        ) or (not any(self.ink) and (self.background_mode!='color' or not any(self.background_ink))):
             raise ValueError("CMYK: четыре числа 0–100%; цвет не может быть полностью белым.")
         object.__setattr__(self, "ink", tuple(float(v) for v in self.ink))
+        if self.background_mode=='color' and self.ink==self.background_ink:
+            raise ValueError('Цвет кода совпадает с подложкой')
 
     @property
     def is_k100(self):
-        return self.ink == (0, 0, 0, 100)
+        return self.ink == (0, 0, 0, 100) and (self.background_mode!='color' or not any(self.background_ink))
 
     @classmethod
-    def from_total_side(cls, total_mm: float, quiet_modules: int = 4, ink=(0, 0, 0, 100), *,pdf_profile="standard"):
+    def from_total_side(cls, total_mm: float, quiet_modules: int = 4, ink=(0, 0, 0, 100), *,pdf_profile="standard",background_mode='white',background_ink=(0,0,0,0)):
         if isinstance(quiet_modules, bool) or not isinstance(quiet_modules, int) or not 4 <= quiet_modules <= 20:
             raise ValueError("Белое поле: целое число от 4 до 20 модулей")
         try:
@@ -45,7 +55,7 @@ class PrintSettings:
             raise ValueError("Общий размер должен быть числом в миллиметрах") from exc
         if not math.isfinite(total) or total <= 0:
             raise ValueError("Общий размер должен быть положительным числом")
-        return cls(module_mm=total / (21 + 2 * quiet_modules), quiet_modules=quiet_modules, ink=ink,pdf_profile=pdf_profile)
+        return cls(module_mm=total / (21 + 2 * quiet_modules), quiet_modules=quiet_modules, ink=ink,pdf_profile=pdf_profile,background_mode=background_mode,background_ink=background_ink)
 
     @property
     def side_mm(self) -> float:
@@ -68,6 +78,8 @@ class PrintSettings:
             "white_margin_mm": self.white_margin_mm,
             "ink": list(self.ink), "k100": self.is_k100,
             "pdf_profile":self.pdf_profile,
+            "background_mode":self.background_mode,"background_ink":list(self.background_ink),
+            "raster_substrate":"white viewer substrate" if self.background_mode=='transparent' else self.background_mode,
             "pdf_writer":"uCode CompactPDF/1" if self.pdf_profile=="compact" else "ReportLab Canvas",
         }
 

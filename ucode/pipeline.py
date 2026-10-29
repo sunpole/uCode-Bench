@@ -22,7 +22,8 @@ def page_encoder(settings):
     unit=settings.module_mm*72/25.4
     pos=[_number((i+settings.quiet_modules)*unit) for i in range(21)]
     size=[_number(i*unit) for i in range(22)]
-    prefix=" ".join(_number(v/100,9) for v in settings.ink)+" k\nn\n"
+    from .print_background import background_operators
+    prefix=background_operators(settings,_number((21+2*settings.quiet_modules)*unit))+" ".join(_number(v/100,9) for v in settings.ink)+" k\nn\n"
     def encode(frame):
         if frame.version!=1 or frame.error!="M" or frame.size!=21 or any(len(row)!=21 for row in frame.matrix): raise ValueError("Только QR V1-M")
         rects=_rectangles(frame.matrix) if settings.pdf_profile=="compact" else ((x,y,1,1) for y,row in enumerate(reversed(frame.matrix)) for x,dark in enumerate(row) if dark)
