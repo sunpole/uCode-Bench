@@ -65,3 +65,5 @@ CPU min/среднее/max и сырые интервалы доступны п�
 Сохранённые реальные отчёты: `output/pipeline-proof/`, очищенная сводка: `results/cpu-pipeline/verification.json`. Точные свежие команды/итоги и ограничения — в `WORK_LOG.md`.
 
 Ветка `codex/cpu-pipeline-tests` основана на `codex/generation-core-controls` (PR16). Main не меняется. Для другой копии обновление допустимо в чистую ветку/отдельную папку с сохранением собственных правок, TXT, output и .local-state; не применять reset/clean поверх изменений. Уже открытое окно использует старый код до перезапуска. Обычную генерацию не переключаем на экспериментальный конвейер до большого сравнения.
+
+Код `9338487d5689558396f40ce2350b933046daf387` опубликован в [draft PR17](https://github.com/sunpole/uCode-Bench/pull/17). На первом снимке [CI40821143357](https://github.com/sunpole/uCode-Bench/actions/runs/40821143357) Windows IN_PROGRESS, Linux QUEUED; оба результата ещё не подтверждены. Полные результаты остаются в output, исходный ZIP `output/uCode-CPU-Pipeline-<finalsha>.zip` сохраняется с проверкой CRC отдельно от них.
