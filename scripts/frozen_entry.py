@@ -6,6 +6,12 @@ from pathlib import Path
 import runpy
 import sys
 
+# On Windows a frozen console process launched with pipes can default to
+# cp1252 instead of UTF-8. The CLI help and diagnostic messages are Russian.
+for stream in (sys.stdout, sys.stderr):
+    if stream is not None and hasattr(stream, 'reconfigure'):
+        stream.reconfigure(encoding='utf-8', errors='replace')
+
 def main():
     from ucode.distribution import MODULES,user_root
     if sys.argv[1:2]==['--ucode-worker']:
