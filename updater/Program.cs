@@ -45,7 +45,7 @@ internal static class Program
         string version = tag[1..];
         string filename = "uCode-" + version + "-windows-x64.zip";
         string expected = ReleaseRoot + "/releases/download/" + tag + "/" + filename;
-        string? package = null;
+        object? package = null;
         foreach (var asset in root.GetProperty("assets").EnumerateArray())
         {
             if (asset.ValueKind != JsonValueKind.Object) continue;
@@ -55,7 +55,7 @@ internal static class Program
             if (link == expected && size > 1000 && Uri.TryCreate(link, UriKind.Absolute, out var uri)
                 && uri.Scheme == "https" && uri.Host == "github.com"
                 && string.IsNullOrEmpty(uri.Query) && string.IsNullOrEmpty(uri.Fragment))
-                package = link;
+                package = new { name = filename, url = link, size_bytes = size };
         }
         int comparison = newer.CompareTo(local);
         return new
@@ -65,7 +65,8 @@ internal static class Program
             latest = version,
             status = comparison > 0 ? "UPDATE_AVAILABLE" : comparison < 0 ? "LOCAL_NEWER" : "CURRENT",
             release_url = url,
-            package_url = package,
+            platform = "windows-x64",
+            package,
             installation = "NOT_IMPLEMENTED",
             download = "NOT_STARTED",
             checked_with = "uCode.Updater.exe 0.1.0",
@@ -116,7 +117,7 @@ internal static class Program
                                        "https://example.net/download/");
             using var altered = JsonDocument.Parse(evil);
             string checkedValue = JsonSerializer.Serialize(ReadRelease(altered.RootElement, "0.3.4"));
-            if (!checkedValue.Contains("\"package_url\":null")) return false;
+            if (!checkedValue.Contains("\"package\":null")) return false;
         }
         catch { return false; }
         return true;
