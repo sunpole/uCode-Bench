@@ -37,7 +37,13 @@ if __name__=='__main__':
         from ucode.distribution import user_root
         root=user_root();root.mkdir(parents=True,exist_ok=True)
         (root/'startup-error.txt').write_text(traceback.format_exc(),encoding='utf-8')
-        if os.name=='nt':
+        # A modal dialog can block headless CI and command-line users forever.
+        # Show it only when the user explicitly started the graphical app.
+        graphical=len(sys.argv)==1 or sys.argv[1] in ('gui','batch','gui-legacy','gui-browser')
+        if os.name=='nt' and graphical:
             import ctypes
             ctypes.windll.user32.MessageBoxW(None,str(exc)+'\n'+str(root/'startup-error.txt'),'uCode',0x10)
+        else:
+            import traceback
+            traceback.print_exc()
         raise
