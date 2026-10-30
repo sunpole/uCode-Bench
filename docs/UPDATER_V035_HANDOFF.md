@@ -33,7 +33,7 @@
 
 - Проверить соответствие синтаксиса JS и Python, рендер и навигацию вкладки, темную/светлую темы, DPI 100/125/150%, Accessibility, отсутствие побочных изменений `operator-approved.html`.
 - Проверить GitHub Windows compilation CI независимого EXE; исправить ошибки компиляции/типов/JSON, провести реальные `--self-test`, `--check` и offline отрицательные кейсы.
-- Подключить независимый `uCode.Updater.exe` к упакованному Windows uCode при сборке, дать loopback bridge безопасно вызывать именно его для проверки; в исходном/dev режиме допускается existing `ucode.update_check` при отсутствии updater.
+- **Реализовано в исходниках, проверить по CI и пользовательскому запуску:** `.github/workflows/portable-preview.yml` собирает `.NET 8` и копирует `uCode.Updater.exe` к `uCode.exe` в Windows package; `ucode/updater_integration.py` использует именно native binary при frozen запуске и валидирует JSON. В режиме исходников используется Python read-only fallback. Не объявлять bundled PASS до успешной матрицы CI.
 - Не передавать URL или произвольные аргументы из браузера в процесс updater; только строгие внутренние константы и установленную версию. CLI JSON контракт валидировать по схеме.
 - Протестировать отсутствие зависаний во время генерации, отказ при отсутствии сети, отмену проверки, закрытие приложения; записать реальные CI run IDs/commit SHA/ограничения.
 
@@ -62,3 +62,10 @@
 - Windows .NET single-file: https://learn.microsoft.com/dotnet/core/deploying/single-file/overview
 - GitHub REST Releases: https://docs.github.com/en/rest/releases/releases#get-the-latest-release
 - Безопасность npm/хостинга не относится к этому протоколу.
+
+## Обновление реализации ChatGPT 30.10.2026
+
+- Изолированная native Windows компиляция с `--self-test` уже проходила PASS: [GitHub Actions 41080240902](https://github.com/sunpole/uCode-Bench/actions/runs/41080240902), не путать с полной интеграцией.
+- Изменения для нового пакетного теста: `ucode/updater_integration.py`, `tests/test_updater_integration.py`, `.github/workflows/portable-preview.yml`, обновлён JSON контракт `updater/Program.cs`. Проверять новые GitHub Actions на HEAD ветки перед признанием PASS.
+- Для локальной проверки UI пользователь предпочитает Git Bash Here. **Не заменять** установленную стабильную `v0.3.4`; тестовая ветка должна работать в соседней копии/ZIP.
+- Нельзя считать отсутствие ошибок unittest доказательством корректной композиции вкладки — необходима реальная визуальная проверка Windows/DPI пользователем.
