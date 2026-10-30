@@ -1,5 +1,17 @@
 # Журнал uCode
 
+## 2026-10-30 — ChatGPT/GitHub: восстановление CI и подготовка переносимых пакетов (без публикации)
+
+Источник: просьба пользователя «ты делаешь в GitHub, а я через PowerShell обновляю». Работа выполнялась **только в рабочей ветке** `codex/v034-local-qr-content`, не в `main`.
+
+- Изучены `AGENTS.md`, `ucode/__main__.py`, `operator_desktop.py`, `operator_web.py`, `operation_host.py`, `pyproject.toml`, ветка 0.3.4 и PR #26. Три файла из последнего локального отчёта Codex (`scripts/frozen_entry.py`, `ucode/distribution.py`, `ucode/system_check.py`) **не было в удалённом Git**: восстановление их содержимого остаётся следующим шагом пользователя/Codex.
+- Проанализирован Windows CI `41056314658`: Linux SUCCESS, Windows завершился из-за принудительного `faulthandler.dump_traceback_later(120, exit=True)` после 120 секунд, а не подтверждённого падения теста. Workflow `.github/workflows/txt-batch.yml` обновлён: 300 секунд watchdog и 30 минут для job, без изменения производственного кода.
+- **Реальный CI PASS:** [GitHub Actions 41056886412](https://github.com/sunpole/uCode-Bench/actions/runs/41056886412), Windows SUCCESS, Linux SUCCESS, основание коммит `fb8e6f10f07cf48c95c8e0e4613a9a32e5d752f8`. Новые коммиты документации и workflow не означают повторной проверки всех сценариев.
+- Добавлен `.github/workflows/portable-preview.yml`: Windows x64/Linux x64/macOS ARM64 PyInstaller onedir, CLI smoke, ZIP/TAR.GZ и SHA256, PR preflight; только **preview CI artifacts**, без auto-publish в Releases. В файле отсутствия WIP проверка успешно сообщает `SKIPPED` для упаковки, это **не PASS сборок**. [CI 41057338756](https://github.com/sunpole/uCode-Bench/actions/runs/41057338756): preflight SUCCESS, portable SKIPPED.
+- Новый `docs/PORTABLE_BUILDS.md` документирует ограничения, нативные зависимости и строгий release gate. Автообновление, подпись, инсталляторы, настоящий Windows EXE/macOS .app/Linux бинарник и релиз 0.3.4 пока **НЕ выполнены**.
+- Состояние очереди: в первую очередь безопасно сохранить три локальных WIP-файла и заново проверить staging; затем platform previews, smoke без Python, полная QA и только после проверки публикация.
+
+
 ## 2026-10-29 — UI/UX, предоставленный uBrand и интерактивная справка (14 задач)
 
 Основа PR21 / `dbe8e76df003bad1a3e89016b93136a1bf905ada`, отдельная `codex/ui-help-ubrand`, тестовая копия. [Список проблем, 14 задач, архитектура, использование и границы](UI_HELP_UBRAND.md). Запрос пользователя: завершить UI/UX-долги, логотип, оформленная интерактивная справка с якорями и графическими пояснениями. Пользователь уточнил готовый SVG: применён именно он, с сохранением байтов/SHA256; сгенерированные варианты не включены в продукт. PNG отрисован существующим bundled Sharp; runtime не требует SVG-рендерера.
