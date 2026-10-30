@@ -20,7 +20,7 @@ concurrency:
 
 jobs:
   publish:
-    if: github.ref == 'refs/heads/main' && (github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.event.head_commit.message == 'release: approve stable v0.3.4'))
+    if: "github.ref == 'refs/heads/main' && (github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.event.head_commit.message == 'release: approve stable v0.3.4'))"
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
