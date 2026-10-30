@@ -1,6 +1,6 @@
 """Independent, deliberately narrow QR decoder for the stage-1 QA contract.
 
-Supports pristine, normally oriented QR Version 1 / M / 12 numeric digits.
+Supports pristine, normally oriented QR Version 1 / L,M,Q,H / 12 numeric digits.
 Checks both format copies, fixed patterns, all Reed-Solomon syndromes and
 canonical numeric padding. It detects errors and never silently corrects them.
 There is no import of the encoder and no metadata-based payload shortcut.
@@ -72,7 +72,7 @@ def _fixed_patterns(matrix):
         raise DecodeError("Fixed dark module is missing")
 
 
-def decode_numeric_v1_m(matrix: Sequence[Sequence[bool]]) -> str:
+def decode_numeric_v1(matrix: Sequence[Sequence[bool]],error_correction="M") -> str:
     """Decode and validate a 21x21 symbol independently of its encoder."""
     if len(matrix) != 21 or any(len(row) != 21 for row in matrix):
         raise DecodeError("Only standard QR Version 1 (21x21) is supported")
@@ -84,9 +84,12 @@ def decode_numeric_v1_m(matrix: Sequence[Sequence[bool]]) -> str:
         col = 20 - bit if bit < 8 else 7 if bit == 8 else 14 - bit
         word_a |= int(matrix[row][8]) << bit
         word_b |= int(matrix[8][col]) << bit
-    matches = [mask for mask in range(8) if word_a == word_b == _format_word(mask)]
+    levels={"L":(1,19,7),"M":(0,16,10),"Q":(3,13,13),"H":(2,9,17)}
+    if error_correction not in levels:raise DecodeError("Unsupported correction level")
+    format_bits,data_count,parity_count=levels[error_correction]
+    matches = [mask for mask in range(8) if word_a == word_b == _format_word((format_bits<<3)|mask)]
     if len(matches) != 1:
-        raise DecodeError("Format BCH/copies mismatch or error correction level is not M")
+        raise DecodeError("Format BCH/copies mismatch or error correction level differs from expected")
     mask = matches[0]
     reserved = _reserved()
     bits = []
@@ -106,7 +109,7 @@ def decode_numeric_v1_m(matrix: Sequence[Sequence[bool]]) -> str:
         raise DecodeError("Unexpected data-module count")
     words = [sum(bits[i + j] << (7 - j) for j in range(8)) for i in range(0, 208, 8)]
     alpha = 1
-    for _ in range(10):
+    for _ in range(parity_count):
         syndrome = 0
         for word in words:
             syndrome = _mul(syndrome, alpha) ^ word
@@ -131,6 +134,11 @@ def decode_numeric_v1_m(matrix: Sequence[Sequence[bool]]) -> str:
     payload = "".join(f"{value:03d}" for value in groups)
     if any(bits[offset:64]):
         raise DecodeError("Invalid numeric terminator or alignment padding")
-    if words[8:16] != [0xEC, 0x11] * 4:
+    if words[8:data_count] != [0xEC if i%2==0 else 0x11 for i in range(data_count-8)]:
         raise DecodeError("Invalid QR pad codewords")
     return payload
+
+
+def decode_numeric_v1_m(matrix):
+    """Historical fixed-M verifier remains strict."""
+    return decode_numeric_v1(matrix,"M")

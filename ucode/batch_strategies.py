@@ -45,17 +45,17 @@ def part_job(folder,request,settings,stop):
 
 class NumericFrames:
     """Independent expected QR values, bounded encoding for final merged QA."""
-    def __init__(self,count,cancel,guard): self.count=count; self.cancel=cancel; self.guard=guard
+    def __init__(self,count,cancel,guard,error_correction="M"): self.count=count; self.cancel=cancel; self.guard=guard;self.error_correction=error_correction
     def __len__(self): return self.count
     def __getitem__(self,index):
         from .engines import get_engine
         self.guard(); _check_cancel(self.cancel)
-        return get_engine().encode([f"{(200000000000+index)%10**12:012d}"])[0]
+        return get_engine(error_correction=self.error_correction).encode([f"{(200000000000+index)%10**12:012d}"])[0]
     def __iter__(self):
         from .engines import get_engine
         for start in range(0,self.count,64):
             self.guard(); _check_cancel(self.cancel)
-            yield from get_engine().encode([f"{(200000000000+i)%10**12:012d}" for i in range(start,min(start+64,self.count))],cancel=self.cancel)
+            yield from get_engine(error_correction=self.error_correction).encode([f"{(200000000000+i)%10**12:012d}" for i in range(start,min(start+64,self.count))],cancel=self.cancel)
 
 
 def run_split_trial(folder,request,settings,cancel,events,budget):
@@ -131,7 +131,7 @@ def run_split_trial(folder,request,settings,cancel,events,budget):
             report.update(status="UNVERIFIED",qa={"status":"NOT_RUN"}); report["seconds"]["quality_checks"]=0.0
         else:
             timer=time.perf_counter(); event("Проверка итогового PDF",part_units+1,0)
-            qa=check_pdf(target,NumericFrames(count,cancel,guard),settings,render_samples=raster,cancel=cancel,
+            qa=check_pdf(target,NumericFrames(count,cancel,guard,settings.error_correction),settings,render_samples=raster,cancel=cancel,
                          on_progress=lambda done,total:event("Проверка итогового PDF",part_units+1+done,done,total))
             report["qa"]={"multipage":qa,"raster_available":raster}
             report["status"]=qa_status(report["qa"],raster)

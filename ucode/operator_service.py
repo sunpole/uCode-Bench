@@ -216,7 +216,7 @@ class OperatorService:
             with tempfile.TemporaryDirectory(dir=cache) as temp:
                 for n in sorted({1,max(1,index.count//2),index.count}):
                     if self.cancel.is_set():raise InterruptedError('Проверка папки остановлена')
-                    frame=engine.encode([index.row(n)]);target=Path(temp)/f'{n}.pdf';engine.write_pdf(frame,target,cfg,cancel=self.cancel)
+                    frame=get_engine(error_correction=cfg.error_correction).encode([index.row(n)]);target=Path(temp)/f'{n}.pdf';engine.write_pdf(frame,target,cfg,cancel=self.cancel)
                     maximum=max(maximum,target.stat().st_size)
             estimate=estimate_space(plan.total_codes,mode,maximum,shutil.disk_usage(destination).free,temp_bytes=plan.unique_values*4096,allocation_unit=unit)
             self.estimate={**asdict(estimate),'sample_page_bytes':maximum,'probe':probe,'enough':estimate.enough}
@@ -292,14 +292,14 @@ class OperatorService:
         return index.find(query,cancel=cancel)
 
     @functools.lru_cache(maxsize=32)
-    def preview_frame(self,value):
+    def preview_frame(self,value,error_correction="M"):
         from .engines import get_engine
-        return get_engine().encode([value])[0]
+        return get_engine(error_correction=error_correction).encode([value])[0]
 
     def preview_svg(self,page,sample=False):
         if not sample and not self.index:raise ValueError('База не загружена')
         value='500000000000' if sample else self.index.row(max(1,min(self.index.count,int(page))))
-        cfg=self.settings;frame=self.preview_frame(value);q=cfg.quiet_modules;side=21+2*q
+        cfg=self.settings;frame=self.preview_frame(value,cfg.error_correction);q=cfg.quiet_modules;side=21+2*q
         def color(ink):
             c,m,y,k=(v/100 for v in ink);return '#'+''.join(f'{round(255*(1-v)*(1-k)):02x}' for v in (c,m,y))
         paper='' if cfg.background_mode=='transparent' else f'<rect width="{side}" height="{side}" fill="{color(cfg.background_ink) if cfg.background_mode=="color" else "#ffffff"}"/>'

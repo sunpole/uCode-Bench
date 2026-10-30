@@ -112,7 +112,7 @@ def run_stream_batch(input_txt,output_root,*,count_plan,settings,mode,engine,exe
         report["execution"]=info
         def encoding(done,total): guard(); tracker.step("Кодирование QR",done,total,0)
         timer=time.perf_counter()
-        encode_values(plan.values(),engine_key=engine,options=execution,plan=info.copy(),metadata=info,
+        encode_values(plan.values(),error_correction=settings.error_correction,engine_key=engine,options=execution,plan=info.copy(),metadata=info,
             cancel=cancel,on_progress=encoding,encoding_only=True,result_store=FrameStore(plan))
         report["seconds"]["code_encoding"]=report["seconds"]["qr_encoding"]=time.perf_counter()-timer
         report["generation"]["encoded_values"]=unique
@@ -169,7 +169,7 @@ def audit_stream_job(root,original,*,render_samples=True,cancel=None,events=None
     from .audit import qa_status
     from .progress import ProgressTracker
     root=Path(root); folder=_make_directory(root/"audits","qa"); guard=ResourceGuard(folder,cancel)
-    cfg=original["print"]; settings=PrintSettings(cfg["module_mm"],cfg["quiet_modules"],tuple(cfg["ink"]),pdf_profile=cfg.get("pdf_profile","standard"),background_mode=cfg.get('background_mode','white'),background_ink=tuple(cfg.get('background_ink',(0,0,0,0))))
+    cfg=original["print"]; settings=PrintSettings(cfg["module_mm"],cfg["quiet_modules"],tuple(cfg["ink"]),pdf_profile=cfg.get("pdf_profile","standard"),background_mode=cfg.get('background_mode','white'),background_ink=tuple(cfg.get('background_ink',(0,0,0,0))),error_correction=cfg.get('error_correction','M'))
     started=time.perf_counter(); plan=None
     result={"kind":"pdf-audit","status":"RUNNING","qa":{},"errors":[],"source_job":"../..","streaming":True}
     try:
@@ -182,7 +182,7 @@ def audit_stream_job(root,original,*,render_samples=True,cancel=None,events=None
         hardware=inspect_hardware(folder); options=ExecutionOptions()
         info=execution_plan(options,unique,hardware["cpu"],hardware["ram"]["available_bytes"],buffered=True)
         def encoded(done,total): guard(); tracker.step("Эталоны QR",done,total,0)
-        encode_values(plan.values(),options=options,plan=info,encoding_only=True,result_store=FrameStore(plan),cancel=cancel,on_progress=encoded)
+        encode_values(plan.values(),error_correction=settings.error_correction,options=options,plan=info,encoding_only=True,result_store=FrameStore(plan),cancel=cancel,on_progress=encoded)
         previous=[None,0,unique]
         def observe(stage,done,total):
             if previous[0] is not None and stage!=previous[0]: previous[2]+=previous[1]

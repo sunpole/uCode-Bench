@@ -14,7 +14,7 @@ from pypdf import PdfReader
 from pypdf.generic import ContentStream,IndirectObject,ArrayObject
 
 from .config import Experiment, QRFrame
-from .qrdecode import DecodeError, decode_numeric_v1_m
+from .qrdecode import DecodeError, decode_numeric_v1
 
 
 PT_PER_MM = 72 / 25.4
@@ -144,7 +144,7 @@ def _page_matrix(page, reader, frame: QRFrame, config: Experiment, cache=None,sh
     result = tuple(tuple(row) for row in matrix)
     if result != frame.matrix:
         raise ValueError("Vector QR matrix differs from the expected number/order")
-    decoded = decode_numeric_v1_m(result)
+    decoded = decode_numeric_v1(result,getattr(config,"error_correction","M"))
     if decoded != frame.payload:
         raise ValueError(f"Decoded payload {decoded!r} differs from TXT {frame.payload!r}")
     if cache is not None and key is not None and key in shared:
@@ -203,7 +203,7 @@ def _decode_image(image_path: Path, config: Experiment, size=21):
                 if (r < quiet or c < quiet or r >= quiet + size or c >= quiet + size) and full_matrix[r][c]:
                     raise DecodeError("Rendered quiet zone differs from configured substrate")
         matrix = tuple(tuple(row[quiet:quiet + size]) for row in full_matrix[quiet:quiet + size])
-        return decode_numeric_v1_m(matrix)
+        return decode_numeric_v1(matrix,getattr(config,"error_correction","M"))
 
 
 def check_pdf(path: Path, frames: list[QRFrame], config: Experiment, *, render_samples=True,
@@ -218,7 +218,7 @@ def check_pdf(path: Path, frames: list[QRFrame], config: Experiment, *, render_s
     result = {
         "status": "FAIL", "errors": [], "pages_checked": 0,
         "decoded_samples": [], "render_samples": bool(render_samples),
-        "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+        "decoder": "independent pristine QR V1/"+getattr(config,"error_correction","M")+"/numeric12 + BCH + RS",
         "geometry_tolerance_points": PT_TOLERANCE,
     }
     scratch=None
@@ -240,7 +240,7 @@ def check_pdf(path: Path, frames: list[QRFrame], config: Experiment, *, render_s
             if cancel is not None and cancel.is_set():
                 raise InterruptedError("Проверка PDF остановлена")
             try:
-                if frame.version != 1 or frame.error != "M" or frame.size != 21:
+                if frame.version != 1 or frame.error != getattr(config,"error_correction","M") or frame.size != 21:
                     raise ValueError("Expected frame is outside QR V1/M contract")
                 cached=_content_key(page) in cache
                 _, payload = _page_matrix(page, reader, frame, config,cache,shared)

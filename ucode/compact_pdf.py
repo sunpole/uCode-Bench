@@ -71,8 +71,8 @@ def write_pdf(frames,path,config,*,on_progress=None,cancel=None):
             if cached is not None:
                 reference=cached[1]
             else:
-                if frame.version!=1 or frame.error!="M" or len(frame.matrix)!=21 or any(len(row)!=21 for row in frame.matrix):
-                    raise ValueError("Only ordinary QR V1-M frames are supported")
+                if frame.version!=1 or frame.error not in ("L","M","Q","H") or len(frame.matrix)!=21 or any(len(row)!=21 for row in frame.matrix):
+                    raise ValueError("Only ordinary QR V1 L/M/Q/H frames are supported")
                 matrix=frame.matrix if isinstance(frame.matrix,tuple) and all(isinstance(row,tuple) for row in frame.matrix) else tuple(tuple(bool(cell) for cell in row) for row in frame.matrix)
                 reference=matrices.get(matrix)
                 if reference is None:

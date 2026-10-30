@@ -51,7 +51,7 @@ def load_user_preferences(path):
             raise ValueError("Неверная структура настроек печати")
         settings = PrintSettings(module_mm=fields["module_mm"], quiet_modules=fields["quiet_modules"],
                                  ink=tuple(fields.get("ink", [0, 0, 0, 100])),pdf_profile=fields.get("pdf_profile","standard"),
-                                 background_mode=fields.get('background_mode','white'),background_ink=tuple(fields.get('background_ink',(0,0,0,0))))
+                                 background_mode=fields.get('background_mode','white'),background_ink=tuple(fields.get('background_ink',(0,0,0,0))),error_correction=fields.get('error_correction','M'))
         fields = value.get("generation", {})
         if not isinstance(fields, dict):
             raise ValueError("Неверные параметры генерации")

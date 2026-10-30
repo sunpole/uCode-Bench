@@ -25,7 +25,7 @@ def page_encoder(settings):
     from .print_background import background_operators
     prefix=background_operators(settings,_number((21+2*settings.quiet_modules)*unit))+" ".join(_number(v/100,9) for v in settings.ink)+" k\nn\n"
     def encode(frame):
-        if frame.version!=1 or frame.error!="M" or frame.size!=21 or any(len(row)!=21 for row in frame.matrix): raise ValueError("Только QR V1-M")
+        if frame.version!=1 or frame.error not in ("L","M","Q","H") or frame.size!=21 or any(len(row)!=21 for row in frame.matrix): raise ValueError("Только QR V1 L/M/Q/H")
         rects=_rectangles(frame.matrix) if settings.pdf_profile=="compact" else ((x,y,1,1) for y,row in enumerate(reversed(frame.matrix)) for x,dark in enumerate(row) if dark)
         return zlib.compress((prefix+"".join(f"{pos[x]} {pos[y]} {size[w]} {size[h]} re\n" for x,y,w,h in rects)+"f\n").encode())
     return encode
@@ -35,7 +35,7 @@ def _stage_worker(pipe,stop,cpu,stage,settings,measure_memory=False):
     try:
         verified=apply_affinity([cpu])["verified_cpus"]
         from .engines import get_engine
-        engine=get_engine(); engine.prepare_encoding(); prepare=page_encoder(settings)
+        engine=get_engine(error_correction=settings.error_correction); engine.prepare_encoding(); prepare=page_encoder(settings)
         baseline=None
         if measure_memory:
             from .pipeline_memory import ready_memory
@@ -206,7 +206,7 @@ def run_pipeline_trial(folder,request,settings,cancel,events,budget,observer=Non
     from .lab_worker import atomic_json
     from .generators import get_generator
     job=_make_directory(Path(folder)/"jobs","pipeline"); count=request["count"]
-    guard=ResourceGuard(job,cancel); expected=NumericFrames(count,cancel,guard)
+    guard=ResourceGuard(job,cancel); expected=NumericFrames(count,cancel,guard,settings.error_correction)
     report={"kind":"txt-batch-pdf","schema_version":1,"pipeline_contract":3,"strategy":"pipeline","streaming":True,
             "generator":"qr","mode":"multipage","count":count,"status":"RUNNING","qa_mode":request["qa_mode"],
             "print":get_generator("qr").describe_settings(settings),"seconds":{},"files":{},"qa":{},"errors":[],"execution":{}}

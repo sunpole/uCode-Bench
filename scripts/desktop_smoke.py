@@ -61,6 +61,16 @@ def run():
             until_js("document.querySelector('#uc-center-tab-2').getAttribute('aria-selected')==='true'")
             until_js("document.querySelector('.uc-style-preview-split img').complete && document.querySelector('.uc-style-preview-split img').naturalWidth>0")
             result['order_flow']='PASS: type/base/path/style; manual name; actual style preview'
+            if '--ecc' in sys.argv:
+                for level in 'LMQH':
+                    window.evaluate_js("document.querySelector('[data-ecc="+level+"]').click()")
+                    until_js("document.querySelector('[data-ecc="+level+"]').getAttribute('aria-pressed')==='true'")
+                    deadline=time.monotonic()+10
+                    while api(url,'state')['form']['print'].get('error_correction')!=level:
+                        if time.monotonic()>deadline:raise TimeoutError('Correction was not applied')
+                        time.sleep(.1)
+                result['ecc_controls']='PASS: L/M/Q/H; final PDF H'
+
         form=api(url,'state')['form']
         form.update(qa_mode='vector',execution_backend='process',workers=1,cpu_choice='1',cpu_unit='logical',telemetry='off')
         api(url,'configure',form);api(url,'preflight',{});wait()

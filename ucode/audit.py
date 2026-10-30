@@ -57,7 +57,7 @@ def audit_job(directory,*,render_samples=True,cancel=None,events=None,progress=N
         from .stream_batch import audit_stream_job
         return audit_stream_job(root,original,render_samples=render_samples,cancel=cancel,events=events)
     cfg=original["print"]
-    settings=PrintSettings(cfg["module_mm"],cfg["quiet_modules"],tuple(cfg["ink"]),pdf_profile=cfg.get("pdf_profile","standard"),background_mode=cfg.get('background_mode','white'),background_ink=tuple(cfg.get('background_ink',(0,0,0,0))))
+    settings=PrintSettings(cfg["module_mm"],cfg["quiet_modules"],tuple(cfg["ink"]),pdf_profile=cfg.get("pdf_profile","standard"),background_mode=cfg.get('background_mode','white'),background_ink=tuple(cfg.get('background_ink',(0,0,0,0))),error_correction=cfg.get('error_correction','M'))
     numbers=load_codes(root/"codes.txt",generator=original.get("generator","qr"),cancel=cancel)
     if len(numbers)!=original["count"]: raise ValueError("codes.txt не совпадает с числом страниц manifest")
     module=get_generator(original.get("generator","qr"))
@@ -74,7 +74,7 @@ def audit_job(directory,*,render_samples=True,cancel=None,events=None,progress=N
         def emit(stage,done,total,base=0):
             if events: events({"stage":stage,"done":done,"total":total,"percent":min(99.9,100*(base+done)/total_work),
                                "elapsed":time.perf_counter()-started,"speed":0,"average_speed":0,"unit":"проверок"})
-        encoded=get_engine().encode(unique,cancel=cancel,on_progress=lambda done,total:emit("Эталоны QR",done,total))
+        encoded=get_engine(error_correction=settings.error_correction).encode(unique,cancel=cancel,on_progress=lambda done,total:emit("Эталоны QR",done,total))
         if [frame.payload for frame in encoded]!=unique: raise ValueError("Неверный результат encoder для QA")
         mapping={frame.payload:frame for frame in encoded}; frames=[mapping[number] for number in numbers]
         previous=[None,0,len(unique)]

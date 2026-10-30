@@ -1,11 +1,12 @@
 // Inserted inside the approved renderer's closure. Styles/layout are not rebuilt.
 let rtState=null,rtLoading=false,rtHydrating=false,rtFormTimer=null,rtPollTimer=null,rtRenderToken=0;
+let rtECC='M';
 let rtSourceDigest='',rtChoice='all',rtNonce=null,rtConfigs={},rtFormError='',rtArchivePage=0,rtHistoryPage=0;
 let rtConfigSequence=Promise.resolve(),rtScientificOptions={size:200,methods:[]};
 const rtToken=location.pathname.split('/').filter(Boolean)[0],rtBase=location.pathname.replace(/\/?$/,'/');
 const rtClone=value=>JSON.parse(JSON.stringify(value));
 Object.assign(valueNames,{full:'Полная',vector:'Структура PDF',deferred:'Без проверки',multipage:'Один PDF',singles:'Отдельные PDF',both:'Оба варианта',white:'Белый',color:'Цветной',transparent:'Прозрачный',staged:'С отбором',true:'Вкл',false:'Выкл','all-2':'Все −2',all:'Все'});
-fieldNames.print_settings='Настройки PDF теста';
+fieldNames.print_settings='Настройки PDF теста';fieldNames.error_correction='Коррекция QR';
 const rtNumber=value=>Number(String(value).replace(/\s/g,'').replace(',','.'));
 const rtText=(node,text)=>{if(node&&node.textContent!==String(text))node.textContent=String(text);};
 const rtClock=seconds=>{seconds=Math.max(0,Math.floor(seconds||0));return [Math.floor(seconds/3600),Math.floor(seconds/60)%60,seconds%60].map(n=>String(n).padStart(2,'0')).join(':');};
@@ -55,7 +56,7 @@ function rtSelectCPU(choice){
 function rtHydrate(data){
   rtHydrating=true;
   try{
-    const f=data.form,p=f.print;rtChoice=f.cpu_choice;state.cpu=f.workers;customCPU.value=f.cpu_choice==='all'||f.cpu_choice==='all-2'?f.workers:f.cpu_choice==='legacy'?f.workers:f.cpu_choice;workersControl.value=f.workers;
+    const f=data.form,p=f.print;rtECC=p.error_correction||'M';rtCorrectionButtons();rtChoice=f.cpu_choice;state.cpu=f.workers;customCPU.value=f.cpu_choice==='all'||f.cpu_choice==='all-2'?f.workers:f.cpu_choice==='legacy'?f.workers:f.cpu_choice;workersControl.value=f.workers;
     $('uc-side').value=String(p.module_mm*(21+2*p.quiet_modules));moduleControl.value=String(p.module_mm);
     const quietField=panels[2].querySelector('input[aria-label^="Белое поле"]');if(quietField)quietField.value=p.quiet_modules;
     if(![...quietPicker.options].some(o=>parseInt(o.value,10)===p.quiet_modules)){const option=el('option',p.quiet_modules+' модуля');quietPicker.append(option);}
@@ -84,7 +85,7 @@ function rtHydrate(data){
 function rtCollectForm(){
   if(!rtState)throw Error('Программа ещё загружается');
   const f=rtClone(rtState.form),quiet=rtNumber(panels[2].querySelector('input[aria-label^="Белое поле"]').value);
-  f.print={module_mm:rtNumber($('uc-side').value)/(21+2*quiet),quiet_modules:quiet,ink:inkInputs.map(input=>rtNumber(input.value)),
+  f.print={error_correction:rtECC,module_mm:rtNumber($('uc-side').value)/(21+2*quiet),quiet_modules:quiet,ink:inkInputs.map(input=>rtNumber(input.value)),
     pdf_profile:orderSettings.pdf_profile==='Компактный'?'compact':'standard',background_mode:['white','color','transparent'][backgroundMode],background_ink:backgroundInputs.map(input=>rtNumber(input.value))};
   f.mode=['multipage','singles','both'][$('uc-output').selectedIndex];f.copies_per_value=rtNumber(copiesField.value);
   f.duplicate_policy=orderSettings.duplicate_policy==='Один экземпляр значения'?'unique':'preserve';f.output_directory=pathInput.value;
@@ -351,7 +352,7 @@ function rtOther(){
   otherPanel.append(el('p','Русский интерфейс. Полный English и GPU пока в разработке. Внешний сервер статистики не подключён; все результаты сохраняются локально.','uc-small'));
 }
 // Wire existing controls; remove prototype wording while retaining their styling.
-root.setAttribute('aria-label','uCode · генерация QR и PDF');root.querySelector('.uc-legal>span').textContent='© 2026 · uCode · Антон Магомедов / uBrand · 0.3.2';
+root.setAttribute('aria-label','uCode · генерация QR и PDF');root.querySelector('.uc-legal>span').textContent='© 2026 · uCode · Антон Магомедов / uBrand · 0.3.3';
 if($('uc-ram').options.length>4)$('uc-ram').remove(4);
 $('uc-gen-note').textContent='Настоящий TXT UTF-8 сохраняется на вашем компьютере.';checkFolder.textContent='Подтвердить';calcSpace.textContent='Пересчитать и проверить';
 [sampleBytes,tempBytes,availableBytes].forEach(input=>{input.readOnly=true;input.placeholder='Измеряется при проверке папки';});
@@ -417,20 +418,22 @@ const rtStyleSplit=el('div',null,'uc-style-preview-split'),rtStyleLeft=el('div')
 const rtStyleImage=el('img'),rtStyleCaption=el('p','', 'uc-small'),rtStyleNote=el('p','Экранный цвет приблизителен. Для печати используйте параметры CMYK и проверку PDF.','uc-small');
 rtStyleImage.alt='Предпросмотр оформления';rtStyleRight.append(rtStyleImage,rtStyleCaption,rtStyleNote);rtStyleSplit.append(rtStyleLeft,rtStyleRight);panels[2].append(rtStyleSplit);
 const rtCorrection=el('section');rtCorrection.id='uc-correction-plan';
-rtCorrection.append(el('h3','Коррекция ошибок QR'),el('p','Сейчас используется M. Выбор других уровней запланирован.','uc-small'));
+rtCorrection.append(el('h3','Коррекция ошибок QR'),el('p','Уровень применяется к предпросмотру, PDF и проверке. Размер клетки не уменьшается.','uc-small'));
 const rtCorrectionRow=el('div',null,'uc-row');
 [['L','≈7%'],['M','≈15%'],['Q','≈25%'],['H','≈30%']].forEach(([level,percent])=>{
-  const button=el('button',level+' · '+percent+(level==='M'?' · используется':' · в разработке'));
-  button.type='button';button.disabled=true;button.setAttribute('aria-pressed',String(level==='M'));
-  button.dataset.tooltip=level==='M'?'Текущий уровень генерации и независимой проверки':'Будущий уровень: генерация и QA пока не реализованы';rtCorrectionRow.append(button);
+  const button=el('button',level+' · '+percent);
+  button.type='button';button.dataset.ecc=level;button.setAttribute('aria-pressed',String(level===rtECC));button.onclick=()=>{rtECC=level;rtCorrectionButtons();rtQueueForm();};
+  button.dataset.tooltip='Коррекция '+level+'; проценты не являются гарантией чтения повреждённой площади';rtCorrectionRow.append(button);
 });
+function rtCorrectionButtons(){rtCorrectionRow.querySelectorAll('[data-ecc]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ecc===rtECC)));}
 rtCorrection.append(rtCorrectionRow,el('h3','iQR — отдельный формат'));
 const rtIQRCorrection=el('button','S · ≈50% · в разработке');rtIQRCorrection.type='button';rtIQRCorrection.disabled=true;
 rtCorrection.append(rtIQRCorrection,el('p','iQR требует отдельного генератора и проверки считывания. Проценты не гарантируют чтение при закрытии такой доли площади.','uc-small'));rtStyleLeft.append(rtCorrection);
 function rtStylePreview(data){const key=JSON.stringify([data.source?.digest,data.form.print]);if(key===rtStyleKey)return;rtStyleKey=key;
   rtStyleImage.src=rtBase+'api/preview?page=1&sample='+(data.source?0:1)+'&revision='+data.revision;
   const p=data.form.print,side=p.module_mm*(21+2*p.quiet_modules);rtStyleImage.style.width=Math.min(195,Math.max(70,side/14.5*160))+'px';
-  rtStyleCaption.textContent=(data.source?'Первая строка базы · '+data.source.first:'Демонстрационный образец · база не выбрана')+' · '+side.toFixed(2)+' × '+side.toFixed(2)+' мм · поле '+p.quiet_modules+' модуля';}
+  rtStyleCaption.textContent=(data.source?'Первая строка базы · '+data.source.first:'Демонстрационный образец · база не выбрана')+' · '+side.toFixed(2)+' × '+side.toFixed(2)+' мм · поле '+p.quiet_modules+' модуля · коррекция '+(p.error_correction||'M');}
+const rtTypeText=document.createTreeWalker(typesPanel,NodeFilter.SHOW_TEXT);while(rtTypeText.nextNode())rtTypeText.currentNode.textContent=rtTypeText.currentNode.textContent.replaceAll('QR V1-M','QR V1 · L/M/Q/H');
 const rtIQ=el('section',null,'uc-type');rtIQ.append(el('h3','iQR'),el('p','Отдельный формат, коррекция S ≈50%.','uc-small'));const rtIQButton=el('button','В разработке');rtIQButton.disabled=true;rtIQ.append(rtIQButton);typesPanel.append(rtIQ);
 (async()=>{
   rtText($('uc-filename'),'Подключение к локальному процессу…');rtText($('uc-status'),'Загрузка uCode…');

@@ -1,0 +1,64 @@
+{
+  "ok": true,
+  "session_closed": true,
+  "ecc_controls": "PASS: L/M/Q/H; final PDF H",
+  "order_flow": "PASS: type/base/path/style; manual name; actual style preview",
+  "geometry": [
+    {
+      "viewport": [
+        1184,
+        761
+      ],
+      "root": [
+        1166,
+        743
+      ],
+      "horizontal": false,
+      "bottom": 753,
+      "preview": true
+    },
+    {
+      "viewport": [
+        984,
+        661
+      ],
+      "root": [
+        966,
+        643
+      ],
+      "horizontal": false,
+      "bottom": 653,
+      "preview": true
+    },
+    {
+      "viewport": [
+        884,
+        521
+      ],
+      "root": [
+        866,
+        503
+      ],
+      "horizontal": false,
+      "bottom": 513,
+      "preview": true
+    },
+    {
+      "viewport": [
+        1184,
+        761
+      ],
+      "root": [
+        1166,
+        743
+      ],
+      "horizontal": false,
+      "bottom": 753,
+      "preview": true
+    }
+  ],
+  "version": "0.3.3",
+  "pdf_status": "LIMITED",
+  "decoder": "independent pristine QR V1/H/numeric12 + BCH + RS",
+  "visual_acceptance": "USER_PENDING"
+}

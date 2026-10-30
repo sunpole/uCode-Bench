@@ -108,10 +108,10 @@ def _cancelled(cancel):
 
 def encode_values(values, *, engine_key="reportlab", options=None, plan=None, cancel=None,
                   on_progress=None, metadata=None, selected_engine=None, generator="qr",
-                  mode="multipage", colorspace="DeviceCMYK",encoding_only=False,result_store=None):
+                  mode="multipage", colorspace="DeviceCMYK",encoding_only=False,result_store=None,error_correction="M"):
     options = options or ExecutionOptions()
-    engine_spec = {"generator": generator, "mode": mode, "colorspace": colorspace}
-    engine = selected_engine or get_engine(engine_key, **engine_spec)
+    engine_spec = {"generator": generator, "mode": mode, "colorspace": colorspace,"error_correction":error_correction}
+    engine = (selected_engine if error_correction=="M" else None) or get_engine(engine_key, **engine_spec)
     if options.backend not in engine.info().execution_modes:
         raise ValueError("Движок не поддерживает выбранный способ выполнения")
     _cancelled(cancel)
