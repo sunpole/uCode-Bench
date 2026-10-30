@@ -1,3 +1,4 @@
+from .distribution import module_command
 """User-started CPU/RAM experiment matrix, separate from historical gates."""
 from dataclasses import asdict, dataclass, field
 import itertools
@@ -112,7 +113,7 @@ def _run_trial(folder, request, cancel, on_progress, timeout=None, cancel_grace=
     folder.mkdir(parents=True, exist_ok=False)
     atomic_json(folder / "request.json", request)
     env = dict(os.environ, PYTHONUTF8="1")
-    args = [sys.executable, "-m", "ucode.lab_worker", str((folder/"request.json").resolve())]
+    args = module_command("ucode.lab_worker",(folder/"request.json").resolve())
     if request.get("runtime_root"): env["UCODE_ASSET_ROOT"]=request["asset_root"]
     kwargs = {"creationflags": subprocess.CREATE_NO_WINDOW} if os.name=="nt" else {"start_new_session": True}
     started = time.perf_counter(); cancelling = None; seen = None; timed_out = False

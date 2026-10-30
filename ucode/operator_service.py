@@ -1,3 +1,4 @@
+from .distribution import module_command
 """Local operator service. Rendering and lab/production engines are independent."""
 from dataclasses import asdict,fields
 import functools
@@ -20,7 +21,7 @@ from .print_settings import PrintSettings
 
 def native_dialog(kind,initial=''):
     options={'creationflags':subprocess.CREATE_NO_WINDOW} if os.name=='nt' else {}
-    result=subprocess.run([sys.executable,'-m','ucode.native_dialog',kind,str(initial)],capture_output=True,
+    result=subprocess.run(module_command('ucode.native_dialog',kind,initial),capture_output=True,
                           text=True,encoding='utf-8',env={**os.environ,'PYTHONUTF8':'1'},**options)
     if result.returncode:raise OSError('Не удалось открыть Проводник: '+result.stderr[-500:])
     return json.loads(result.stdout.strip())
