@@ -37,10 +37,20 @@ function rtCPUButtons(){
   [['1','1'],...(maximum>2?[['all-2','Все − 2 · '+(maximum-2)]]:[]),['all','Все · '+maximum]].forEach(([choice,label])=>{
     const button=el('button',label);button.type='button';button.dataset.cpu=choice==='all'?maximum:choice==='all-2'?maximum-2:1;
     button.setAttribute('aria-pressed',String(rtChoice===choice));button.dataset.tooltip='Реальные '+(physical?'физические ядра':'логические CPU')+' текущего ПК';
-    button.onclick=()=>{rtChoice=choice;state.cpu=Number(button.dataset.cpu);customCPU.value=workersControl.value=String(state.cpu);rtCPUButtons();rtQueueForm();};row.append(button);
+    button.onclick=event=>{event.stopPropagation();rtSelectCPU(choice);};row.append(button);
   });
   const info=panels[3].querySelector('.uc-small');
   rtText(info,(cpu.name||'CPU')+' · '+cpu.physical_cores+' ядер / '+cpu.logical_processors+' потоков · доступно '+(cpu.available_physical||'?')+' / '+cpu.available_logical+' · RAM '+(rtState.hardware.ram.available_bytes/1024**3).toFixed(1)+' ГиБ свободно');
+}
+function rtSelectCPU(choice){
+  if(rtHydrating||!rtState)return;
+  try{
+    const unit=orderSettings.cpu_unit==='Потоки SMT'?'logical':'physical';
+    const selected=window.ucodeOperatorControls.cpuSelection(rtState.hardware.cpu,unit,choice);
+    rtChoice=selected.choice;state.cpu=selected.workers;customCPU.value=workersControl.value=String(selected.workers);affinityField.value='';
+    $('uc-method').selectedIndex=0;$('uc-method').dispatchEvent(new Event('change',{bubbles:true}));
+    rtCPUButtons();rtQueueForm();
+  }catch(error){rtChoice=String(choice);rtFormError=error.message;updatePathGate();rtError(error);}
 }
 function rtHydrate(data){
   rtHydrating=true;
@@ -186,7 +196,7 @@ refreshFooter=function(){
   const metrics=root.querySelectorAll('.uc-telemetry>div');
   rtText(metrics[6]?.querySelector('strong'),load&&load.sampled_seconds>0?load.mean.toFixed(1)+'% / '+load.max.toFixed(1)+'% · min '+load.min.toFixed(1)+'%':'— / — · нет достаточных замеров');
   rtText(metrics[7]?.querySelector('strong'),memory?rtBytes(memory.current_tree_rss_bytes)+' / '+rtBytes(memory.peak_tree_rss_bytes):'— / — · не измерялась');
-  rtText($('uc-resource-cpu'),'QR: '+(p?.execution?.confirmed_processes??(f.execution_backend==='serial'?1:f.workers))+' процессов · PDF: 1');
+  rtText($('uc-resource-cpu'),f.execution_backend==='thread'?'QR: потоки Python (GIL) · PDF: 1 процесс':'QR: '+(p?.execution?.confirmed_processes??(f.execution_backend==='serial'?1:f.workers))+' процессов · PDF: 1');
   const seconds=r?.seconds;rtText(metrics[10]?.querySelector('strong'),seconds?[seconds.code_encoding,Number(seconds.write_multipage||0)+Number(seconds.write_singles||0),seconds.quality_checks].map(v=>typeof v==='number'?v.toFixed(3)+' с':'—').join(' / '):'— / — / —');
   const estimate=s.estimate;rtText(metrics[4]?.querySelector('strong'),estimate?'PDF ≈ '+rtBytes(estimate.pdf_bytes)+' · время: нужна калибровка':'Вес / время: нужна калибровка');
   rtText(metrics[4]?.querySelector('span'),'Прогноз · оценка');
@@ -340,10 +350,11 @@ $('uc-qr').setAttribute('aria-label','QR выбранной строки');
 async function rtCheckPath(){await rtFlushForm();rtFormTimer=null;await rtAction('preflight');}
 checkFolder.onclick=()=>rtCheckPath().catch(rtError);calcSpace.onclick=checkFolder.onclick;chooseFolder.onclick=()=>rtAction('dialog',{kind:'folder'}).catch(rtError);
 launchButton.dataset.tooltip='Создать настоящие PDF из текущей базы';
-customCPU.addEventListener('input',event=>{event.stopImmediatePropagation();rtChoice=String(rtNumber(customCPU.value));state.cpu=rtNumber(customCPU.value);workersControl.value=customCPU.value;groupInput(customCPU);rtCPUButtons();rtQueueForm();},true);
-workersControl.addEventListener('input',()=>{rtChoice='legacy';rtQueueForm();});
+customCPU.addEventListener('input',event=>{event.stopImmediatePropagation();groupInput(customCPU);rtSelectCPU(String(rtNumber(customCPU.value)));},true);
+workersControl.addEventListener('input',()=>{rtChoice='legacy';rtCPUButtons();rtQueueForm();});
+affinityField.addEventListener('input',()=>{rtChoice='legacy';rtCPUButtons();rtQueueForm();});
 root.addEventListener('input',event=>{if(event.target.closest('#uc-center-panel-2,#uc-center-panel-3')||event.target===pathInput)rtQueueForm();});
-root.addEventListener('change',event=>{if(event.target.closest('#uc-center-panel-2,#uc-center-panel-3')||event.target===duplicateButton){rtCPUButtons();rtQueueForm();}});
+root.addEventListener('change',event=>{if(event.target.dataset.ucSetting==='cpu_unit')rtSelectCPU(rtChoice==='legacy'?'all':rtChoice);else if(event.target.closest('#uc-center-panel-2,#uc-center-panel-3')||event.target===duplicateButton){if(event.target===$('uc-method')&&$('uc-method').selectedIndex!==0)rtChoice='legacy';rtCPUButtons();rtQueueForm();}});
 bgMode.addEventListener('click',rtQueueForm);resetSettings.onclick=async()=>{try{const data=await rtAPI('reset',{});rtApplyState(data);rtHydrate(data);render();}catch(e){rtError(e);}};
 document.addEventListener('click',event=>{
   const button=event.target.closest('button');if(!button||!root.contains(button))return;

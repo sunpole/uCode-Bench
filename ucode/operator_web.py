@@ -34,7 +34,8 @@ def document(token):
     source=source.replace(marker,bridge+'\n'+marker)
     source=source.replace('<script>','<script nonce="'+token+'">')
     prefix='<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>uCode 0.3.0</title><style>html,body{margin:0;background:#0b1220;color:#edf4fc}body{padding:8px;box-sizing:border-box}*{box-sizing:border-box}</style></head><body><script nonce="'+token+'">window.UCODE_RUNTIME=true;window.ucodeRows={};</script>'
-    return (prefix+source+'</body></html>').encode('utf-8')
+    controls=(ASSETS/'operator-controls.js').read_text(encoding='utf-8')
+    return (prefix+'<script nonce="'+token+'">'+controls+'</script>'+source+'</body></html>').encode('utf-8')
 
 
 class OperatorHTTP(ThreadingHTTPServer):
