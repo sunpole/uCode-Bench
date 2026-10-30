@@ -71,7 +71,8 @@ def main(root=None):
     except ImportError as exc:
         raise RuntimeError('Нужна проектная установка: Setup-Desktop.cmd. Запасной запуск: Start-uCode-Browser.cmd.') from exc
     from .operator_web import main as serve,_runtime_lock
-    project=Path(root or Path.cwd()).resolve();private=project/'.local-state';private.mkdir(exist_ok=True)
+    from .distribution import user_root
+    project=Path(root or user_root()).resolve();private=project/'.local-state';private.mkdir(exist_ok=True)
     lease=_runtime_lock(private/'desktop.lock')
     record=private/'desktop-window.json'
     if lease is None:
@@ -89,7 +90,7 @@ def main(root=None):
             controller.window=window
             window.events.closing+=controller.closing
             # No silent fallback to the obsolete IE renderer on Windows.
-            webview.start(gui='edgechromium' if os.name=='nt' else None,debug=False,
+            webview.start(gui='edgechromium' if os.name=='nt' else 'qt' if __import__('sys').platform=='linux' else None,debug=False,
                           private_mode=True,storage_path=str(private/'webview-profile'),
                           icon=str(Path(__file__).with_name('assets')/('ubrand.ico' if os.name=='nt' else 'ubrand.png')))
         serve(root=project,open_browser=False,presenter=present)

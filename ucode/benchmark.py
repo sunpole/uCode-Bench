@@ -1,3 +1,4 @@
+from .distribution import module_command
 """M07: explicit stage boundaries, isolated timings, strict qualification gate."""
 import hashlib
 import json
@@ -50,7 +51,7 @@ def _measure(directory, config, kind, output, *, tag, notify=None, cancel=None, 
     _json_new(request, {"config": config.to_dict(), "kind": kind, "output": str(output), **live, **extra})
     flags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
     started = time.perf_counter()
-    command = [sys.executable, "-m", "ucode.worker", str(request), str(response)]
+    command = module_command("ucode.worker",request,response)
     timeout = 1800 if config.count == 10000 else 600 if config.count == 1000 else 180
     if notify:
         with subprocess.Popen(command, cwd=Path(__file__).resolve().parent.parent, stdout=subprocess.PIPE,
