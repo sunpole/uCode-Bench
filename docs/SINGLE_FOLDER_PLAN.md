@@ -1,3 +1,5 @@
+> **СТАТУС 30.10.2026:** миграция пользователя в единственную `016_uCode` **уже выполнена и подтверждена** (два worktree сохранены на отдельном диске и удалены штатным Git). Нижеследующий текст описывает исходный план/ранний аудит, а не текущий список папок. Читать [CODEX_RESUME_2026-10-30.md](CODEX_RESUME_2026-10-30.md) прежде, чем предлагать изменения файловой структуры.
+
 # Единая локальная папка uCode — план безопасного перехода
 
 Статус: **PLAN / НЕ ВЫПОЛНЕН НА ПК**. Инициатор: пользователь 30.10.2026. Составлено ChatGPT для работы без Codex и будущей передачи Codex.
@@ -60,3 +62,11 @@
 - Установленный frozen uCode хранит примерно 70 МиБ пользовательских данных в профиле Windows `LOCALAPPDATA/uBrand/uCode` (точный путь не раскрывать в публичном репозитории).
 - **Критический вывод:** ни `016_uCode_PDF_test`, ни её `output/` нельзя удалять/чистить до проверки сохранности 20 ГиБ, настроек и восьми исходных изменений. Ранее в GitHub сохранили восемь файлов Codex в коммите `f70f748`, но локальную побайтовую идентичность этим файлам в первом аудите ещё НЕ доказали. Проверить `git hash-object --path` / blob SHA для восьми путей. При несовпадении создать отдельную резервную копию/пачт, без перезаписи GitHub.
 - **Следующий read-only этап:** сравнить рабочие восемь файлов с git blob `f70f748`, оценить дерево содержимого `output/` в крупных разделах, доступное место под независимую резервную копию 20 ГиБ. Проверить источники `results/` и `.local-state/`, не включать приватные значения/имена в публичные отчёты. Ни `git worktree remove`, ни `rm -rf`, ни `git clean`, ни `git reset --hard` пока НЕ выполнять.
+
+
+### Report-only PDF policy, owner decision 2026-10-30
+
+- User confirmed `f70f748` matches **all 8/8** local Codex source files. Main `016_uCode` remains the future single workspace but C: is 99% occupied (only 5.7 GiB available); `016_uCode_PDF_test/output/jobs` contains about 20 GiB generated output. Never delete working files automatically or change the local PC via GitHub actions.
+- Explicit requirement: benchmark/lab output should be **small test reports, QA evidence, timing and configuration**, not permanently accumulated PDF; generated PDF must still be physically written and verified before safely discarding it *outside* measured intervals. User-initiated production PDF for printing must be retained.
+- Read **docs/REPORT_ONLY_TESTS.md** and draft **PR #30** (`codex/v035-report-only-benchmarks` → `codex/v035-native-updater-tab`) before any further changes. GUI LabConfig/PipelineConfig/SearchConfig now perform per-trial report-only cleanup; historical scientific gate and console path need a separate safe migration and must never claim PASS without comparable QA evidence. `.gitignore` excludes output/ already; no PDF upload to GitHub.
+- No `git reset --hard`/`git clean`/worktree deletion; separate confirmation is required before deleting previous 20 GiB. Existing `results`, `.local-state`, TXT, user settings remain intact.

@@ -75,6 +75,13 @@ class OperatorWebTests(unittest.TestCase):
         command=self.api('console-plan',{'text':plan['command']});self.assertEqual(command['commands'][0]['config']['counts'],[2])
         self.api('test-start',{'name':'LabConfig','config':cfg});state=self.wait_done()
         self.assertEqual(state['result']['status'],'UNVERIFIED',state['result']);self.assertEqual(state['result']['kind'],'resource-lab')
+        laboratory=Path(self.server.service.options.output_directory)/'tests'/'laboratory'
+        trial_files=list(laboratory.rglob('trial.json'))
+        self.assertTrue(trial_files,'GUI laboratory must preserve a machine-readable report')
+        trial=json.loads(trial_files[-1].read_text(encoding='utf-8'))
+        self.assertEqual(trial['retention']['mode'],'REPORT_ONLY')
+        self.assertFalse(list(laboratory.rglob('*.pdf')),
+                         'Completed GUI benchmark must not retain temporary PDFs')
     def test_stop_nonce_cannot_skip_delay(self):
         service=self.server.service;service.busy=True
         request=self.api('stop-request',{})

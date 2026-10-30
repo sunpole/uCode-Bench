@@ -18,7 +18,7 @@ from .test_archive import archived_test
 
 
 @archived_test
-def run_pipeline_lab(output_root,config,*,cancel=None,events=None):
+def run_pipeline_lab(output_root,config,*,cancel=None,events=None,report_only=False):
     from .resource_lab import _run_trial
     from .frozen_runtime import snapshot_runtime,assert_trial_integrity
     from .history import _quality_pass
@@ -45,7 +45,7 @@ def run_pipeline_lab(output_root,config,*,cancel=None,events=None):
                 def event(value):
                     if events: events({**value,"stage":case["id"]+f" · повтор {repeat+1}/{config.repeats} · "+value["stage"],
                                        "percent":min(99.9,100*(finished+value["percent"]/100)/max(1,total))})
-                trial=_run_trial(folder/"trials"/f"{case['id']}-{repeat+1:02d}",request,cancel,event)
+                trial=_run_trial(folder/"trials"/f"{case['id']}-{repeat+1:02d}",request,cancel,event,report_only=report_only)
                 case["trials"].append(trial); finished+=1
                 assert_trial_integrity(trial)
                 if trial["status"]=="CANCELLED": raise InterruptedError("Серия конвейера остановлена")

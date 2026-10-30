@@ -14,3 +14,7 @@ node_modules/
 .nuget/
 **/obj/
 **/bin/
+
+# Generated PDF payloads are local-only, never commit test outputs.
+*.pdf
+*.PDF

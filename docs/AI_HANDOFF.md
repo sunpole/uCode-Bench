@@ -1,3 +1,5 @@
+> **ОБНОВЛЕНИЕ 30.10.2026, конец дня:** информация в этом документе историческая (часть событий написана до появления stable v0.3.4 и миграции диска). **Текущий проверенный handoff: [CODEX_RESUME_2026-10-30.md](CODEX_RESUME_2026-10-30.md)**. У пользователя теперь только рабочая папка `016_uCode`; две другие worktree архивированы и отключены. Готовы и открыты draft PR #28, #29, #30; релиз v0.3.4 опубликован. Не выполнять старые планы восстановления трёх папок.
+
 # Передача контекста ChatGPT → Codex: uCode-Bench
 
 Дата фиксации: 2026-10-30. Этот документ — журнал подтверждённых фактов и пользовательского сообщения о прерванной задаче. Он НЕ означает, что сборки или релиз уже выполнены.
@@ -92,3 +94,11 @@
 - Пользователь отказался от переменной длины массовых числовых QR. Не возвращаться к ней без нового требования.
 
 Ни одна запись о проектировании автоматической установки не даёт разрешения немедленно ставить EXE или менять пользовательские файлы; сначала отдельный safe install патч с планом, SHA-256, backup/rollback и ручным подтверждением.
+
+
+### Report-only PDF policy, owner decision 2026-10-30
+
+- User confirmed `f70f748` matches **all 8/8** local Codex source files. Main `016_uCode` remains the future single workspace but C: is 99% occupied (only 5.7 GiB available); `016_uCode_PDF_test/output/jobs` contains about 20 GiB generated output. Never delete working files automatically or change the local PC via GitHub actions.
+- Explicit requirement: benchmark/lab output should be **small test reports, QA evidence, timing and configuration**, not permanently accumulated PDF; generated PDF must still be physically written and verified before safely discarding it *outside* measured intervals. User-initiated production PDF for printing must be retained.
+- Read **docs/REPORT_ONLY_TESTS.md** and draft **PR #30** (`codex/v035-report-only-benchmarks` → `codex/v035-native-updater-tab`) before any further changes. GUI LabConfig/PipelineConfig/SearchConfig now perform per-trial report-only cleanup; historical scientific gate and console path need a separate safe migration and must never claim PASS without comparable QA evidence. `.gitignore` excludes output/ already; no PDF upload to GitHub.
+- No `git reset --hard`/`git clean`/worktree deletion; separate confirmation is required before deleting previous 20 GiB. Existing `results`, `.local-state`, TXT, user settings remain intact.

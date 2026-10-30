@@ -12,13 +12,13 @@ def run(request,cancel,send):
             cfg=OperatorService.valid_config(operation,request['config'])
             if operation=='LabConfig':
                 from .resource_lab import run_lab
-                folder=run_lab(root/'laboratory',cfg,cancel=cancel,events=events,progress=lambda s:send('status',s))
+                folder=run_lab(root/'laboratory',cfg,cancel=cancel,events=events,progress=lambda s:send('status',s),report_only=True)
             elif operation=='PipelineConfig':
                 from .pipeline_lab import run_pipeline_lab
-                folder=run_pipeline_lab(root/'pipeline',cfg,cancel=cancel,events=events)
+                folder=run_pipeline_lab(root/'pipeline',cfg,cancel=cancel,events=events,report_only=True)
             else:
                 from .pc_search import run_search
-                folder=run_search(root/'search',cfg,cancel=cancel,events=events)
+                folder=run_search(root/'search',cfg,cancel=cancel,events=events,report_only=True)
         elif operation=='console':
             from .test_commands import run_script
             folder=run_script(request['text'],root/'console',cancel=cancel,events=events)
