@@ -1,0 +1,136 @@
+name: Portable preview (Windows / Linux / macOS)
+
+# Manual PREVIEW ONLY. Never publishes or updates a GitHub Release.
+# The three files from the interrupted Codex session must first be committed.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: portable-preview-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check actual frozen entrypoint is committed
+        run: |
+          set -euo pipefail
+          for f in scripts/frozen_entry.py ucode/distribution.py ucode/system_check.py; do
+            if test ! -f "$f"; then
+              echo "::error file=$f::Codex stopped with a local WIP file; first preserve and commit it. No executable will be published."
+              exit 1
+            fi
+          done
+          python -m py_compile scripts/frozen_entry.py ucode/distribution.py ucode/system_check.py
+      - id: version
+        name: Read actual project version
+        shell: bash
+        run: |
+          python - <<'PY'
+          import pathlib, re, tomllib, os
+          project=tomllib.loads(pathlib.Path('pyproject.toml').read_text(encoding='utf-8'))
+          version=project['project']['version']
+          init=pathlib.Path('ucode/__init__.py').read_text(encoding='utf-8')
+          match=re.search(r'^__version__\\s*=\\s*[\'"]([^\'"]+)[\'"]', init, re.M)
+          if not match or match.group(1)!=version:
+              raise SystemExit('Version mismatch: pyproject.toml / ucode.__init__')
+          with open(os.environ['GITHUB_OUTPUT'],'a',encoding='utf-8') as out:
+              print('version='+version,file=out)
+          PY
+
+  portable:
+    needs: preflight
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            platform: windows-x64
+          - os: ubuntu-24.04
+            platform: linux-x64
+          - os: macos-15
+            platform: macos-arm64
+    env:
+      PYTHONUTF8: "1"
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          architecture: "arm64" # overridden below by x64 except macOS
+        if: runner.os == 'macOS'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          architecture: "x64"
+        if: runner.os != 'macOS'
+      - name: Install isolated packaging dependencies
+        shell: bash
+        run: |
+          python -m pip install "pyinstaller>=6,<7" ".[desktop]"
+      - name: Bundle the local application (portable folder)
+        shell: python
+        run: |
+          import os, subprocess, sys
+          sep=';' if os.name=='nt' else ':'
+          cmd=[sys.executable,'-m','PyInstaller',
+               '--noconfirm','--clean','--onedir','--name','uCode',
+               '--collect-all','ucode','--collect-all','webview',
+               '--collect-all','reportlab','--collect-all','pypdf',
+               '--add-data','ucode/assets'+sep+'ucode/assets']
+          if sys.platform=='darwin':
+              cmd+=['--windowed']
+          cmd+=['scripts/frozen_entry.py']
+          subprocess.run(cmd,check=True)
+      - name: Binary CLI smoke (no print job and no network)
+        shell: python
+        run: |
+          from pathlib import Path
+          import os, subprocess, sys
+          path=(Path('dist/uCode.app/Contents/MacOS/uCode') if sys.platform=='darwin'
+                else Path('dist/uCode/uCode.exe') if os.name=='nt'
+                else Path('dist/uCode/uCode'))
+          if not path.is_file():raise SystemExit('Portable executable missing: '+str(path))
+          p=subprocess.run([str(path.resolve()),'--help'],text=True,
+                           capture_output=True,timeout=50)
+          if p.returncode!=0:
+              raise SystemExit(f'Portable CLI smoke FAILED: exit={p.returncode}; stdout={p.stdout[-1000:]}; stderr={p.stderr[-1000:]}')
+      - name: Package preview and SHA256 checksums
+        shell: python
+        env:
+          UCODE_PLATFORM: ${{ matrix.platform }}
+          UCODE_VERSION: ${{ needs.preflight.outputs.version }}
+        run: |
+          from pathlib import Path
+          import hashlib,os,shutil,sys,tarfile
+          platform=os.environ['UCODE_PLATFORM'];version=os.environ['UCODE_VERSION']
+          out=Path('portable-artifacts');out.mkdir(exist_ok=True)
+          if sys.platform=='darwin':
+              src=Path('dist/uCode.app')
+              if not src.exists():raise SystemExit('macOS .app was not created')
+              path=Path(shutil.make_archive(str(out/f'uCode-{version}-{platform}'),'zip',root_dir='dist',base_dir='uCode.app'))
+          elif os.name=='nt':
+              path=Path(shutil.make_archive(str(out/f'uCode-{version}-{platform}'),'zip',root_dir='dist',base_dir='uCode'))
+          else:
+              path=out/f'uCode-{version}-{platform}.tar.gz'
+              with tarfile.open(path,'w:gz') as tf:tf.add('dist/uCode',arcname='uCode')
+          h=hashlib.sha256(path.read_bytes()).hexdigest()
+          (out/'SHA256SUMS.txt').write_text(f'{h}  {path.name}\n',encoding='utf-8')
+          print(path.name, h)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ucode-portable-preview-${{ matrix.platform }}-${{ needs.preflight.outputs.version }}
+          path: portable-artifacts/
+          if-no-files-found: error
+          retention-days: 14
