@@ -36,3 +36,11 @@
 - Текущий updater выполняет **ТОЛЬКО** проверку версии: `--check --installed X`, `--self-test`, `--version`. Команда `--install` недоступна; кнопка установки UI отключена. Не включать автоматические скачивания/замену файлов без полноценного отдельного патча с SHA-256, транзакционной установкой и откатом.
 - Сохранить `output/`, TXT, PDF, `.local-state/`, результаты и бэкапы вне каталога обновляемого приложения. Пользователь работает через Git Bash Here; основной грязный worktree не очищать.
 - Предложение QR с различной числовой длиной отклонено пользователем из-за отсутствия нужды; не разрабатывать без нового поручения.
+
+
+### Report-only PDF policy, owner decision 2026-10-30
+
+- User confirmed `f70f748` matches **all 8/8** local Codex source files. Main `016_uCode` remains the future single workspace but C: is 99% occupied (only 5.7 GiB available); `016_uCode_PDF_test/output/jobs` contains about 20 GiB generated output. Never delete working files automatically or change the local PC via GitHub actions.
+- Explicit requirement: benchmark/lab output should be **small test reports, QA evidence, timing and configuration**, not permanently accumulated PDF; generated PDF must still be physically written and verified before safely discarding it *outside* measured intervals. User-initiated production PDF for printing must be retained.
+- Read **docs/REPORT_ONLY_TESTS.md** and draft **PR #30** (`codex/v035-report-only-benchmarks` → `codex/v035-native-updater-tab`) before any further changes. GUI LabConfig/PipelineConfig/SearchConfig now perform per-trial report-only cleanup; historical scientific gate and console path need a separate safe migration and must never claim PASS without comparable QA evidence. `.gitignore` excludes output/ already; no PDF upload to GitHub.
+- No `git reset --hard`/`git clean`/worktree deletion; separate confirmation is required before deleting previous 20 GiB. Existing `results`, `.local-state`, TXT, user settings remain intact.
