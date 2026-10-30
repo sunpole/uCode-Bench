@@ -22,4 +22,4 @@ all-python-engines = ["PyMuPDF>=2,<3", "pikepdf>=9,<11", "pdfrw==0.4", "pypdfium
 include = ["ucode*"]
 
 [tool.setuptools.package-data]
-ucode = ["assets/*.png", "assets/*.svg", "assets/*.html", "assets/*.css", "assets/*.js"]
+ucode = ["assets/*.png", "assets/*.svg", "assets/*.ico", "assets/*.html", "assets/*.css", "assets/*.js"]

@@ -61,6 +61,7 @@ def main(root=None):
         # Before creating any window. Per-monitor V2 preserves Windows scaling;
         # older Windows gets per-monitor awareness where available.
         import ctypes
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('uBrand.uCode.Desktop')
         try:
             ctypes.windll.user32.SetProcessDpiAwarenessContext(ctypes.c_void_p(-4))
         except AttributeError:
@@ -89,7 +90,8 @@ def main(root=None):
             window.events.closing+=controller.closing
             # No silent fallback to the obsolete IE renderer on Windows.
             webview.start(gui='edgechromium' if os.name=='nt' else None,debug=False,
-                          private_mode=True,storage_path=str(private/'webview-profile'))
+                          private_mode=True,storage_path=str(private/'webview-profile'),
+                          icon=str(Path(__file__).with_name('assets')/('ubrand.ico' if os.name=='nt' else 'ubrand.png')))
         serve(root=project,open_browser=False,presenter=present)
     finally:lease.close()
 
