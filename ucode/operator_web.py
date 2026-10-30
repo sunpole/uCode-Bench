@@ -112,6 +112,8 @@ class Handler(BaseHTTPRequestHandler):
         s=self.server.service
         if route not in ('stop-request','stop','ui'):s.require_idle()
         if route=='configure':return s.configure(value)
+        if route=='output-name':
+            s.set_output_name(value.get('name',''),value.get('automatic',False));return s.state()
         if route=='ui':
             for key in ('theme','rowFont','allowSelect','statisticsOpen'):
                 if key in value:s.ui[key]=value[key]
@@ -123,7 +125,7 @@ class Handler(BaseHTTPRequestHandler):
                 if not path:return
                 if kind=='source':
                     from .operator_models import SourceIndex
-                    s.index=SourceIndex.build(path,s.private/'source-indexes',cancel=s.cancel);s.approval.invalidate();s.save()
+                    s.index=SourceIndex.build(path,s.private/'source-indexes',cancel=s.cancel);s.source_serial+=1;s.name_stamp=None;s.refresh_approval();s.save()
                 elif kind=='folder':
                     from dataclasses import replace
                     s.options=replace(s.options,output_directory=path);s.form['output_directory']=path;s.approval.invalidate();s.save()

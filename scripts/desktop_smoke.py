@@ -31,6 +31,16 @@ def run():
             'from ucode.operator_desktop import main; main(root='+repr(str(folder.resolve()))+')'],
             capture_output=True,timeout=10,creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
         result['duplicate_exit']=duplicate.returncode
+        def until_js(expression):
+            end=time.monotonic()+10
+            while time.monotonic()<end:
+                if window.evaluate_js(expression):return
+                time.sleep(.1)
+            raise TimeoutError(expression)
+        if '--order-flow' in sys.argv:
+            until_js("!!document.querySelector('#uc-output-name')?.value")
+            window.evaluate_js("document.querySelector('#uc-center-panel-0 .uc-type button').click()")
+            until_js("document.querySelector('#uc-center-tab-4').getAttribute('aria-selected')==='true'")
         api(url,'sequence',{'start':'500000000000','count':3,'step':1})
         def wait():
             end=time.monotonic()+20
@@ -39,7 +49,16 @@ def run():
                 if not state['busy']:return state
                 time.sleep(.05)
             raise TimeoutError('Small operation timeout')
-        state=wait();form=state['form']
+        state=wait()
+        if '--order-flow' in sys.argv:
+            until_js("document.querySelector('#uc-center-tab-5').getAttribute('aria-selected')==='true'")
+            window.evaluate_js("(()=>{const n=document.querySelector('#uc-output-name');n.value='Custom.PDF.pdf';n.dispatchEvent(new Event('input',{bubbles:true}));})()")
+            until_js("document.querySelector('#uc-output-name').value==='Custom.pdf'")
+            window.evaluate_js("[...document.querySelectorAll('#uc-center-panel-5 button')].find(b=>b.textContent==='Подтвердить').click()")
+            until_js("document.querySelector('#uc-center-tab-2').getAttribute('aria-selected')==='true'")
+            until_js("document.querySelector('.uc-style-preview-split img').complete && document.querySelector('.uc-style-preview-split img').naturalWidth>0")
+            result['order_flow']='PASS: type/base/path/style; manual name; actual style preview'
+        form=api(url,'state')['form']
         form.update(qa_mode='vector',execution_backend='process',workers=1,cpu_choice='1',cpu_unit='logical',telemetry='off')
         api(url,'configure',form);api(url,'preflight',{});wait()
         api(url,'generate',{});result['pdf']=wait()['result']

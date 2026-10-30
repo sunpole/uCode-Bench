@@ -1,0 +1,121 @@
+{
+  "scope": "real WebView2, 3 codes, geometry only; not visual/DPI acceptance",
+  "ok": true,
+  "session_closed": true,
+  "duplicate_exit": 0,
+  "order_flow": "PASS: type/base/path/style; manual name; actual style preview",
+  "geometry": [
+    {
+      "viewport": [
+        1184,
+        761
+      ],
+      "root": [
+        1166,
+        743
+      ],
+      "horizontal": false,
+      "bottom": 753,
+      "preview": true
+    },
+    {
+      "viewport": [
+        984,
+        661
+      ],
+      "root": [
+        966,
+        643
+      ],
+      "horizontal": false,
+      "bottom": 653,
+      "preview": true
+    },
+    {
+      "viewport": [
+        884,
+        521
+      ],
+      "root": [
+        866,
+        503
+      ],
+      "horizontal": false,
+      "bottom": 513,
+      "preview": true
+    },
+    {
+      "viewport": [
+        1184,
+        761
+      ],
+      "root": [
+        1166,
+        743
+      ],
+      "horizontal": false,
+      "bottom": 753,
+      "preview": true
+    }
+  ],
+  "tabs": [
+    {
+      "horizontal": false,
+      "bottom": 753,
+      "height": 761,
+      "stageHeight": 325
+    },
+    {
+      "horizontal": false,
+      "bottom": 753,
+      "height": 761,
+      "stageHeight": 325
+    },
+    {
+      "horizontal": false,
+      "bottom": 753,
+      "height": 761,
+      "stageHeight": 325
+    },
+    {
+      "horizontal": false,
+      "bottom": 753,
+      "height": 761,
+      "stageHeight": 325
+    },
+    {
+      "horizontal": false,
+      "bottom": 753,
+      "height": 761,
+      "stageHeight": 325
+    },
+    {
+      "horizontal": false,
+      "bottom": 753,
+      "height": 761,
+      "stageHeight": 224
+    },
+    {
+      "horizontal": false,
+      "bottom": 753,
+      "height": 761,
+      "stageHeight": 325
+    },
+    {
+      "horizontal": false,
+      "bottom": 753,
+      "height": 761,
+      "stageHeight": 325
+    }
+  ],
+  "version": "0.3.2",
+  "pdf": {
+    "status": "LIMITED",
+    "count": 3,
+    "pages": 3,
+    "files": 1
+  },
+  "python_tests": 34,
+  "node_tests": 2,
+  "visual_acceptance": "USER_PENDING"
+}

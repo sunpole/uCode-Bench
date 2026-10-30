@@ -9,3 +9,8 @@ html,body{height:100%;overflow:hidden}
 #ucode-layout .uc-stage .uc-work{min-height:0}
 #ucode-layout .uc-telemetry{max-height:22vh;overflow:auto}
 #ucode-layout .uc-file{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+#ucode-layout .uc-style-preview-split{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(190px,1fr);gap:22px;min-height:0}
+#ucode-layout .uc-style-preview-split>section{text-align:center}
+#ucode-layout .uc-style-preview-split img{width:160px;max-width:100%;aspect-ratio:1;border:1px solid var(--uc-line);padding:10px;border-radius:8px}
+#ucode-layout #uc-output-name{display:block;width:100%}

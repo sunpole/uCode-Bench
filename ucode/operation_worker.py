@@ -64,6 +64,9 @@ def main(argv=None):
             execution=execution,qa_mode=options['qa_mode'],activity=options['activity'],timeline_mode=options['timeline_mode'],
             copies_per_value=options['copies_per_value'],duplicate_policy=options['duplicate_policy'],
             events=observe,progress=lambda text:send('status',text),execution_observer=execution_seen)
+        if request.get('output_name'):
+            from .order_output import publish_job
+            result=publish_job(result,request['output_name'])
         if monitor:telemetry=monitor.finish();monitor=None
         manifest=json.loads((result/'manifest.json').read_text(encoding='utf-8'))
         manifest['seconds']['launcher_wall']=time.perf_counter()-request['launcher_started']

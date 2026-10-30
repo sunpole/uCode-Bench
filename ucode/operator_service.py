@@ -62,9 +62,14 @@ class OperatorService:
             try:self.lab_configs[name]=asdict(self.valid_config(name,json.loads((self.private/filename).read_text(encoding='utf-8'))))
             except (OSError,ValueError,TypeError,KeyError):pass
         self._stop_nonce=None;self._stop_at=None;self.revision=0;self.history_paths={};self.closed=False
+        self.output_name=None;self.manual_name=False;self.name_stamp=None;self.confirmed_directory=None;self.source_serial=0
         try:
             saved=json.loads((self.private/'web-ui.json').read_text(encoding='utf-8'))
             self.ui.update(saved.get('ui',{}));self.telemetry=saved.get('telemetry','cpu');self.form['telemetry']=self.telemetry
+            from .order_output import normalize_name
+            name=saved.get('order_name',{})
+            self.manual_name=bool(name.get('manual',False));self.name_stamp=name.get('stamp')
+            if self.manual_name:self.output_name=normalize_name(name['value'])
             for key,value in saved.get('lab_configs',{}).items():
                 if key in config_types():self.lab_configs[key]=asdict(self.valid_config(key,value))
             source=saved.get('source');cached=saved.get('index')
@@ -84,6 +89,7 @@ class OperatorService:
         if index:index.update(source=str(self.index.source),database=str(self.index.database))
         stat=self.index.database.stat() if self.index else None
         atomic_json(self.private/'web-ui.json',{'ui':self.ui,'telemetry':self.telemetry,'lab_configs':self.lab_configs,
+                    'order_name':{'value':self.result_name(),'manual':self.manual_name,'stamp':self.name_stamp},
                     'source':str(self.index.source) if self.index else None,'index':index,
                     'index_stat':[stat.st_size,stat.st_mtime_ns] if stat else None})
 
@@ -91,7 +97,32 @@ class OperatorService:
         if self.busy:raise ValueError('Операция выполняется. Сначала остановите её через подтверждение.')
 
     def order(self):
-        return {'source':self.index.sha256 if self.index else None,'form':self.form}
+        return {'source':self.index.sha256 if self.index else None,'form':self.form,'output_name':self.result_name()}
+
+    def result_name(self):
+        from .order_output import suggested_name
+        from datetime import datetime
+        if self.name_stamp is None:self.name_stamp=datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+        return self.output_name if self.manual_name else suggested_name(self.index.first if self.index else '0000',self.plan().total_codes if self.index else 0,self.name_stamp)
+
+    def set_output_name(self,value,automatic=False):
+        from .order_output import normalize_name
+        self.require_idle()
+        name=None if automatic else normalize_name(value)
+        self.output_name=name;self.manual_name=not automatic
+        self.refresh_approval();self.save()
+
+    def refresh_approval(self):
+        """Recalculate safely without requiring another folder selection."""
+        self.approval.invalidate()
+        if not self.index or self.confirmed_directory!=str(Path(self.options.output_directory).resolve()):return
+        try:
+            destination=Path(self.confirmed_directory);free=shutil.disk_usage(destination).free
+            estimate=estimate_space(self.plan().total_codes,self.mode,max(8192,(self.estimate or {}).get('sample_page_bytes',0)*2),free,
+                                    temp_bytes=self.plan().unique_values*4096,allocation_unit=65536)
+            self.estimate={**(self.estimate or {}),**asdict(estimate),'enough':estimate.enough}
+            if estimate.enough:self.approval.approve(self.order(),destination,estimate.required_bytes)
+        except (OSError,ValueError):self.status='Путь недоступен. Проверьте папку ещё раз.'
 
     def execution(self):
         from .generation_cpu import execution_options
@@ -116,6 +147,7 @@ class OperatorService:
         values={f.name:value.get(f.name,getattr(self.options,f.name)) for f in fields(GenerationPreferences)}
         for key in ('copies_per_value','template_count','workers','batch_size'):values[key]=parse_number(values[key],integer=True)
         options=GenerationPreferences(**values);mode=value.get('mode',self.mode)
+        if not isinstance(options.output_directory,str) or not options.output_directory.strip():raise ValueError('Укажите папку сохранения во вкладке «Путь»')
         if mode not in ('singles','multipage','both'):raise ValueError('Выберите формат файлов')
         if value.get('telemetry','cpu') not in ('cpu','off'):raise ValueError('Режим статистики: cpu/off')
         previous=(self.settings,self.options,self.form,self.mode,self.telemetry)
@@ -125,7 +157,7 @@ class OperatorService:
             self.execution()
         except Exception:
             self.settings,self.options,self.form,self.mode,self.telemetry=previous;raise
-        if self.approval.signature!=JobApproval.key(self.order()):self.approval.invalidate()
+        if self.approval.signature!=JobApproval.key(self.order()):self.refresh_approval()
         self.save();self.revision+=1
         return self.state()
 
@@ -143,7 +175,7 @@ class OperatorService:
         def task():
             index=SourceIndex.build(path,self.private/'source-indexes',cancel=self.cancel,
                 progress=lambda n,total:self.events.put(('status',f'Загрузка TXT · {n:,} строк'.replace(',',' '))))
-            self.index=index;self.approval.invalidate();self.save();return {'count':index.count}
+            self.index=index;self.source_serial+=1;self.name_stamp=None;self.refresh_approval();self.save();return {'count':index.count}
         self._launch('База',task)
 
     def sequence(self,value,save_as=None,use=True):
@@ -153,6 +185,7 @@ class OperatorService:
             path.parent.mkdir(parents=True,exist_ok=True);spec.save(path,cancel=self.cancel)
             if use:
                 self.index=SourceIndex.build(path,self.private/'source-indexes',cancel=self.cancel);self.approval.invalidate();self.save()
+                self.source_serial+=1;self.name_stamp=None;self.refresh_approval()
             self.ui['sequence']={'start':spec.first,'count':spec.count,'step':spec.step};self.save()
             return {'path':str(path),'count':spec.count,'use':use}
         self._launch('Создание TXT',task)
@@ -166,6 +199,8 @@ class OperatorService:
         self.require_idle()
         if not self.index:raise ValueError('Сначала откройте базу')
         order=self.order();index=self.index;cfg=self.settings;mode=self.mode;destination=Path(self.options.output_directory).resolve();plan=self.plan()
+        if os.name=='nt' and len(str(destination/Path(self.result_name()).stem/self.result_name()))>240:
+            raise ValueError('Слишком длинный путь результата. Сократите имя или выберите папку ближе к корню диска.')
         def task():
             from .hardware import probe_directory
             from .engines import get_engine
@@ -185,7 +220,8 @@ class OperatorService:
                     maximum=max(maximum,target.stat().st_size)
             estimate=estimate_space(plan.total_codes,mode,maximum,shutil.disk_usage(destination).free,temp_bytes=plan.unique_values*4096,allocation_unit=unit)
             self.estimate={**asdict(estimate),'sample_page_bytes':maximum,'probe':probe,'enough':estimate.enough}
-            if estimate.enough and order==self.order():self.approval.approve(order,destination,estimate.required_bytes)
+            if estimate.enough and order==self.order():
+                self.confirmed_directory=str(destination);self.approval.approve(order,destination,estimate.required_bytes)
             else:self.approval.invalidate()
             return self.estimate
         self._launch('Проверка папки',task)
@@ -196,8 +232,10 @@ class OperatorService:
         destination=Path(self.options.output_directory).resolve()
         if not self.approval.valid(self.order(),destination,shutil.disk_usage(destination).free):raise ValueError('PATH_REQUIRED: проверьте папку для текущего заказа')
         if not self.index.verify_content():self.approval.invalidate();raise ValueError('TXT изменился. Откройте его заново.')
+        from .hardware import probe_directory
+        probe_directory(destination)
         request={'input':str(self.index.source),'destination':str(destination),'settings':asdict(self.settings),'options':asdict(self.options),
-                 'mode':self.mode,'execution':asdict(self.execution()),'telemetry':self.telemetry,'archive':str(self.archive)}
+                 'mode':self.mode,'execution':asdict(self.execution()),'telemetry':self.telemetry,'archive':str(self.archive),'output_name':self.result_name()}
         self._host_start(request)
 
     def _host_start(self,request):
@@ -233,7 +271,11 @@ class OperatorService:
         with self.lock:
             self.pump();index=self.index
             approved=bool(index and index.unchanged() and self.approval.signature==JobApproval.key(self.order()))
+            if approved:
+                try:approved=self.approval.valid(self.order(),self.options.output_directory,shutil.disk_usage(self.options.output_directory).free)
+                except OSError:approved=False
             return {'busy':self.busy,'status':self.status,'revision':self.revision,'progress':self.progress,'result':self.result,
+                    'output_name':self.result_name(),'manual_name':self.manual_name,'source_serial':self.source_serial,
                     'elapsed':max(0,(self.finished or time.monotonic())-self.started) if self.started else 0,
                     'source':{'count':index.count,'first':index.first,'last':index.last,'name':index.source.name,'digest':index.sha256} if index else None,
                     'form':self.form,'ui':self.ui,'hardware':self.hardware,'path_approved':approved,'estimate':self.estimate,
@@ -257,7 +299,7 @@ class OperatorService:
     def preview_svg(self,page,sample=False):
         if not sample and not self.index:raise ValueError('База не загружена')
         value='500000000000' if sample else self.index.row(max(1,min(self.index.count,int(page))))
-        cfg=PrintSettings() if sample else self.settings;frame=self.preview_frame(value);q=cfg.quiet_modules;side=21+2*q
+        cfg=self.settings;frame=self.preview_frame(value);q=cfg.quiet_modules;side=21+2*q
         def color(ink):
             c,m,y,k=(v/100 for v in ink);return '#'+''.join(f'{round(255*(1-v)*(1-k)):02x}' for v in (c,m,y))
         paper='' if cfg.background_mode=='transparent' else f'<rect width="{side}" height="{side}" fill="{color(cfg.background_ink) if cfg.background_mode=="color" else "#ffffff"}"/>'

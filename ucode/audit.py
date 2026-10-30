@@ -5,7 +5,7 @@ import shutil
 import time
 
 
-def verify_outputs(directory,frames,settings,mode,*,code_module=None,render_samples=True,cancel=None,on_progress=None):
+def verify_outputs(directory,frames,settings,mode,*,code_module=None,render_samples=True,cancel=None,on_progress=None,layout=None):
     if mode not in ("both","multipage","singles") or not frames:
         raise ValueError("Неверный режим или пустой список кодов для QA")
     from .generators import get_generator
@@ -14,13 +14,15 @@ def verify_outputs(directory,frames,settings,mode,*,code_module=None,render_samp
     def emit(stage,done,total):
         if on_progress: on_progress(stage,done,total)
     if mode in ("both","multipage"):
-        path=root/f"all-{len(frames)}-pages.pdf"
+        from .order_output import output_path
+        path=output_path(root,layout,"multipage",f"all-{len(frames)}-pages.pdf")
         total=len(frames)+(len(samples) if render_samples else 0)
         emit("Проверка PDF",0,total)
         qa["multipage"]=code_module.verify(path,frames,settings,render_samples=render_samples,cancel=cancel,
             on_progress=lambda done,total:emit("Проверка PDF",done,total))
     if mode in ("both","singles"):
-        paths=sorted((root/"singles").glob("*.pdf")); done=0; failures=[]; failed=0
+        from .order_output import output_path
+        paths=sorted(output_path(root,layout,"singles","singles").glob("*.pdf")); done=0; failures=[]; failed=0
         total=len(frames)+(len(samples) if render_samples else 0)
         emit("Проверка отдельных PDF",0,total)
         if len(paths)!=len(frames):
@@ -80,7 +82,7 @@ def audit_job(directory,*,render_samples=True,cancel=None,events=None,progress=N
             if previous[0] is not None and stage!=previous[0]: previous[2]+=previous[1]
             previous[0],previous[1]=stage,total
             emit(stage,done,total,previous[2])
-        result["qa"]=verify_outputs(root,frames,settings,original["mode"],code_module=module,render_samples=raster,
+        result["qa"]=verify_outputs(root,frames,settings,original["mode"],layout=original.get("output_layout"),code_module=module,render_samples=raster,
                                     cancel=cancel,on_progress=update)
         result["status"]=qa_status(result["qa"],raster)
     except (Exception,KeyboardInterrupt) as exc:

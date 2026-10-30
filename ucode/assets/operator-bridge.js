@@ -109,7 +109,8 @@ function rtQueueForm(){
   rtFormTimer=setTimeout(()=>rtFlushForm().then(()=>render()).catch(error=>{rtFormError=error.message;rtError(error);}),250);
 }
 updatePathGate=function(){
-  if(!rtState)return;approvedPath=rtState.path_approved&&!rtFormTimer&&!rtFormError;
+  if(!rtState)return;approvedPath=rtState.path_approved&&!rtFormTimer&&!rtFormError&&!rtNameTimer&&!rtNameError;
+  launchButton.disabled=runActive||!approvedPath;
   launchButton.classList.toggle('uc-path-blocked',!approvedPath);launchButton.setAttribute('aria-disabled',String(!approvedPath));
   launchButton.dataset.tooltip=approvedPath?'Создать настоящие PDF с текущими параметрами':'Проверьте папку для текущего заказа во вкладке «Путь»';
   rtText(pathGateNote,approvedPath?'Папка проверена для текущего заказа.':'Проверка места не выполнена или устарела. Перейдите в «Путь».');
@@ -172,6 +173,7 @@ requestStop=async function(){
 };
 forceStop.onclick=requestStop;stopYes.onclick=async()=>{try{await rtAPI('stop',{nonce:rtNonce});stopDialog.close();rtText($('uc-status'),'Остановка собственного процесса…');}catch(error){rtError(error);}};
 finishRun=function(){rtLock(false);};
+let rtLastSource=null,rtConfirmPending=false;
 let rtClosePending=false;
 window.ucodeRequestClose=()=>{rtClosePending=true;rtLock(true);requestStop();};
 stopNo.addEventListener('click',()=>{rtClosePending=false;});
@@ -182,7 +184,11 @@ function rtApplyState(data){
   rtText($('uc-filename'),data.source?data.source.name:'Откройте TXT или создайте базу');
   baseFileInfo.replaceChildren(el('p',data.source?.name||'Файл не выбран'),el('p',data.source?fmt(data.source.count)+' строк · UTF-8 · 12 цифр':'Одна строка — один код'),el('p','Первый: '+(data.source?.first||'—')),el('p','Последний: '+(data.source?.last||'—')));
   rtLock(data.busy);refreshFooter();updatePathGate();
-  if(oldSource!==rtSourceDigest){state.page=1;render();if(data.source)activateTab(1);}
+  if(oldSource!==rtSourceDigest){state.page=1;render();}
+  if(rtLastSource!==null&&data.source_serial!==rtLastSource&&data.source)activateTab(5);rtLastSource=data.source_serial;
+  if(rtConfirmPending&&wasBusy&&!data.busy){rtConfirmPending=false;if(data.path_approved)activateTab(2);}
+  if(document.activeElement!==rtNameInput&&!rtNameTimer)rtNameInput.value=data.output_name;
+  rtStylePreview(data);
   if(wasBusy&&!data.busy){rtHydrate(data);render();if(currentView.index===6)showTest(selectedTest);}
   if(!data.busy&&rtClosePending){rtClosePending=false;window.pywebview?.api.finish_close();}
 }
@@ -345,14 +351,14 @@ function rtOther(){
   otherPanel.append(el('p','Русский интерфейс. Полный English и GPU пока в разработке. Внешний сервер статистики не подключён; все результаты сохраняются локально.','uc-small'));
 }
 // Wire existing controls; remove prototype wording while retaining their styling.
-root.setAttribute('aria-label','uCode · генерация QR и PDF');root.querySelector('.uc-legal>span').textContent='© 2026 · uCode · Антон Магомедов / uBrand · 0.3.0';
+root.setAttribute('aria-label','uCode · генерация QR и PDF');root.querySelector('.uc-legal>span').textContent='© 2026 · uCode · Антон Магомедов / uBrand · 0.3.2';
 if($('uc-ram').options.length>4)$('uc-ram').remove(4);
-$('uc-gen-note').textContent='Настоящий TXT UTF-8 сохраняется на вашем компьютере.';checkFolder.textContent='Проверить папку';calcSpace.textContent='Пересчитать и проверить';
+$('uc-gen-note').textContent='Настоящий TXT UTF-8 сохраняется на вашем компьютере.';checkFolder.textContent='Подтвердить';calcSpace.textContent='Пересчитать и проверить';
 [sampleBytes,tempBytes,availableBytes].forEach(input=>{input.readOnly=true;input.placeholder='Измеряется при проверке папки';});
 availableBytes.closest('label').firstChild.textContent='Свободно, ГиБ';
 availableBytes.setAttribute('aria-label','Свободно, ГиБ');tempBytes.closest('label').firstChild.textContent='Оценка временных данных, МиБ';tempBytes.setAttribute('aria-label','Оценка временных данных, МиБ');
 $('uc-qr').setAttribute('aria-label','QR выбранной строки');
-async function rtCheckPath(){await rtFlushForm();rtFormTimer=null;await rtAction('preflight');}
+async function rtCheckPath(){await rtSaveName();await rtFlushForm();rtFormTimer=null;rtConfirmPending=true;try{await rtAction('preflight');}catch(e){rtConfirmPending=false;throw e;}}
 checkFolder.onclick=()=>rtCheckPath().catch(rtError);calcSpace.onclick=checkFolder.onclick;chooseFolder.onclick=()=>rtAction('dialog',{kind:'folder'}).catch(rtError);
 launchButton.dataset.tooltip='Создать настоящие PDF из текущей базы';
 customCPU.addEventListener('input',event=>{event.stopImmediatePropagation();groupInput(customCPU);rtSelectCPU(String(rtNumber(customCPU.value)));},true);
@@ -395,11 +401,31 @@ async function rtPoll(){
   try{rtApplyState(await rtAPI('state'));}catch(error){rtText($('uc-status'),'Связь с локальным процессом прервана. Откройте Start-uCode.cmd для подключения.');}
   setTimeout(rtPoll,runActive?350:1000);
 }
+// Order name and styling preview are independent of preview pagination.
+let rtNameTimer=null,rtNameError='',rtStyleKey='';
+const rtNameLabel=el('label','Имя результата'),rtNameInput=el('input'),rtAutoName=el('button','Автоимя');
+rtNameInput.id='uc-output-name';rtNameInput.setAttribute('aria-label','Имя результата');rtNameInput.maxLength=164;
+rtNameLabel.append(rtNameInput);storageLeft.prepend(rtNameLabel,rtAutoName);
+async function rtSaveName(){clearTimeout(rtNameTimer);rtNameTimer=null;
+  if(rtNameInput.value===rtState?.output_name){rtNameError='';updatePathGate();return;}
+  try{const data=await rtAPI('output-name',{name:rtNameInput.value});rtNameError='';rtApplyState(data);}
+  catch(e){rtNameError=e.message;updatePathGate();throw e;}}
+rtNameInput.addEventListener('input',()=>{clearTimeout(rtNameTimer);rtNameError='';rtNameTimer=setTimeout(()=>rtSaveName().catch(rtError),300);updatePathGate();});
+rtAutoName.onclick=async()=>{clearTimeout(rtNameTimer);rtNameTimer=null;rtNameError='';try{rtApplyState(await rtAPI('output-name',{automatic:true}));}catch(e){rtError(e);}};
+const rtStyleSplit=el('div',null,'uc-style-preview-split'),rtStyleLeft=el('div'),rtStyleRight=el('section');
+[...panels[2].children].filter(node=>!node.classList.contains('uc-section-title')).forEach(node=>rtStyleLeft.append(node));
+const rtStyleImage=el('img'),rtStyleCaption=el('p','', 'uc-small'),rtStyleNote=el('p','Экранный цвет приблизителен. Для печати используйте параметры CMYK и проверку PDF.','uc-small');
+rtStyleImage.alt='Предпросмотр оформления';rtStyleRight.append(rtStyleImage,rtStyleCaption,rtStyleNote);rtStyleSplit.append(rtStyleLeft,rtStyleRight);panels[2].append(rtStyleSplit);
+function rtStylePreview(data){const key=JSON.stringify([data.source?.digest,data.form.print]);if(key===rtStyleKey)return;rtStyleKey=key;
+  rtStyleImage.src=rtBase+'api/preview?page=1&sample='+(data.source?0:1)+'&revision='+data.revision;
+  const p=data.form.print,side=p.module_mm*(21+2*p.quiet_modules);rtStyleImage.style.width=Math.min(195,Math.max(70,side/14.5*160))+'px';
+  rtStyleCaption.textContent=(data.source?'Первая строка базы · '+data.source.first:'Демонстрационный образец · база не выбрана')+' · '+side.toFixed(2)+' × '+side.toFixed(2)+' мм · поле '+p.quiet_modules+' модуля';}
+const rtIQ=el('section',null,'uc-type');rtIQ.append(el('h3','iQR'),el('p','Отдельный формат, коррекция S ≈50%.','uc-small'));const rtIQButton=el('button','В разработке');rtIQButton.disabled=true;rtIQ.append(rtIQButton);typesPanel.append(rtIQ);
 (async()=>{
   rtText($('uc-filename'),'Подключение к локальному процессу…');rtText($('uc-status'),'Загрузка uCode…');
   root.querySelectorAll('.uc-telemetry strong').forEach(node=>rtText(node,'—'));
   try{const data=await rtAPI('state');rtApplyState(data);rtHydrate(data);rtConfigs=await rtAPI('configs');showTest('CPU / RAM');rtOther();render();
     const image=el('img');image.src=rtBase+'api/preview?sample=1';image.alt='QR Code';image.style.cssText='height:100%;max-width:100%';$('uc-type-qr').replaceChildren(image);
-    if(!data.source)activateTab(4);rtPoll();
+    if(!data.source)activateTab(0);rtPoll();
   }catch(error){rtError(error);}
 })();
