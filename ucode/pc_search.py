@@ -124,7 +124,7 @@ from .test_archive import archived_test
 
 
 @archived_test
-def run_search(output_root,config,*,cancel=None,events=None):
+def run_search(output_root,config,*,cancel=None,events=None,report_only=False):
     from .search_report import write_search_report
     hardware=inspect_hardware(output_root); catalog=inspect_catalog()
     families=candidates(config,hardware["cpu"]); plan=preview_search(config,hardware["cpu"])
@@ -159,7 +159,7 @@ def run_search(output_root,config,*,cancel=None,events=None):
                 if events:
                     events({**value,"percent":min(99.9,100*(finished+value["percent"]/100)/max(1,plan["trials_upper_bound"])),
                             "stage":f"{count} кодов · {case['id']} · повтор{repeat+1}/{config.repeats} · "+value["stage"]})
-            trial=_run_trial(folder/"t"/f"{len(data['cases']):04d}-{repeat+1:02d}",request,cancel,event)
+            trial=_run_trial(folder/"t"/f"{len(data['cases']):04d}-{repeat+1:02d}",request,cancel,event,report_only=report_only)
             trial["relative_folder"]=(Path("t")/trial["folder"]).as_posix()
             case["trials"].append(trial); finished+=1
             assert_trial_integrity(trial)
