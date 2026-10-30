@@ -1,0 +1,39 @@
+{
+  "version": "0.3.0",
+  "tag_commit": "e6fbc0fc1b167c541614d869046a42baf389ed84",
+  "downloaded_checksums": "MATCH",
+  "public_wheel_smoke": [
+    {
+      "mode": "both",
+      "background": "white",
+      "status": "COMPLETE",
+      "count": 2
+    },
+    {
+      "mode": "multipage",
+      "background": "color",
+      "status": "COMPLETE",
+      "count": 2
+    },
+    {
+      "mode": "web-service-owned-worker",
+      "status": "LIMITED",
+      "count": 2
+    }
+  ],
+  "source_sha256": "5f53dac1a099fdcf180777c4dc5b652a6d2976772e7900ea7301441b63e3f254",
+  "wheel_sha256": "949aff58cae401acb8ff5ed9ce1aa006d992c3a253acd6b6aa87a49976e92d26",
+  "release_url": "https://github.com/sunpole/uCode-Bench/releases/tag/v0.3.0",
+  "ci_url": "https://github.com/sunpole/uCode-Bench/actions/runs/41009708898",
+  "ci": {
+    "Windows": "SUCCESS",
+    "Linux": "SUCCESS"
+  },
+  "implementation_prs": [
+    23,
+    24
+  ],
+  "published_at_utc": "2026-10-30T05:46:44Z",
+  "formal_visual_acceptance": "USER_PENDING",
+  "large_automatic_workloads": false
+}
