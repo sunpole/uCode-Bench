@@ -1,6 +1,6 @@
 # uCode: переносимые приложения — этап 1 (30.10.2026)
 
-Статус: **подготовлена инфраструктура CI-preview, полноценные автономные приложения НЕ подтверждены**.
+Статус: **три preview-пакета собраны в GitHub Actions и прошли CLI + небольшой реальный QR/PDF smoke**. Полноценные GUI, чистая установка, подпись и автообновление пока не подтверждены.
 
 ## Что добавлено
 
@@ -36,3 +36,29 @@
 - Кросс-компиляция пакетов одной ОС из другой ОС в обычном PyInstaller не поддерживается.
 - Контрольные суммы в CI — SHA-256 *проверочных артефактов*, но не сертификат цифровой подписи. Приложение Windows/macOS пока не подписано.
 - Более полный контракт передачи Codex: `docs/AI_HANDOFF.md`.
+
+## Восстановление Codex WIP и первый реальный результат (30.10.2026)
+
+- Пользователь сохранил все восемь файлов прерванной работы Codex на ветке `codex/portable-wip-20261030`, commit `f70f748c530bdad75e5472a8070b10974f0e878b`; исходная рабочая папка не удалялась. Открыт draft PR #27 в `codex/v034-local-qr-content`.
+- Первое CI выявило зависание Windows `--help` на 50 секунд из-за модального сообщения об ошибке. После удаления модального окна из CLI GitHub Actions выявил первопричину — `UnicodeEncodeError` из-за cp1252 при выводе русской справки.
+- В `scripts/frozen_entry.py` установлена UTF-8 кодировка stdout/stderr, а консольные ошибки теперь не требуют нажатия на MessageBox; упаковочный smoke читает UTF-8.
+- Добавлен `ucode/distribution_smoke.py`, он исключительно по опции `--smoke` создаёт две настоящие QR-страницы в одном PDF, проверяет PDF/manifest и применяет векторную QA. Ожидаемая метка QA — `LIMITED`, **не COMPLETE** (не включает Poppler-растровую проверку камеры). Временная папка после теста удаляется.
+- **Проверено на GitHub:** [portable preview run 41062288521](https://github.com/sunpole/uCode-Bench/actions/runs/41062288521), commit `1ddc17f5b7b3ae8ff38788b86ec8be7b1cd081b5`: preflight SUCCESS, Windows x64 SUCCESS, Linux x64 SUCCESS, macOS ARM64 SUCCESS, включая `--help` и `--smoke` **в уже упакованных исполняемых файлах**.
+- Проверено существование трёх GitHub Actions artifacts: `ucode-portable-preview-windows-x64-0.3.4`, `ucode-portable-preview-linux-x64-0.3.4`, `ucode-portable-preview-macos-arm64-0.3.4`, контрольные суммы в каждом пакете. Это **не GitHub Releases** и не подписанные инсталляторы; временные CI-артефакты сохраняются 14 дней.
+- Полная Windows/Linux исходная регрессия для предыдущего коммита `e45a745ca65e4b300a8e484e0904301698394efb`: [run 41061933545](https://github.com/sunpole/uCode-Bench/actions/runs/41061933545) SUCCESS; актуальную регрессию после добавления smoke нужно отслеживать отдельно.
+- Требуется пользовательская приёмка GUI на Windows: открыть `uCode.exe`, проверить WebView2, кнопки, реальные пользовательские TXT/QR, PDF в нужных форматах, DPI и закрытие. На чистой Windows не тестировалось. Аналогично Linux Qt/WebKit и macOS GUI/Gatekeeper не прошли физическую пользовательскую приёмку. Самообновление ещё НЕ реализовано.
+
+### Получение Windows preview через установленный GitHub CLI
+
+```powershell
+$download = Join-Path $env:USERPROFILE 'Downloads\uCode-034-preview'
+New-Item -ItemType Directory -Force -Path $download | Out-Null
+gh run download 41062288521 -R sunpole/uCode-Bench -n ucode-portable-preview-windows-x64-0.3.4 -D $download
+$archive = Join-Path $download 'uCode-0.3.4-windows-x64.zip'
+Get-FileHash -Algorithm SHA256 -LiteralPath $archive
+Get-Content -LiteralPath (Join-Path $download 'SHA256SUMS.txt')
+Expand-Archive -LiteralPath $archive -DestinationPath (Join-Path $download 'app')
+& (Join-Path $download 'app\uCode\uCode.exe') --smoke
+```
+
+Сверять хеш `Get-FileHash` с `SHA256SUMS.txt` перед запуском. Не разархивировать поверх рабочей копии или существующего дистрибутива. Инструкции по дальнейшему выпуску stable и merge в main — прежние, пока не выполнены.
