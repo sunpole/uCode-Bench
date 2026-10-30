@@ -1,0 +1,143 @@
+name: Publish verified stable v0.3.4
+
+# Explicit opt-in after the checked PRs have been merged into main.
+# This is deliberately manual: no preview branch push can publish a release.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: ucode-stable-v0.3.4
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG_NAME: v0.3.4
+      SOURCE_SHA: 7b1d5fae151b7edbe1f916c093d11813516479cd
+      BUILD_RUN: '41074759451'
+      TEST_RUN: '41074759503'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Confirm main, source identity and successful CI
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = refs/heads/main
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          python - <<'PY'
+          import pathlib, tomllib, re
+          cfg=tomllib.loads(pathlib.Path('pyproject.toml').read_text(encoding='utf-8'))
+          assert cfg['project']['version']=='0.3.4', 'Wrong project version'
+          py=pathlib.Path('ucode/__init__.py').read_text(encoding='utf-8')
+          assert re.search(r"""^__version__\s*=\s*['"]0\.3\.4['"]""",py,re.M), 'Wrong internal version'
+          assert pathlib.Path('docs/RELEASE_NOTES_034.md').is_file()
+          PY
+          git cat-file -e "$SOURCE_SHA^{commit}"
+          git merge-base --is-ancestor "$SOURCE_SHA" "$GITHUB_SHA"
+          # Every shipped runtime/code file must equal the CI-tested source.
+          git diff --exit-code "$SOURCE_SHA" "$GITHUB_SHA" -- pyproject.toml ucode scripts/frozen_entry.py
+          for RUN in "$BUILD_RUN" "$TEST_RUN"; do
+            state="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN" --jq '.conclusion')"
+            sha="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN" --jq '.head_sha')"
+            test "$state" = success
+            test "$sha" = "$SOURCE_SHA"
+          done
+          if gh release view "$TAG_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "::error::Release already exists; refusing to overwrite stable assets."
+            exit 1
+          fi
+
+      - name: Download the already verified packages from GitHub Actions
+        shell: bash
+        run: |
+          set -euo pipefail
+          for PLATFORM in windows-x64 linux-x64 macos-arm64; do
+            mkdir -p "release-work/$PLATFORM"
+            gh run download "$BUILD_RUN" --repo "$GITHUB_REPOSITORY" \
+              -n "ucode-portable-preview-$PLATFORM-0.3.4" \
+              -D "release-work/$PLATFORM"
+          done
+
+      - name: Validate three complete archives and create combined SHA256SUMS
+        shell: python
+        run: |
+          import hashlib, hmac, pathlib, shutil, tarfile, zipfile
+          root=pathlib.Path('release-work')
+          release=pathlib.Path('release-assets')
+          release.mkdir(exist_ok=False)
+          records=[]
+          formats={
+              'windows-x64':('uCode-0.3.4-windows-x64.zip','uCode/uCode.exe'),
+              'linux-x64':('uCode-0.3.4-linux-x64.tar.gz','uCode/uCode'),
+              'macos-arm64':('uCode-0.3.4-macos-arm64.zip','uCode.app/Contents/MacOS/uCode'),
+          }
+          for platform,(filename,binary) in formats.items():
+              directory=root/platform
+              path=directory/filename
+              checksum=directory/'SHA256SUMS.txt'
+              if not path.is_file() or path.stat().st_size<1000000 or not checksum.is_file():
+                  raise SystemExit('Missing or undersized package: '+filename)
+              lines=checksum.read_text(encoding='utf-8').strip().splitlines()
+              if len(lines)!=1:
+                  raise SystemExit('Expected single checksum record: '+filename)
+              parts=lines[0].split()
+              if len(parts)!=2 or parts[1]!=filename:
+                  raise SystemExit('Wrong checksum manifest: '+filename)
+              digest=hashlib.sha256()
+              with path.open('rb') as stream:
+                  for chunk in iter(lambda:stream.read(1024*1024),b''):
+                      digest.update(chunk)
+              hash_value=digest.hexdigest()
+              if not hmac.compare_digest(hash_value.lower(),parts[0].lower()):
+                  raise SystemExit('SHA256 mismatch: '+filename)
+              if filename.endswith('.tar.gz'):
+                  with tarfile.open(path,'r:gz') as archive:
+                      members={m.name for m in archive.getmembers()}
+                      if binary not in members:raise SystemExit('Missing Linux executable')
+              else:
+                  with zipfile.ZipFile(path) as archive:
+                      if binary not in archive.namelist():raise SystemExit('Missing executable: '+binary)
+                      if archive.testzip() is not None:raise SystemExit('Corrupt ZIP: '+filename)
+              shutil.copy2(path,release/filename)
+              records.append(f'{hash_value}  {filename}')
+              print('VALIDATED:',platform,filename,hash_value)
+          (release/'SHA256SUMS.txt').write_text('\n'.join(sorted(records))+'\n',encoding='utf-8')
+
+      - name: Create immutable annotated stable tag and GitHub Release
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG_NAME" >/dev/null 2>&1; then
+            git fetch origin "refs/tags/$TAG_NAME:refs/tags/$TAG_NAME"
+            actual="$(git rev-list -n 1 "$TAG_NAME")"
+            if [ "$actual" != "$GITHUB_SHA" ]; then
+              echo "::error::Existing tag points to a different commit; refusing replacement."
+              exit 1
+            fi
+          else
+            git tag -a "$TAG_NAME" "$GITHUB_SHA" -m 'Stable uCode v0.3.4; reviewed packaged Windows/Linux/macOS preview'
+            git push origin "refs/tags/$TAG_NAME"
+          fi
+          if gh release view "$TAG_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "::error::Release exists; refusing asset overwrite."
+            exit 1
+          fi
+          gh release create "$TAG_NAME" release-assets/* \
+            --repo "$GITHUB_REPOSITORY" --verify-tag \
+            --title 'uCode 0.3.4 — stable' \
+            --notes-file docs/RELEASE_NOTES_034.md \
+            --latest
+          gh release view "$TAG_NAME" --repo "$GITHUB_REPOSITORY" --json name,isDraft,isPrerelease,assets,url

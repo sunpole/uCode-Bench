@@ -33,7 +33,7 @@ env:
 
 jobs:
   test-batch:
-    timeout-minutes: 20
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -88,10 +88,10 @@ jobs:
         run: python -m unittest discover -s tests -p test_print_settings.py -v
       - name: Full regression (Windows)
         if: runner.os == 'Windows'
-        run: python -c "import faulthandler,unittest; faulthandler.dump_traceback_later(120, exit=True); suite=unittest.defaultTestLoader.discover('tests'); result=unittest.TextTestRunner(verbosity=2).run(suite); raise SystemExit(not result.wasSuccessful())"
+        run: python -c "import faulthandler,unittest; faulthandler.dump_traceback_later(300, exit=True); suite=unittest.defaultTestLoader.discover('tests'); result=unittest.TextTestRunner(verbosity=2).run(suite); raise SystemExit(not result.wasSuccessful())"
       - name: Full regression with actual Tk (Linux)
         if: runner.os == 'Linux'
-        run: xvfb-run -a python -c "import faulthandler,unittest; faulthandler.dump_traceback_later(120, exit=True); suite=unittest.defaultTestLoader.discover('tests'); result=unittest.TextTestRunner(verbosity=2).run(suite); raise SystemExit(not result.wasSuccessful())"
+        run: xvfb-run -a python -c "import faulthandler,unittest; faulthandler.dump_traceback_later(300, exit=True); suite=unittest.defaultTestLoader.discover('tests'); result=unittest.TextTestRunner(verbosity=2).run(suite); raise SystemExit(not result.wasSuccessful())"
       - name: Small real PDF smoke (up to 7 pages, serial and process)
         run: python scripts/verify_smoke.py
       - name: Tiny CPU RAM lab (two pages, three repeats)

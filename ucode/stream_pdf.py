@@ -29,8 +29,8 @@ def write_pdf(frames,path,settings,index_path,*,cancel=None,on_progress=None,gua
             for number,payload,frame,data in source:
                 check()
                 if not 1<=number<=count: raise ValueError("Номер страницы вне тиража")
-                if frame is not None and (frame.version!=1 or frame.error!="M" or frame.size!=21 or any(len(row)!=21 for row in frame.matrix)):
-                    raise ValueError("Только QR V1-M")
+                if frame is not None and (frame.version!=1 or frame.error not in ("L","M","Q","H") or frame.size!=21 or any(len(row)!=21 for row in frame.matrix)):
+                    raise ValueError("Только QR V1 L/M/Q/H")
                 cached=db.execute("SELECT ref FROM contents WHERE value=?",(payload,)).fetchone() if settings.pdf_profile=="compact" else None
                 content=cached[0] if cached else next_id
                 if not cached:

@@ -14,7 +14,7 @@ from pypdf import PdfReader
 from pypdf.generic import ContentStream,IndirectObject,ArrayObject
 
 from .config import Experiment, QRFrame
-from .qrdecode import DecodeError, decode_numeric_v1_m
+from .qrdecode import DecodeError, decode_numeric_v1
 
 
 PT_PER_MM = 72 / 25.4
@@ -144,8 +144,12 @@ def _page_matrix(page, reader, frame: QRFrame, config: Experiment, cache=None,sh
     result = tuple(tuple(row) for row in matrix)
     if result != frame.matrix:
         raise ValueError("Vector QR matrix differs from the expected number/order")
-    decoded = decode_numeric_v1_m(result)
+    if getattr(config,'payload_mode',False):
+        from .qr_content_codec import decode_content
+        decoded=decode_content(result,config.error_correction)
+    else:decoded = decode_numeric_v1(result,getattr(config,"error_correction","M"))
     if decoded != frame.payload:
+        if getattr(config,'payload_mode',False):raise ValueError('Decoded payload differs from supplied content')
         raise ValueError(f"Decoded payload {decoded!r} differs from TXT {frame.payload!r}")
     if cache is not None and key is not None and key in shared:
         cache[key]=(result,decoded)
@@ -156,6 +160,8 @@ def _decode_image(image_path: Path, config: Experiment, size=21):
     from PIL import Image
 
     with Image.open(image_path) as image:
+        if 'A' in image.getbands():
+            image=Image.alpha_composite(Image.new('RGBA',image.size,(255,255,255,255)),image.convert('RGBA'))
         image = image.convert("L")
         cells = size + 2 * config.quiet_modules
         if abs(image.width - image.height) > 1 or min(image.size) < cells * 8:
@@ -203,7 +209,10 @@ def _decode_image(image_path: Path, config: Experiment, size=21):
                 if (r < quiet or c < quiet or r >= quiet + size or c >= quiet + size) and full_matrix[r][c]:
                     raise DecodeError("Rendered quiet zone differs from configured substrate")
         matrix = tuple(tuple(row[quiet:quiet + size]) for row in full_matrix[quiet:quiet + size])
-        return decode_numeric_v1_m(matrix)
+        if getattr(config,'payload_mode',False):
+            from .qr_content_codec import decode_content
+            return decode_content(matrix,config.error_correction)
+        return decode_numeric_v1(matrix,getattr(config,"error_correction","M"))
 
 
 def check_pdf(path: Path, frames: list[QRFrame], config: Experiment, *, render_samples=True,
@@ -218,7 +227,7 @@ def check_pdf(path: Path, frames: list[QRFrame], config: Experiment, *, render_s
     result = {
         "status": "FAIL", "errors": [], "pages_checked": 0,
         "decoded_samples": [], "render_samples": bool(render_samples),
-        "decoder": "independent pristine QR V1/M/numeric12 + BCH + RS",
+        "decoder": ("independent pristine QR V1–40 UTF-8 + BCH + RS" if getattr(config,'payload_mode',False) else "independent pristine QR V1/"+getattr(config,"error_correction","M")+"/numeric12 + BCH + RS"),
         "geometry_tolerance_points": PT_TOLERANCE,
     }
     scratch=None
@@ -240,12 +249,14 @@ def check_pdf(path: Path, frames: list[QRFrame], config: Experiment, *, render_s
             if cancel is not None and cancel.is_set():
                 raise InterruptedError("Проверка PDF остановлена")
             try:
-                if frame.version != 1 or frame.error != "M" or frame.size != 21:
+                if ((not getattr(config,'payload_mode',False) and (frame.version!=1 or frame.size!=21)) or
+                    (getattr(config,'payload_mode',False) and (not 1<=frame.version<=40 or frame.size!=17+4*frame.version)) or
+                    frame.error != getattr(config,"error_correction","M")):
                     raise ValueError("Expected frame is outside QR V1/M contract")
                 cached=_content_key(page) in cache
                 _, payload = _page_matrix(page, reader, frame, config,cache,shared)
                 cached_pages+=int(cached); decoded_streams+=int(not cached)
-                digest.update((payload + "\n").encode("ascii"))
+                digest.update((payload + "\n").encode("utf-8"))
             except Exception as exc:
                 if len(result["errors"])<20: result["errors"].append(f"Page {index}: {type(exc).__name__}: {exc}")
             result["pages_checked"] += 1
@@ -282,7 +293,7 @@ def check_pdf(path: Path, frames: list[QRFrame], config: Experiment, *, render_s
                 prefix = render_dir / f"page_{index + 1:04d}"
                 completed = subprocess.run(
                     [renderer, "-f", str(index + 1), "-l", str(index + 1), "-singlefile",
-                     "-r", "1016", "-png", source, prefix.name],
+                     "-r", str(round(254/config.module_mm)) if getattr(config,'payload_mode',False) else "1016", "-png", source, prefix.name],
                     cwd=work.resolve(),capture_output=True, timeout=30, check=False,
                 )
                 if work!=render_dir and (work/(prefix.name+".png")).is_file():
@@ -291,7 +302,7 @@ def check_pdf(path: Path, frames: list[QRFrame], config: Experiment, *, render_s
                     detail = completed.stderr.decode("utf-8", errors="replace")[:500]
                     raise ValueError(f"pdftoppm exited {completed.returncode}: {detail}")
                 png = prefix.with_suffix(".png")
-                payload = _decode_image(png, config)
+                payload = _decode_image(png, config,frames[index].size)
                 if payload != frames[index].payload:
                     raise ValueError(f"Rendered page {index + 1}: decoded payload does not match TXT")
                 result["decoded_samples"].append({"page": index + 1, "payload": payload, "png": str(png.resolve())})

@@ -12,6 +12,7 @@ import time
 from urllib.parse import urlsplit,parse_qs
 
 from .operator_service import OperatorService,native_dialog
+from . import __version__
 
 ASSETS=Path(__file__).parent/'assets'
 APPROVED_SHA256='b86287a4413e4e32b51a46a6ca8b8c1a7278d627b0d4b0ee97612992e9bd863a'
@@ -35,7 +36,9 @@ def document(token):
     source=source.replace('<script>','<script nonce="'+token+'">')
     prefix='<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>uCode 0.3.0</title><style>html,body{margin:0;background:#0b1220;color:#edf4fc}body{padding:8px;box-sizing:border-box}*{box-sizing:border-box}</style></head><body><script nonce="'+token+'">window.UCODE_RUNTIME=true;window.ucodeRows={};</script>'
     controls=(ASSETS/'operator-controls.js').read_text(encoding='utf-8')
-    return (prefix+'<script nonce="'+token+'">'+controls+'</script>'+source+'</body></html>').encode('utf-8')
+    prefix=prefix.replace('<title>uCode 0.3.0</title>',f'<title>uCode {__version__}</title>')
+    constraints=(ASSETS/'operator-window.css').read_text(encoding='utf-8')
+    return (prefix+'<script nonce="'+token+'">'+controls+'</script>'+source+'<style>'+constraints+'</style></body></html>').encode('utf-8')
 
 
 class OperatorHTTP(ThreadingHTTPServer):
@@ -72,12 +75,15 @@ class Handler(BaseHTTPRequestHandler):
         route,args=target;s=self.server.service
         try:
             if route=='':self.send(document(self.server.token),content_type='text/html; charset=utf-8')
-            elif route=='api/health':self.send({'application':'uCode','version':'0.3.0','project':self.server.project_digest})
+            elif route=='api/health':self.send({'application':'uCode','version':__version__,'project':self.server.project_digest})
             elif route=='api/state':self.send(s.state())
             elif route=='api/rows':self.send(s.rows(int(args.get('page',['1'])[0])))
             elif route=='api/search':self.send({'rows':s.search(args.get('q',[''])[0])})
             elif route=='api/preview':self.send(s.preview_svg(int(args.get('page',['1'])[0]),args.get('sample',['0'])[0]=='1').encode(),content_type='image/svg+xml')
             elif route=='api/configs':self.send(s.lab_configs)
+            elif route=='api/content-kinds':
+                from .qr_payloads import KINDS
+                self.send(KINDS)
             elif route=='api/archive':
                 from .test_archive import KINDS,STATES
                 self.send([{**r,'kind_title':KINDS.get(r['kind'],r['kind']),'status_title':STATES.get(r['status'],r['status'])} for r in s.archive_rows()])
@@ -109,6 +115,9 @@ class Handler(BaseHTTPRequestHandler):
         s=self.server.service
         if route not in ('stop-request','stop','ui'):s.require_idle()
         if route=='configure':return s.configure(value)
+        if route=='content':s.set_content(value['kind'],value['fields']);return s.state()
+        if route=='output-name':
+            s.set_output_name(value.get('name',''),value.get('automatic',False));return s.state()
         if route=='ui':
             for key in ('theme','rowFont','allowSelect','statisticsOpen'):
                 if key in value:s.ui[key]=value[key]
@@ -120,7 +129,7 @@ class Handler(BaseHTTPRequestHandler):
                 if not path:return
                 if kind=='source':
                     from .operator_models import SourceIndex
-                    s.index=SourceIndex.build(path,s.private/'source-indexes',cancel=s.cancel);s.approval.invalidate();s.save()
+                    s.index=SourceIndex.build(path,s.private/'source-indexes',cancel=s.cancel);s.source_serial+=1;s.name_stamp=None;s.refresh_approval();s.save()
                 elif kind=='folder':
                     from dataclasses import replace
                     s.options=replace(s.options,output_directory=path);s.form['output_directory']=path;s.approval.invalidate();s.save()
@@ -257,7 +266,7 @@ def _runtime_lock(path):
     except OSError:stream.close();return None
 
 
-def main(root=None,open_browser=True):
+def main(root=None,open_browser=True,presenter=None):
     import webbrowser
     from urllib.request import urlopen
     project=Path(root or Path.cwd()).resolve();private=project/'.local-state';private.mkdir(parents=True,exist_ok=True)
@@ -268,7 +277,8 @@ def main(root=None,open_browser=True):
         if parsed.hostname=='127.0.0.1' and parsed.scheme=='http':
             with urlopen(url+'api/health',timeout=1) as response:live=json.load(response)
             if live.get('project')==digest and live.get('application')=='uCode':
-                if open_browser:webbrowser.open(url)
+                if presenter:presenter(url)
+                elif open_browser:webbrowser.open(url)
                 return
     except (OSError,ValueError,KeyError):pass
     lease=_runtime_lock(private/'web-runtime.lock')
@@ -281,6 +291,17 @@ def main(root=None,open_browser=True):
     from .lab_worker import atomic_json
     atomic_json(state_file,{'url':server.base,'pid':os.getpid(),'project':digest})
     server.timeout=.5
+    if presenter:
+        thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
+        try:presenter(server.base)
+        finally:
+            server.service.cancel.set();server.service.search_cancel.set()
+            host=server.service.host
+            if host:host.stop(force=True)
+            worker=server.service.worker
+            if worker:worker.join(10)
+            server.shutdown();thread.join(5);server.server_close();lease.close()
+        return
     if open_browser:webbrowser.open(server.base)
     try:
         while not server.service.closed:

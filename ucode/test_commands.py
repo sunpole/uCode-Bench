@@ -53,7 +53,7 @@ def parser_for(kind):
     p.add_argument("--repeats",type=int,default=3)
     p.add_argument("--qa",choices=QA,default="full")
     p.add_argument("--module",type=float,default=.5); p.add_argument("--quiet",type=int,default=4)
-    p.add_argument("--ink",default="0,0,0,100")
+    p.add_argument("--ink",default="0,0,0,100");p.add_argument("--ecc",choices=("L","M","Q","H"),default="M")
     p.add_argument("--pdf",default="compact"); p.add_argument("--metrics",default="off")
     p.add_argument("--xy",choices=("on","off"),default="off")
     p.add_argument('--background',choices=('white','color','transparent'),default='white')
@@ -91,7 +91,7 @@ def parse_command(line):
     a=parser_for(kind).parse_args(tokens[2:])
     pdf=values(a.pdf); metrics=values(a.metrics)
     settings=asdict(PrintSettings(a.module,a.quiet,tuple(float(n.strip()) for n in a.ink.split(",")),pdf[0],
-                                 background_mode=a.background,background_ink=tuple(float(n.strip()) for n in a.paper.split(','))))
+                                 error_correction=a.ecc,background_mode=a.background,background_ink=tuple(float(n.strip()) for n in a.paper.split(','))))
     common={"counts":values(a.codes,int),"repeats":a.repeats,"qa_mode":QA[a.qa],"print_settings":settings,"timeline_mode":a.xy}
     if kind=="lab":
         if len(values(a.batch,int))!=1: raise ValueError("lab: один размер порции на команду; для нескольких используйте несколько строк")
@@ -133,6 +133,7 @@ def command_text(command):
     settings=PrintSettings(**c.print_settings)
     args=["test",command.kind,"--codes",",".join(map(str,c.counts)),"--repeats",str(c.repeats),"--qa",c.qa_mode,
           "--module",str(settings.module_mm),"--quiet",str(settings.quiet_modules),"--ink",",".join(f"{n:g}" for n in settings.ink)]
+    args.extend(['--ecc',settings.error_correction])
     if settings.background_mode!='white' or any(settings.background_ink):
         args.extend(['--background',settings.background_mode,'--paper',','.join(f'{n:g}' for n in settings.background_ink)])
     def add(name,value): args.extend(["--"+name,",".join(map(str,value)) if isinstance(value,tuple) else str(value)])

@@ -1,0 +1,122 @@
+{
+  "scope": "real WebView2, 3 codes, geometry only; not visual/DPI acceptance",
+  "ok": true,
+  "session_closed": true,
+  "duplicate_exit": 0,
+  "geometry": [
+    {
+      "viewport": [
+        1184,
+        761
+      ],
+      "root": [
+        1166,
+        743
+      ],
+      "horizontal": false,
+      "bottom": 753,
+      "preview": true
+    },
+    {
+      "viewport": [
+        984,
+        661
+      ],
+      "root": [
+        966,
+        643
+      ],
+      "horizontal": false,
+      "bottom": 653,
+      "preview": true
+    },
+    {
+      "viewport": [
+        884,
+        521
+      ],
+      "root": [
+        866,
+        503
+      ],
+      "horizontal": false,
+      "bottom": 513,
+      "preview": true
+    },
+    {
+      "viewport": [
+        1184,
+        761
+      ],
+      "root": [
+        1166,
+        743
+      ],
+      "horizontal": false,
+      "bottom": 753,
+      "preview": true
+    }
+  ],
+  "tabs": [
+    {
+      "horizontal": false,
+      "bottom": 753,
+      "height": 761,
+      "stageHeight": 325
+    },
+    {
+      "horizontal": false,
+      "bottom": 753,
+      "height": 761,
+      "stageHeight": 325
+    },
+    {
+      "horizontal": false,
+      "bottom": 753,
+      "height": 761,
+      "stageHeight": 325
+    },
+    {
+      "horizontal": false,
+      "bottom": 753,
+      "height": 761,
+      "stageHeight": 325
+    },
+    {
+      "horizontal": false,
+      "bottom": 753,
+      "height": 761,
+      "stageHeight": 325
+    },
+    {
+      "horizontal": false,
+      "bottom": 753,
+      "height": 761,
+      "stageHeight": 224
+    },
+    {
+      "horizontal": false,
+      "bottom": 753,
+      "height": 761,
+      "stageHeight": 325
+    },
+    {
+      "horizontal": false,
+      "bottom": 753,
+      "height": 761,
+      "stageHeight": 325
+    }
+  ],
+  "version": "0.3.1",
+  "pdf": {
+    "status": "LIMITED",
+    "count": 3,
+    "files": 1,
+    "pages": 3,
+    "bytes": 2650
+  },
+  "python_tests": 20,
+  "node_tests": 2,
+  "visual_dpi_acceptance": "USER_PENDING",
+  "original_html_sha256": "b86287a4413e4e32b51a46a6ca8b8c1a7278d627b0d4b0ee97612992e9bd863a"
+}

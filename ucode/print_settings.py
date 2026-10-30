@@ -12,8 +12,10 @@ class PrintSettings:
     pdf_profile: str = "standard"
     background_mode: str = "white"
     background_ink: tuple = (0, 0, 0, 0)
+    error_correction: str = "M"
 
     def __post_init__(self):
+        if self.error_correction not in ('L','M','Q','H'):raise ValueError('Коррекция QR: L, M, Q или H')
         if self.pdf_profile not in ("standard","compact"):
             raise ValueError("PDF-профиль: обычный или компактный")
         if isinstance(self.module_mm, bool):
@@ -46,7 +48,7 @@ class PrintSettings:
         return self.ink == (0, 0, 0, 100) and (self.background_mode!='color' or not any(self.background_ink))
 
     @classmethod
-    def from_total_side(cls, total_mm: float, quiet_modules: int = 4, ink=(0, 0, 0, 100), *,pdf_profile="standard",background_mode='white',background_ink=(0,0,0,0)):
+    def from_total_side(cls, total_mm: float, quiet_modules: int = 4, ink=(0, 0, 0, 100), *,pdf_profile="standard",background_mode='white',background_ink=(0,0,0,0),error_correction='M'):
         if isinstance(quiet_modules, bool) or not isinstance(quiet_modules, int) or not 4 <= quiet_modules <= 20:
             raise ValueError("Белое поле: целое число от 4 до 20 модулей")
         try:
@@ -55,7 +57,7 @@ class PrintSettings:
             raise ValueError("Общий размер должен быть числом в миллиметрах") from exc
         if not math.isfinite(total) or total <= 0:
             raise ValueError("Общий размер должен быть положительным числом")
-        return cls(module_mm=total / (21 + 2 * quiet_modules), quiet_modules=quiet_modules, ink=ink,pdf_profile=pdf_profile,background_mode=background_mode,background_ink=background_ink)
+        return cls(module_mm=total / (21 + 2 * quiet_modules), quiet_modules=quiet_modules, ink=ink,pdf_profile=pdf_profile,background_mode=background_mode,background_ink=background_ink,error_correction=error_correction)
 
     @property
     def side_mm(self) -> float:
@@ -72,6 +74,7 @@ class PrintSettings:
     def to_dict(self) -> dict:
         return {
             "module_mm": self.module_mm,
+            "error_correction":self.error_correction,
             "quiet_modules": self.quiet_modules,
             "page_mm": [self.side_mm, self.side_mm],
             "dark_matrix_mm": self.dark_matrix_mm,

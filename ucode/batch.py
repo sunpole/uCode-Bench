@@ -207,7 +207,7 @@ def run_batch(input_txt: Path, output_root: Path, *, mode: str = "both",
         progress(f"Читаем {len(numbers)} строк TXT и создаём {code_module.name}")
         tracker.step(f"Кодирование {code_module.progress_name}", 0, len(encoding_numbers), base, force=True)
         t = time.perf_counter()
-        encoded, _ = encode_values(encoding_numbers, engine_key=engine, options=execution,
+        encoded, _ = encode_values(encoding_numbers,error_correction=config.error_correction, engine_key=engine, options=execution,
             encoding_only=activity=="minimal" or getattr(config,"pdf_profile","standard")=="compact",
             selected_engine=selected_engine, generator=generator, mode=mode, colorspace=print_metadata["colorspace"],
             plan=execution_info.copy(), metadata=report["execution"], cancel=cancel,

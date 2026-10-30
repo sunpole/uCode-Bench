@@ -1,11 +1,13 @@
 // Inserted inside the approved renderer's closure. Styles/layout are not rebuilt.
 let rtState=null,rtLoading=false,rtHydrating=false,rtFormTimer=null,rtPollTimer=null,rtRenderToken=0;
+let rtECC='M';
+const rtN=()=>rtState?.matrix_size||21;
 let rtSourceDigest='',rtChoice='all',rtNonce=null,rtConfigs={},rtFormError='',rtArchivePage=0,rtHistoryPage=0;
 let rtConfigSequence=Promise.resolve(),rtScientificOptions={size:200,methods:[]};
 const rtToken=location.pathname.split('/').filter(Boolean)[0],rtBase=location.pathname.replace(/\/?$/,'/');
 const rtClone=value=>JSON.parse(JSON.stringify(value));
 Object.assign(valueNames,{full:'Полная',vector:'Структура PDF',deferred:'Без проверки',multipage:'Один PDF',singles:'Отдельные PDF',both:'Оба варианта',white:'Белый',color:'Цветной',transparent:'Прозрачный',staged:'С отбором',true:'Вкл',false:'Выкл','all-2':'Все −2',all:'Все'});
-fieldNames.print_settings='Настройки PDF теста';
+fieldNames.print_settings='Настройки PDF теста';fieldNames.error_correction='Коррекция QR';
 const rtNumber=value=>Number(String(value).replace(/\s/g,'').replace(',','.'));
 const rtText=(node,text)=>{if(node&&node.textContent!==String(text))node.textContent=String(text);};
 const rtClock=seconds=>{seconds=Math.max(0,Math.floor(seconds||0));return [Math.floor(seconds/3600),Math.floor(seconds/60)%60,seconds%60].map(n=>String(n).padStart(2,'0')).join(':');};
@@ -55,8 +57,8 @@ function rtSelectCPU(choice){
 function rtHydrate(data){
   rtHydrating=true;
   try{
-    const f=data.form,p=f.print;rtChoice=f.cpu_choice;state.cpu=f.workers;customCPU.value=f.cpu_choice==='all'||f.cpu_choice==='all-2'?f.workers:f.cpu_choice==='legacy'?f.workers:f.cpu_choice;workersControl.value=f.workers;
-    $('uc-side').value=String(p.module_mm*(21+2*p.quiet_modules));moduleControl.value=String(p.module_mm);
+    const f=data.form,p=f.print;rtECC=p.error_correction||'M';rtCorrectionButtons();rtChoice=f.cpu_choice;state.cpu=f.workers;customCPU.value=f.cpu_choice==='all'||f.cpu_choice==='all-2'?f.workers:f.cpu_choice==='legacy'?f.workers:f.cpu_choice;workersControl.value=f.workers;
+    $('uc-side').value=String(p.module_mm*(rtN()+2*p.quiet_modules));moduleControl.value=String(p.module_mm);
     const quietField=panels[2].querySelector('input[aria-label^="Белое поле"]');if(quietField)quietField.value=p.quiet_modules;
     if(![...quietPicker.options].some(o=>parseInt(o.value,10)===p.quiet_modules)){const option=el('option',p.quiet_modules+' модуля');quietPicker.append(option);}
     quietPicker.selectedIndex=[...quietPicker.options].findIndex(o=>parseInt(o.value,10)===p.quiet_modules);
@@ -84,7 +86,7 @@ function rtHydrate(data){
 function rtCollectForm(){
   if(!rtState)throw Error('Программа ещё загружается');
   const f=rtClone(rtState.form),quiet=rtNumber(panels[2].querySelector('input[aria-label^="Белое поле"]').value);
-  f.print={module_mm:rtNumber($('uc-side').value)/(21+2*quiet),quiet_modules:quiet,ink:inkInputs.map(input=>rtNumber(input.value)),
+  f.print={error_correction:rtECC,module_mm:rtState.content_kind?rtNumber(moduleControl.value):rtNumber($('uc-side').value)/(21+2*quiet),quiet_modules:quiet,ink:inkInputs.map(input=>rtNumber(input.value)),
     pdf_profile:orderSettings.pdf_profile==='Компактный'?'compact':'standard',background_mode:['white','color','transparent'][backgroundMode],background_ink:backgroundInputs.map(input=>rtNumber(input.value))};
   f.mode=['multipage','singles','both'][$('uc-output').selectedIndex];f.copies_per_value=rtNumber(copiesField.value);
   f.duplicate_policy=orderSettings.duplicate_policy==='Один экземпляр значения'?'unique':'preserve';f.output_directory=pathInput.value;
@@ -109,7 +111,8 @@ function rtQueueForm(){
   rtFormTimer=setTimeout(()=>rtFlushForm().then(()=>render()).catch(error=>{rtFormError=error.message;rtError(error);}),250);
 }
 updatePathGate=function(){
-  if(!rtState)return;approvedPath=rtState.path_approved&&!rtFormTimer&&!rtFormError;
+  if(!rtState)return;approvedPath=rtState.path_approved&&!rtFormTimer&&!rtFormError&&!rtNameTimer&&!rtNameError;
+  launchButton.disabled=runActive||!approvedPath;
   launchButton.classList.toggle('uc-path-blocked',!approvedPath);launchButton.setAttribute('aria-disabled',String(!approvedPath));
   launchButton.dataset.tooltip=approvedPath?'Создать настоящие PDF с текущими параметрами':'Проверьте папку для текущего заказа во вкладке «Путь»';
   rtText(pathGateNote,approvedPath?'Папка проверена для текущего заказа.':'Проверка места не выполнена или устарела. Перейдите в «Путь».');
@@ -125,7 +128,7 @@ async function rtPaintRows(){
   }
   $('uc-rows').replaceChildren(fragment);jump.value=fmt(state.page);$('uc-page').value=state.page;
   of.textContent='/ '+fmt(state.count);$('uc-pages').textContent=of.textContent;first.disabled=back.disabled=state.page===1;last.disabled=forward.disabled=state.page>=state.count;
-  rtText($('uc-window'),data.rows.length?'Строки '+fmt(data.rows[0][0])+'–'+fmt(data.rows.at(-1)[0])+' из '+fmt(state.count)+' · UTF-8 · 12 цифр':'База пуста');
+  rtText($('uc-window'),data.rows.length?'Строки '+fmt(data.rows[0][0])+'–'+fmt(data.rows.at(-1)[0])+' из '+fmt(state.count)+(rtState.content_kind?' · UTF-8 · '+new TextEncoder().encode(rtState.source.first).length+' байт':' · UTF-8 · 12 цифр'):'База пуста');
   rtText($('uc-value'),window.ucodeRows[state.page]||'');
   const image=el('img');image.alt='QR Code · '+(window.ucodeRows[state.page]||'');image.src=rtBase+'api/preview?page='+state.page+'&revision='+rtState.revision;
   image.style.cssText='width:100%;height:100%;display:block';$('uc-qr').replaceChildren(image);
@@ -172,14 +175,25 @@ requestStop=async function(){
 };
 forceStop.onclick=requestStop;stopYes.onclick=async()=>{try{await rtAPI('stop',{nonce:rtNonce});stopDialog.close();rtText($('uc-status'),'Остановка собственного процесса…');}catch(error){rtError(error);}};
 finishRun=function(){rtLock(false);};
+let rtLastSource=null,rtConfirmPending=false;
+let rtClosePending=false;
+window.ucodeRequestClose=()=>{rtClosePending=true;rtLock(true);requestStop();};
+stopNo.addEventListener('click',()=>{rtClosePending=false;});
+stopDialog.addEventListener('click',event=>{if(event.target!==stopDialog||stopNo.disabled)return;const r=stopDialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)rtClosePending=false;});
 function rtApplyState(data){
   const oldSource=rtSourceDigest,wasBusy=runActive;rtState=data;rtSourceDigest=data.source?.digest||'';
   state.count=data.source?.count||0;state.start=data.source?.first||'500000000000';state.page=Math.max(1,Math.min(state.count||1,state.page));
   rtText($('uc-filename'),data.source?data.source.name:'Откройте TXT или создайте базу');
-  baseFileInfo.replaceChildren(el('p',data.source?.name||'Файл не выбран'),el('p',data.source?fmt(data.source.count)+' строк · UTF-8 · 12 цифр':'Одна строка — один код'),el('p','Первый: '+(data.source?.first||'—')),el('p','Последний: '+(data.source?.last||'—')));
+  baseFileInfo.replaceChildren(el('p',data.source?.name||'Файл не выбран'),el('p',data.source?(data.content_kind?'Содержимое QR · '+new TextEncoder().encode(data.source.first).length+' байт · матрица '+data.matrix_size+'×'+data.matrix_size:fmt(data.source.count)+' строк · UTF-8 · 12 цифр'):'Одна строка — один код'),el('p','Первый: '+(data.source?.first||'—')),el('p','Последний: '+(data.source?.last||'—')));
   rtLock(data.busy);refreshFooter();updatePathGate();
-  if(oldSource!==rtSourceDigest){state.page=1;render();if(data.source)activateTab(1);}
+  if(oldSource!==rtSourceDigest){state.page=1;render();}
+  if(rtLastSource!==null&&data.source_serial!==rtLastSource&&data.source)activateTab(5);rtLastSource=data.source_serial;
+  if(rtConfirmPending&&wasBusy&&!data.busy){rtConfirmPending=false;if(data.path_approved)activateTab(2);}
+  if(document.activeElement!==rtNameInput&&!rtNameTimer)rtNameInput.value=data.output_name;
+  root.classList.toggle('uc-content-mode',!!data.content_kind);rtStylePreview(data);
+  if(data.content_kind&&document.activeElement!==$('uc-side'))$('uc-side').value=String(data.form.print.module_mm*(data.matrix_size+2*data.form.print.quiet_modules));
   if(wasBusy&&!data.busy){rtHydrate(data);render();if(currentView.index===6)showTest(selectedTest);}
+  if(!data.busy&&rtClosePending){rtClosePending=false;window.pywebview?.api.finish_close();}
 }
 refreshFooter=function(){
   if(!rtState)return;
@@ -196,13 +210,13 @@ refreshFooter=function(){
   const metrics=root.querySelectorAll('.uc-telemetry>div');
   rtText(metrics[6]?.querySelector('strong'),load&&load.sampled_seconds>0?load.mean.toFixed(1)+'% / '+load.max.toFixed(1)+'% · min '+load.min.toFixed(1)+'%':'— / — · нет достаточных замеров');
   rtText(metrics[7]?.querySelector('strong'),memory?rtBytes(memory.current_tree_rss_bytes)+' / '+rtBytes(memory.peak_tree_rss_bytes):'— / — · не измерялась');
-  rtText($('uc-resource-cpu'),f.execution_backend==='thread'?'QR: потоки Python (GIL) · PDF: 1 процесс':'QR: '+(p?.execution?.confirmed_processes??(f.execution_backend==='serial'?1:f.workers))+' процессов · PDF: 1');
+  rtText($('uc-resource-cpu'),s.content_kind?'Один QR · 1 процесс; настройка ядер относится к массовым номерам':f.execution_backend==='thread'?'QR: потоки Python (GIL) · PDF: 1 процесс':'QR: '+(p?.execution?.confirmed_processes??(f.execution_backend==='serial'?1:f.workers))+' процессов · PDF: 1');
   const seconds=r?.seconds;rtText(metrics[10]?.querySelector('strong'),seconds?[seconds.code_encoding,Number(seconds.write_multipage||0)+Number(seconds.write_singles||0),seconds.quality_checks].map(v=>typeof v==='number'?v.toFixed(3)+' с':'—').join(' / '):'— / — / —');
   const estimate=s.estimate;rtText(metrics[4]?.querySelector('strong'),estimate?'PDF ≈ '+rtBytes(estimate.pdf_bytes)+' · время: нужна калибровка':'Вес / время: нужна калибровка');
   rtText(metrics[4]?.querySelector('span'),'Прогноз · оценка');
   rtText($('uc-output-info'),r?.data?.case_count!=null?'Серия: '+fmt(r.data.case_count)+' вариантов · подробности в отчёте':r?.files?fmt(r.files)+' PDF · '+(r.pages==null?'страницы: см. отчёт':fmt(r.pages)+' страниц')+' · '+rtBytes(r.bytes):'План: '+(f.mode==='multipage'?'1 PDF':f.mode==='singles'?fmt(total)+' PDF':'1 общий + '+fmt(total)+' отдельных PDF')+' · '+fmt(total*(f.mode==='both'?2:1))+' страниц');
   rtText($('uc-quality-info'),r?r.status+' · '+(r.status==='UNVERIFIED'?'качество не проверялось':'подробности в отчёте'):f.qa_mode==='deferred'?'Без проверки':'После создания: '+(f.qa_mode==='full'?'полная QA':'структура PDF'));
-  rtText($('uc-order-info'),'QR Code · '+Number(f.print.module_mm*(21+2*f.print.quiet_modules)).toFixed(2)+' мм · CMYK '+f.print.ink.join(' / ')+' · статистика: '+(f.telemetry==='cpu'?'подробная':'минимальная'));
+  rtText($('uc-order-info'),'QR Code · '+Number(f.print.module_mm*(rtN()+2*f.print.quiet_modules)).toFixed(2)+' мм · CMYK '+f.print.ink.join(' / ')+' · статистика: '+(f.telemetry==='cpu'?'подробная':'минимальная'));
   $('uc-results').hidden=!r||!r.data;
   if(estimate){sampleBytes.value=(estimate.sample_page_bytes/1024).toFixed(2);tempBytes.value=(estimate.temporary_bytes/1024**2).toFixed(2);availableBytes.value=(estimate.free_bytes/1024**3).toFixed(2);
     rtText(spaceResult,'Нужно с запасом: '+(estimate.required_bytes/1024**3).toFixed(2)+' ГиБ · '+(s.path_approved?'проверено для текущего заказа':'проверка устарела'));
@@ -330,7 +344,7 @@ async function rtHelpInApp(){
 }
 function rtOther(){
   otherPanel.replaceChildren(otherHeader);const grid=el('div',null,'uc-form-grid');otherPanel.append(grid);
-  [['Обновить сведения о CPU / RAM / диске',()=>rtAction('resources')],['Проверить запись 32 КиБ',()=>rtAction('probe')],['Проверить готовый PDF',()=>rtAction('audit')],
+  [['Открыть PNG для камеры',()=>rtAPI('result',{action:'png'})],['Открыть SVG',()=>rtAPI('result',{action:'svg'})],['Точное содержимое QR',()=>rtAPI('result',{action:'payload'})],['Обновить сведения о CPU / RAM / диске',()=>rtAction('resources')],['Проверить запись 32 КиБ',()=>rtAction('probe')],['Проверить готовый PDF',()=>rtAction('audit')],
    ['Открыть PDF',()=>rtAPI('result',{action:'pdf'})],['Открыть папку результата',()=>rtAPI('result',{action:'folder'})],['Отчёт в браузере',()=>rtAPI('result',{action:'report'})],
    ['Справка · F1',rtHelpInApp],['Полная справка с графическими схемами',()=>rtAPI('help',{})],['Версии и доступность движков',async()=>{
      const versions=await rtAPI('engines'),pre=el('pre',JSON.stringify(versions,null,2),'uc-small');pre.style.whiteSpace='pre-wrap';otherPanel.append(pre);}],
@@ -340,14 +354,14 @@ function rtOther(){
   otherPanel.append(el('p','Русский интерфейс. Полный English и GPU пока в разработке. Внешний сервер статистики не подключён; все результаты сохраняются локально.','uc-small'));
 }
 // Wire existing controls; remove prototype wording while retaining their styling.
-root.setAttribute('aria-label','uCode · генерация QR и PDF');root.querySelector('.uc-legal>span').textContent='© 2026 · uCode · Антон Магомедов / uBrand · 0.3.0';
+root.setAttribute('aria-label','uCode · генерация QR и PDF');root.querySelector('.uc-legal>span').textContent='© 2026 · uCode · Антон Магомедов / uBrand · 0.3.4';
 if($('uc-ram').options.length>4)$('uc-ram').remove(4);
-$('uc-gen-note').textContent='Настоящий TXT UTF-8 сохраняется на вашем компьютере.';checkFolder.textContent='Проверить папку';calcSpace.textContent='Пересчитать и проверить';
+$('uc-gen-note').textContent='Настоящий TXT UTF-8 сохраняется на вашем компьютере.';checkFolder.textContent='Подтвердить';calcSpace.textContent='Пересчитать и проверить';
 [sampleBytes,tempBytes,availableBytes].forEach(input=>{input.readOnly=true;input.placeholder='Измеряется при проверке папки';});
 availableBytes.closest('label').firstChild.textContent='Свободно, ГиБ';
 availableBytes.setAttribute('aria-label','Свободно, ГиБ');tempBytes.closest('label').firstChild.textContent='Оценка временных данных, МиБ';tempBytes.setAttribute('aria-label','Оценка временных данных, МиБ');
 $('uc-qr').setAttribute('aria-label','QR выбранной строки');
-async function rtCheckPath(){await rtFlushForm();rtFormTimer=null;await rtAction('preflight');}
+async function rtCheckPath(){await rtSaveName();await rtFlushForm();rtFormTimer=null;rtConfirmPending=true;try{await rtAction('preflight');}catch(e){rtConfirmPending=false;throw e;}}
 checkFolder.onclick=()=>rtCheckPath().catch(rtError);calcSpace.onclick=checkFolder.onclick;chooseFolder.onclick=()=>rtAction('dialog',{kind:'folder'}).catch(rtError);
 launchButton.dataset.tooltip='Создать настоящие PDF из текущей базы';
 customCPU.addEventListener('input',event=>{event.stopImmediatePropagation();groupInput(customCPU);rtSelectCPU(String(rtNumber(customCPU.value)));},true);
@@ -390,11 +404,72 @@ async function rtPoll(){
   try{rtApplyState(await rtAPI('state'));}catch(error){rtText($('uc-status'),'Связь с локальным процессом прервана. Откройте Start-uCode.cmd для подключения.');}
   setTimeout(rtPoll,runActive?350:1000);
 }
+// Order name and styling preview are independent of preview pagination.
+let rtNameTimer=null,rtNameError='',rtStyleKey='';
+const rtNameLabel=el('label','Имя результата'),rtNameInput=el('input'),rtAutoName=el('button','Автоимя');
+rtNameInput.id='uc-output-name';rtNameInput.setAttribute('aria-label','Имя результата');rtNameInput.maxLength=164;
+rtNameLabel.append(rtNameInput);storageLeft.prepend(rtNameLabel,rtAutoName);
+async function rtSaveName(){clearTimeout(rtNameTimer);rtNameTimer=null;
+  if(rtNameInput.value===rtState?.output_name){rtNameError='';updatePathGate();return;}
+  try{const data=await rtAPI('output-name',{name:rtNameInput.value});rtNameError='';rtApplyState(data);}
+  catch(e){rtNameError=e.message;updatePathGate();throw e;}}
+rtNameInput.addEventListener('input',()=>{clearTimeout(rtNameTimer);rtNameError='';rtNameTimer=setTimeout(()=>rtSaveName().catch(rtError),300);updatePathGate();});
+rtAutoName.onclick=async()=>{clearTimeout(rtNameTimer);rtNameTimer=null;rtNameError='';try{rtApplyState(await rtAPI('output-name',{automatic:true}));}catch(e){rtError(e);}};
+const rtStyleSplit=el('div',null,'uc-style-preview-split'),rtStyleLeft=el('div'),rtStyleRight=el('section');
+[...panels[2].children].filter(node=>!node.classList.contains('uc-section-title')).forEach(node=>rtStyleLeft.append(node));
+const rtStyleImage=el('img'),rtStyleCaption=el('p','', 'uc-small'),rtStyleNote=el('p','Экранный цвет приблизителен. Для печати используйте параметры CMYK и проверку PDF.','uc-small');
+rtStyleImage.alt='Предпросмотр оформления';rtStyleRight.append(rtStyleImage,rtStyleCaption,rtStyleNote);rtStyleSplit.append(rtStyleLeft,rtStyleRight);panels[2].append(rtStyleSplit);
+const rtCorrection=el('section');rtCorrection.id='uc-correction-plan';
+rtCorrection.append(el('h3','Коррекция ошибок QR'),el('p','Уровень применяется к предпросмотру, PDF и проверке. Размер клетки сохраняется; для текста матрица и страница увеличиваются автоматически.','uc-small'));
+const rtCorrectionRow=el('div',null,'uc-row');
+[['L','≈7%'],['M','≈15%'],['Q','≈25%'],['H','≈30%']].forEach(([level,percent])=>{
+  const button=el('button',level+' · '+percent);
+  button.type='button';button.dataset.ecc=level;button.setAttribute('aria-pressed',String(level===rtECC));button.onclick=()=>{rtECC=level;rtCorrectionButtons();rtQueueForm();};
+  button.dataset.tooltip='Коррекция '+level+'; проценты не являются гарантией чтения повреждённой площади';rtCorrectionRow.append(button);
+});
+function rtCorrectionButtons(){rtCorrectionRow.querySelectorAll('[data-ecc]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ecc===rtECC)));}
+rtCorrection.append(rtCorrectionRow,el('h3','iQR — отдельный формат'));
+const rtIQRCorrection=el('button','S · ≈50% · в разработке');rtIQRCorrection.type='button';rtIQRCorrection.disabled=true;
+rtCorrection.append(rtIQRCorrection,el('p','iQR требует отдельного генератора и проверки считывания. Проценты не гарантируют чтение при закрытии такой доли площади.','uc-small'));rtStyleLeft.append(rtCorrection);
+function rtStylePreview(data){const key=JSON.stringify([data.source?.digest,data.form.print]);if(key===rtStyleKey)return;rtStyleKey=key;
+  rtStyleImage.src=rtBase+'api/preview?page=1&sample='+(data.source?0:1)+'&revision='+data.revision;
+  const p=data.form.print,side=p.module_mm*(rtN()+2*p.quiet_modules);rtStyleImage.style.width=Math.min(195,Math.max(70,side/14.5*160))+'px';
+  rtStyleCaption.textContent=(data.source?'Первая строка базы · '+data.source.first:'Демонстрационный образец · база не выбрана')+' · '+side.toFixed(2)+' × '+side.toFixed(2)+' мм · поле '+p.quiet_modules+' модуля · коррекция '+(p.error_correction||'M');}
+const rtTypeText=document.createTreeWalker(typesPanel,NodeFilter.SHOW_TEXT);while(rtTypeText.nextNode())rtTypeText.currentNode.textContent=rtTypeText.currentNode.textContent.replaceAll('QR V1-M','QR V1–40 · L/M/Q/H');
+const rtContentAbout=el('p','База → Данные QR: текст, ссылки, контакты, Wi-Fi и другие данные. Матрица подбирается автоматически; TXT-номера сохраняют прежний профиль V1.','uc-small');typesPanel.querySelector('.uc-type')?.append(rtContentAbout);
+const rtIQ=el('section',null,'uc-type');rtIQ.append(el('h3','iQR'),el('p','Отдельный формат, коррекция S ≈50%.','uc-small'));const rtIQButton=el('button','В разработке');rtIQButton.disabled=true;rtIQ.append(rtIQButton);typesPanel.append(rtIQ);
+// Static content uses the existing order/path/style/preview flow; TXT stays unchanged.
+const rtContentBox=el('section'),rtContentNav=el('div',null,'uc-row'),rtContentFields=el('div',null,'uc-form-grid'),rtContentInfo=el('p','','uc-small');
+rtContentBox.id='uc-content-editor';const rtUseContent=el('button','Использовать данные'),rtPayloadView=el('textarea');
+rtPayloadView.readOnly=true;rtPayloadView.id='uc-payload-view';rtPayloadView.setAttribute('aria-label','Точное содержимое QR');rtPayloadView.rows=4;
+const rtCopyPayload=el('button','Скопировать содержимое');rtCopyPayload.onclick=async()=>{try{await navigator.clipboard.writeText(rtPayloadView.value);rtText(rtContentInfo,'Содержимое скопировано для сравнения.');}catch(e){rtPayloadView.focus();rtPayloadView.select();rtText(rtContentInfo,'Нажмите Ctrl+C, чтобы скопировать выделенное содержимое.');}};
+rtUseContent.id='uc-use-content';rtContentBox.append(el('h3','Содержимое QR'),rtContentNav,rtContentFields,rtUseContent,rtContentInfo,rtPayloadView,rtCopyPayload);
+const rtBaseSplit=panels[4].querySelector('.uc-base-split'),rtBaseMode=el('div',null,'uc-row'),rtModeNumbers=el('button','Номера из TXT'),rtModeContent=el('button','Данные QR');
+rtModeContent.id='uc-mode-content';rtBaseMode.append(rtModeNumbers,rtModeContent);panels[4].insertBefore(rtBaseMode,rtBaseSplit);panels[4].insertBefore(rtContentBox,rtBaseSplit);
+function rtContentMode(on){rtContentBox.hidden=!on;rtBaseSplit.hidden=on;rtModeNumbers.setAttribute('aria-pressed',String(!on));rtModeContent.setAttribute('aria-pressed',String(on));}
+rtModeNumbers.onclick=()=>rtContentMode(false);rtModeContent.onclick=()=>rtContentMode(true);rtContentMode(false);
+let rtContentKind='text',rtContentSchema=null;const rtContentInputs={};
+function rtContentSelect(kind){rtContentKind=kind;rtContentFields.replaceChildren();Object.keys(rtContentInputs).forEach(k=>delete rtContentInputs[k]);
+  rtContentNav.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.kind===kind)));
+  for(const [key,title,type] of rtContentSchema[kind][1]){const label=el('label',title),input=el(type==='textarea'?'textarea':type==='security'?'select':'input');
+    input.id='uc-content-'+key;input.setAttribute('aria-label',title);if(input.tagName==='INPUT')input.type=type;
+    if(type==='security'){for(const [value,text] of [['WPA','WPA / WPA2'],['WEP','WEP'],['nopass','Без пароля']]){const opt=el('option',text);opt.value=value;input.append(opt);}}
+    if(type==='textarea')input.rows=3;input.autocomplete='off';rtContentInputs[key]=input;label.append(input);rtContentFields.append(label);}
+  rtContentInfo.textContent=['pdf','images','video','app','social','url','whatsapp'].includes(kind)?'Код содержит готовую ссылку. uCode не загружает файлы и не создаёт страницу; для открытия адреса нужен интернет.':kind==='wifi'?'Пароль записывается в QR в открытом виде; его может прочитать любой сканер.':'Содержимое записывается прямо в QR. Действие при съёмке зависит от приложения камеры.';
+  rtPayloadView.value='';}
+rtUseContent.onclick=async()=>{try{await rtFlushForm();const fields={};for(const [key,input] of Object.entries(rtContentInputs))fields[key]=input.type==='checkbox'?input.checked:input.value;
+  const data=await rtAPI('content',{kind:rtContentKind,fields});rtApplyState(data);rtHydrate(data);render();rtPayloadView.value=data.source.first;
+  rtContentInfo.textContent='Готово: '+new TextEncoder().encode(data.source.first).length+' байт · QR '+data.matrix_size+'×'+data.matrix_size+' · коррекция '+data.form.print.error_correction;
+  activateTab(5);}catch(e){rtContentInfo.textContent=e.message;rtError(e);}};
+async function rtInitContent(){rtContentSchema=await rtAPI('content-kinds');for(const [kind,[title]] of Object.entries(rtContentSchema)){
+  const b=el('button',title);b.dataset.kind=kind;b.onclick=()=>rtContentSelect(kind);rtContentNav.append(b);}rtContentSelect('text');}
+moduleControl.addEventListener('input',e=>{if(!rtState?.content_kind)return;e.stopImmediatePropagation();$('uc-side').value=String(rtNumber(moduleControl.value)*(rtN()+2*rtNumber(panels[2].querySelector('input[aria-label^="Белое поле"]').value)));rtQueueForm();},true);
+$('uc-side').addEventListener('input',e=>{if(!rtState?.content_kind)return;e.stopImmediatePropagation();moduleControl.value=String(rtNumber($('uc-side').value)/(rtN()+2*rtNumber(panels[2].querySelector('input[aria-label^="Белое поле"]').value)));rtQueueForm();},true);
 (async()=>{
   rtText($('uc-filename'),'Подключение к локальному процессу…');rtText($('uc-status'),'Загрузка uCode…');
   root.querySelectorAll('.uc-telemetry strong').forEach(node=>rtText(node,'—'));
   try{const data=await rtAPI('state');rtApplyState(data);rtHydrate(data);rtConfigs=await rtAPI('configs');showTest('CPU / RAM');rtOther();render();
     const image=el('img');image.src=rtBase+'api/preview?sample=1';image.alt='QR Code';image.style.cssText='height:100%;max-width:100%';$('uc-type-qr').replaceChildren(image);
-    if(!data.source)activateTab(4);rtPoll();
+    await rtInitContent();rtContentMode(!!data.content_kind);if(data.content_kind)rtPayloadView.value=data.source.first;activateTab(0);window.ucodeReady=true;rtPoll();
   }catch(error){rtError(error);}
 })();

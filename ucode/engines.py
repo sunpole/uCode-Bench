@@ -36,6 +36,7 @@ class GenerationEngine(Protocol):
 
 
 class ReportLabEngine:
+    def __init__(self,error_correction="M"):self.error_correction=error_correction
     def prepare_encoding(self):
         from .qr import encode_numbers
         self._encode=encode_numbers
@@ -60,7 +61,7 @@ class ReportLabEngine:
     def encode(self, values, **kwargs):
         if not hasattr(self, "_encode"):
             self.prepare()
-        return self._encode(values, **kwargs)
+        return self._encode(values,error_correction=self.error_correction, **kwargs)
 
     def write_pdf(self, frames, path, settings, **kwargs):
         if getattr(settings,"pdf_profile","standard")=="compact":
@@ -83,7 +84,7 @@ def available_engines():
     return tuple(engine.info() for engine in _ENGINES.values())
 
 
-def get_engine(key="reportlab", *, generator="qr", mode="multipage", colorspace="DeviceCMYK"):
+def get_engine(key="reportlab", *, generator="qr", mode="multipage", colorspace="DeviceCMYK",error_correction="M"):
     engine = _ENGINES.get(key)
     if engine is None:
         raise ValueError(f"Неизвестный движок генерации: {key}")
@@ -96,4 +97,4 @@ def get_engine(key="reportlab", *, generator="qr", mode="multipage", colorspace=
         raise ValueError(f"Движок {info.name} не поддерживает формат результата {mode}")
     if colorspace not in info.colorspaces or not info.vector:
         raise ValueError(f"Движок {info.name} не поддерживает требуемый векторный {colorspace}")
-    return engine
+    return ReportLabEngine(error_correction) if key=="reportlab" and error_correction!="M" else engine

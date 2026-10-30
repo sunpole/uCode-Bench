@@ -1,3 +1,4 @@
+from .distribution import module_command
 """Owned production process and child-tree containment; GUI never runs the encoder."""
 import json
 import os
@@ -30,7 +31,7 @@ class OperationHost:
         if os.name=='nt':options['creationflags']=subprocess.CREATE_NO_WINDOW|subprocess.CREATE_NEW_PROCESS_GROUP
         else:options['start_new_session']=True
         try:
-            self.process=subprocess.Popen([sys.executable,'-m','ucode.operation_worker',str(request)],**options)
+            self.process=subprocess.Popen(module_command('ucode.operation_worker',request),**options)
             if os.name=='nt':self.job=create_owned_job(budget['budget_bytes'],process_handle=int(self.process._handle))
             self.go_path.touch(exist_ok=False)
         except BaseException:

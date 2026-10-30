@@ -26,7 +26,7 @@ class QRGenerator:
     available: bool = True
     progress_name: str = "QR"
     legacy_timing_key: str = "qr_encoding"
-    input_description: str = "QR V1-M: ровно 12 ASCII-цифр, без пробелов"
+    input_description: str = "QR V1 L/M/Q/H: ровно 12 ASCII-цифр, без пробелов"
 
     def validate(self, value):
         return len(value) == 12 and value.isascii() and value.isdigit()
@@ -42,8 +42,8 @@ class QRGenerator:
 
     def describe_settings(self, settings):
         self.validate_settings(settings)
-        return {"symbology": self.name, "version": 1, "ecc": "M", "numeric_digits": 12,
-                "description": "векторный QR V1-M",
+        return {"symbology": self.name, "version": 1, "ecc": settings.error_correction, "numeric_digits": 12,
+                "description": "векторный QR V1-"+settings.error_correction,
                 **settings.to_dict(), "colorspace": "DeviceCMYK", "vector": True,
                 "pdf_x_certified": False}
 

@@ -19,7 +19,7 @@ if (-not $pythonPath) {
 }
 $popplerDir = Join-Path $env:USERPROFILE '.cache\codex-runtimes\codex-primary-runtime\dependencies\native\poppler\Library\bin'
 if (Test-Path -LiteralPath $popplerDir -PathType Container) { $env:PATH = $popplerDir + ';' + $env:PATH }
-if ($Action -in @('gui', 'gui-legacy', 'batch')) {
+if ($Action -in @('gui', 'gui-browser', 'gui-legacy', 'batch')) {
     if (-not (Test-UCodePythonImports -PythonPath $pythonPath -Modules 'tkinter')) {
         Add-Type -AssemblyName System.Windows.Forms
         [System.Windows.Forms.MessageBox]::Show('В выбранном Python отсутствует tkinter. Выберите Python для Windows с tkinter или запустите Setup-PDF.cmd.', 'uCode') | Out-Null

@@ -31,6 +31,11 @@ def main(argv=None):
         while not watch_stop.wait(.1):
             if (folder/'cancel').exists():cancel.set();return
     watcher=threading.Thread(target=watch,name='ucode-cancel-file',daemon=True);watcher.start()
+    if request.get('operation')=='content':
+        from .qr_content_job import run_content_job
+        try:
+            result=run_content_job(request,cancel,send);send('done',str(result));return 0
+        finally:watch_stop.set();watcher.join(1)
     if request.get('operation','generate')!='generate':
         from .operator_test_worker import run
         try:return run(request,cancel,send)
@@ -64,6 +69,9 @@ def main(argv=None):
             execution=execution,qa_mode=options['qa_mode'],activity=options['activity'],timeline_mode=options['timeline_mode'],
             copies_per_value=options['copies_per_value'],duplicate_policy=options['duplicate_policy'],
             events=observe,progress=lambda text:send('status',text),execution_observer=execution_seen)
+        if request.get('output_name'):
+            from .order_output import publish_job
+            result=publish_job(result,request['output_name'])
         if monitor:telemetry=monitor.finish();monitor=None
         manifest=json.loads((result/'manifest.json').read_text(encoding='utf-8'))
         manifest['seconds']['launcher_wall']=time.perf_counter()-request['launcher_started']

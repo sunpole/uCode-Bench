@@ -63,7 +63,8 @@ class OperatorWebTests(unittest.TestCase):
         self.api('generate',{});state=self.wait_done();result=state['result']
         self.assertEqual(result['count'],3);self.assertEqual(result['files'],1);self.assertEqual(result['status'],'LIMITED')
         self.assertEqual(len(self.api('archive')),1)
-        form['copies_per_value']=2;state=self.api('configure',form);self.assertFalse(state['path_approved'])
+        form['copies_per_value']=2;state=self.api('configure',form);self.assertTrue(state['path_approved'])
+        form['output_directory']=str(self.folder/'other');state=self.api('configure',form);self.assertFalse(state['path_approved'])
         with self.assertRaises(HTTPError):self.api('generate',{})
     def test_lab_config_is_complete_and_independent_and_small_test_runs(self):
         self.load();before=self.api('state')['form'];configs=self.api('configs');cfg=configs['LabConfig']

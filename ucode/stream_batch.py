@@ -28,22 +28,25 @@ class ResourceGuard:
         if free is None or free<self.reserve: raise RuntimeError("Остановлено: исчерпан резерв ОЗУ, частичные файлы сохранены")
 
 
-def verify_stream_outputs(directory,frames,settings,mode,*,raster,cancel=None,on_progress=None,guard=lambda:None,indexed=True):
+def verify_stream_outputs(directory,frames,settings,mode,*,raster,cancel=None,on_progress=None,guard=lambda:None,indexed=True,layout=None):
     from .quality import check_pdf
     root=Path(directory); qa={}; count=len(frames); samples={0,count//2,count-1}
     if mode in ("multipage","both"):
-        path=root/f"all-{count}-pages.pdf"
+        from .order_output import output_path
+        path=output_path(root,layout,"multipage",f"all-{count}-pages.pdf")
         if on_progress: on_progress("Проверка PDF",0,count+(len(samples) if raster else 0))
         qa["multipage"]=check_pdf(path,frames,settings,render_samples=raster,cancel=cancel,
             on_progress=lambda done,total:on_progress("Проверка PDF",done,total) if on_progress else None,
             reader_factory=(lambda:DiskReader(path,root/"pdf-index.sqlite",cancel=cancel,guard=guard)) if indexed else None)
     if mode in ("singles","both"):
         done=failed=0; errors=[]; digits=max(4,len(str(count))); total=count+(len(samples) if raster else 0)
-        actual=sum(1 for _ in (root/"singles").glob("*.pdf"))
+        from .order_output import output_path
+        single_root=output_path(root,layout,"singles","singles")
+        actual=sum(1 for _ in single_root.glob("*.pdf"))
         if actual!=count: failed+=1; errors.append("Число отдельных PDF отличается от тиража")
         for index,frame in enumerate(frames):
             guard(); rendered=raster and index in samples
-            result=check_pdf(root/"singles"/f"{index+1:0{digits}d}_{frame.payload}.pdf",[frame],settings,render_samples=rendered,cancel=cancel)
+            result=check_pdf(single_root/(f"{index+1:0{digits}d}.pdf" if (layout or {}).get("numbered") else f"{index+1:0{digits}d}_{frame.payload}.pdf"),[frame],settings,render_samples=rendered,cancel=cancel)
             if result["status"]!="PASS":
                 failed+=1
                 if len(errors)<20: errors.append({"index":index+1,"errors":result["errors"]})
@@ -109,7 +112,7 @@ def run_stream_batch(input_txt,output_root,*,count_plan,settings,mode,engine,exe
         report["execution"]=info
         def encoding(done,total): guard(); tracker.step("Кодирование QR",done,total,0)
         timer=time.perf_counter()
-        encode_values(plan.values(),engine_key=engine,options=execution,plan=info.copy(),metadata=info,
+        encode_values(plan.values(),error_correction=settings.error_correction,engine_key=engine,options=execution,plan=info.copy(),metadata=info,
             cancel=cancel,on_progress=encoding,encoding_only=True,result_store=FrameStore(plan))
         report["seconds"]["code_encoding"]=report["seconds"]["qr_encoding"]=time.perf_counter()-timer
         report["generation"]["encoded_values"]=unique
@@ -166,7 +169,7 @@ def audit_stream_job(root,original,*,render_samples=True,cancel=None,events=None
     from .audit import qa_status
     from .progress import ProgressTracker
     root=Path(root); folder=_make_directory(root/"audits","qa"); guard=ResourceGuard(folder,cancel)
-    cfg=original["print"]; settings=PrintSettings(cfg["module_mm"],cfg["quiet_modules"],tuple(cfg["ink"]),pdf_profile=cfg.get("pdf_profile","standard"),background_mode=cfg.get('background_mode','white'),background_ink=tuple(cfg.get('background_ink',(0,0,0,0))))
+    cfg=original["print"]; settings=PrintSettings(cfg["module_mm"],cfg["quiet_modules"],tuple(cfg["ink"]),pdf_profile=cfg.get("pdf_profile","standard"),background_mode=cfg.get('background_mode','white'),background_ink=tuple(cfg.get('background_ink',(0,0,0,0))),error_correction=cfg.get('error_correction','M'))
     started=time.perf_counter(); plan=None
     result={"kind":"pdf-audit","status":"RUNNING","qa":{},"errors":[],"source_job":"../..","streaming":True}
     try:
@@ -179,12 +182,12 @@ def audit_stream_job(root,original,*,render_samples=True,cancel=None,events=None
         hardware=inspect_hardware(folder); options=ExecutionOptions()
         info=execution_plan(options,unique,hardware["cpu"],hardware["ram"]["available_bytes"],buffered=True)
         def encoded(done,total): guard(); tracker.step("Эталоны QR",done,total,0)
-        encode_values(plan.values(),options=options,plan=info,encoding_only=True,result_store=FrameStore(plan),cancel=cancel,on_progress=encoded)
+        encode_values(plan.values(),error_correction=settings.error_correction,options=options,plan=info,encoding_only=True,result_store=FrameStore(plan),cancel=cancel,on_progress=encoded)
         previous=[None,0,unique]
         def observe(stage,done,total):
             if previous[0] is not None and stage!=previous[0]: previous[2]+=previous[1]
             previous[0],previous[1]=stage,total; tracker.step(stage,done,total,previous[2])
-        result["qa"]=verify_stream_outputs(root,plan.frames(),settings,original["mode"],raster=raster,cancel=cancel,on_progress=observe,guard=guard,indexed=original.get("pdf_indexed",True))
+        result["qa"]=verify_stream_outputs(root,plan.frames(),settings,original["mode"],raster=raster,cancel=cancel,on_progress=observe,guard=guard,indexed=original.get("pdf_indexed",True),layout=original.get("output_layout"))
         result["status"]=qa_status(result["qa"],raster)
     except (Exception,KeyboardInterrupt) as exc:
         result.update(status="CANCELLED" if isinstance(exc,(InterruptedError,KeyboardInterrupt)) else "ERROR",errors=[str(exc)])
