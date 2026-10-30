@@ -109,7 +109,7 @@ def preview(config, hardware):
             "time_estimate": None}
 
 
-def _run_trial(folder, request, cancel, on_progress, timeout=None, cancel_grace=15):
+def _run_trial(folder, request, cancel, on_progress, timeout=None, cancel_grace=15, *, report_only=False):
     folder.mkdir(parents=True, exist_ok=False)
     atomic_json(folder / "request.json", request)
     env = dict(os.environ, PYTHONUTF8="1")
@@ -156,6 +156,10 @@ def _run_trial(folder, request, cancel, on_progress, timeout=None, cancel_grace=
     if process.returncode != 0 and result["status"] in ("COMPLETE","UNVERIFIED","LIMITED"):
         result.update(status="ERROR", errors=["Успешный JSON при ненулевом exitcode рабочего процесса"])
     result["folder"] = folder.name
+    if report_only:
+        from .test_retention import discard_trial_pdfs
+        result["retention"] = discard_trial_pdfs(folder)
+        atomic_json(folder/"trial.json",result)
     return result
 
 
@@ -163,7 +167,7 @@ from .test_archive import archived_test
 
 
 @archived_test
-def run_lab(output_root, config, *, cancel=None, events=None, progress=None):
+def run_lab(output_root, config, *, cancel=None, events=None, progress=None, report_only=False):
     hardware = inspect_hardware(output_root)
     cases = build_cases(config, hardware["cpu"])
     plan = preview(config, hardware)
@@ -210,7 +214,7 @@ def run_lab(output_root, config, *, cancel=None, events=None, progress=None):
                                      cpu_count=len(case["cpus"]),cpu_unit=case["cpu_unit"])
                         events(event)
                 if cancel is not None and cancel.is_set(): raise InterruptedError("Серия остановлена")
-                trial = _run_trial(folder/"trials"/f"{case['id']}-{repeat+1:02d}", request, cancel, update)
+                trial = _run_trial(folder/"trials"/f"{case['id']}-{repeat+1:02d}", request, cancel, update, report_only=report_only)
                 trial["relative_folder"] = "trials/"+trial["folder"]
                 case["trials"].append(trial); completed+=1
                 assert_trial_integrity(trial)
