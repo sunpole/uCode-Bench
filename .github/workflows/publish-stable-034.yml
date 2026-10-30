@@ -1,9 +1,14 @@
 name: Publish verified stable v0.3.4
 
-# Explicit opt-in after the checked PRs have been merged into main.
-# This is deliberately manual: no preview branch push can publish a release.
+# Explicit stable-approval marker or manually dispatched run on main only.
+# Only one specifically named approval commit can start the release.
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/RELEASE_APPROVAL_034.md'
 
 permissions:
   contents: write
@@ -15,7 +20,7 @@ concurrency:
 
 jobs:
   publish:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.event.head_commit.message == 'release: approve stable v0.3.4'))
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
@@ -35,6 +40,10 @@ jobs:
           set -euo pipefail
           test "$GITHUB_REF" = refs/heads/main
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          if [ "$GITHUB_EVENT_NAME" = push ]; then
+            test -f docs/RELEASE_APPROVAL_034.md
+            grep -Fq 'Approved: stable v0.3.4' docs/RELEASE_APPROVAL_034.md
+          fi
           python - <<'PY'
           import pathlib, tomllib, re
           cfg=tomllib.loads(pathlib.Path('pyproject.toml').read_text(encoding='utf-8'))
