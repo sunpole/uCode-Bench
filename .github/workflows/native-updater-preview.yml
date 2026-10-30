@@ -1,0 +1,52 @@
+name: Independent Windows updater (preview)
+
+on:
+  pull_request:
+    paths:
+      - 'updater/**'
+      - 'tests/test_update_center.py'
+      - 'ucode/assets/operator-updates.js'
+      - 'ucode/assets/operator-updates.css'
+      - 'ucode/operator_web.py'
+      - '.github/workflows/native-updater-preview.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  updater:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Publish independent self-contained single EXE
+        shell: pwsh
+        run: |
+          dotnet publish updater/uCode.Updater.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:PublishTrimmed=false -p:DebugType=None -p:DebugSymbols=false -o dist/native-updater
+          if ($LASTEXITCODE -ne 0) { throw 'Compile failed' }
+      - name: Run native offline self-test
+        shell: pwsh
+        run: |
+          & ./dist/native-updater/uCode.Updater.exe --self-test
+          if ($LASTEXITCODE -ne 0) { throw 'Native updater self-test failed' }
+          & ./dist/native-updater/uCode.Updater.exe --version
+          if ($LASTEXITCODE -ne 0) { throw 'Native updater version failed' }
+          & ./dist/native-updater/uCode.Updater.exe --help
+          if ($LASTEXITCODE -ne 0) { throw 'Native updater help failed' }
+      - name: Publish checksum
+        shell: pwsh
+        run: |
+          $hash=(Get-FileHash -Algorithm SHA256 -LiteralPath dist/native-updater/uCode.Updater.exe).Hash.ToLowerInvariant()
+          "$hash  uCode.Updater.exe" | Out-File -FilePath dist/native-updater/SHA256SUMS.txt -Encoding ascii
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ucode-native-updater-win64-preview
+          path: |
+            dist/native-updater/uCode.Updater.exe
+            dist/native-updater/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 14
