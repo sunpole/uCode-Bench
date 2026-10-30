@@ -23,6 +23,11 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
+      - name: Validate Update Center JavaScript syntax
+        shell: pwsh
+        run: |
+          node --check ucode/assets/operator-updates.js
+          if ($LASTEXITCODE -ne 0) { throw 'Update Center JavaScript parse failure' }
       - name: Publish independent self-contained single EXE
         shell: pwsh
         run: |
