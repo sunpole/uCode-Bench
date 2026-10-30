@@ -46,7 +46,7 @@ class UpdateCenterTests(unittest.TestCase):
         self.assertNotIn("https://cdn.jsdelivr.net/npm/qrcode",html)
 
     def test_read_only_status_does_not_need_network(self):
-        with patch("ucode.update_check.inspect_remote",side_effect=AssertionError("No network")):
+        with patch("ucode.updater_integration.inspect_remote",side_effect=AssertionError("No network")):
             data=self.request("update-info")
         self.assertEqual(data["installed"],"0.3.4")
         self.assertEqual(data["channel"],"stable")
@@ -56,11 +56,11 @@ class UpdateCenterTests(unittest.TestCase):
     def test_user_triggered_check_and_auth(self):
         snapshot={"installed":"0.3.4","latest":"0.3.4","status":"CURRENT",
                   "package":None,"installation":"NOT_STARTED"}
-        with patch("ucode.update_check.inspect_remote",return_value=snapshot) as check:
+        with patch("ucode.updater_integration.inspect_remote",return_value=snapshot) as check:
             result=self.request("updates-check",{})
         self.assertEqual(result["status"],"CURRENT")
         check.assert_called_once_with(installed="0.3.4")
-        with patch("ucode.update_check.inspect_remote") as check:
+        with patch("ucode.updater_integration.inspect_remote") as check:
             with self.assertRaises(HTTPError) as caught:
                 self.request("updates-check",{},authorized=False)
             self.assertEqual(caught.exception.code,403)
