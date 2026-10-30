@@ -37,10 +37,20 @@ function rtCPUButtons(){
   [['1','1'],...(maximum>2?[['all-2','Все − 2 · '+(maximum-2)]]:[]),['all','Все · '+maximum]].forEach(([choice,label])=>{
     const button=el('button',label);button.type='button';button.dataset.cpu=choice==='all'?maximum:choice==='all-2'?maximum-2:1;
     button.setAttribute('aria-pressed',String(rtChoice===choice));button.dataset.tooltip='Реальные '+(physical?'физические ядра':'логические CPU')+' текущего ПК';
-    button.onclick=()=>{rtChoice=choice;state.cpu=Number(button.dataset.cpu);customCPU.value=workersControl.value=String(state.cpu);rtCPUButtons();rtQueueForm();};row.append(button);
+    button.onclick=()=>rtSelectCPU(choice);row.append(button);
   });
   const info=panels[3].querySelector('.uc-small');
   rtText(info,(cpu.name||'CPU')+' · '+cpu.physical_cores+' ядер / '+cpu.logical_processors+' потоков · доступно '+(cpu.available_physical||'?')+' / '+cpu.available_logical+' · RAM '+(rtState.hardware.ram.available_bytes/1024**3).toFixed(1)+' ГиБ свободно');
+}
+function rtSelectCPU(choice){
+  if(rtHydrating||!rtState)return;
+  try{
+    const unit=orderSettings.cpu_unit==='Потоки SMT'?'logical':'physical';
+    const selected=window.ucodeOperatorControls.cpuSelection(rtState.hardware.cpu,unit,choice);
+    rtChoice=selected.choice;state.cpu=selected.workers;customCPU.value=workersControl.value=String(selected.workers);affinityField.value='';
+    $('uc-method').selectedIndex=0;$('uc-method').dispatchEvent(new Event('change',{bubbles:true}));
+    rtCPUButtons();rtQueueForm();
+  }catch(error){rtChoice=String(choice);rtFormError=error.message;updatePathGate();rtError(error);}
 }
 function rtHydrate(data){
   rtHydrating=true;
@@ -340,10 +350,10 @@ $('uc-qr').setAttribute('aria-label','QR выбранной строки');
 async function rtCheckPath(){await rtFlushForm();rtFormTimer=null;await rtAction('preflight');}
 checkFolder.onclick=()=>rtCheckPath().catch(rtError);calcSpace.onclick=checkFolder.onclick;chooseFolder.onclick=()=>rtAction('dialog',{kind:'folder'}).catch(rtError);
 launchButton.dataset.tooltip='Создать настоящие PDF из текущей базы';
-customCPU.addEventListener('input',event=>{event.stopImmediatePropagation();rtChoice=String(rtNumber(customCPU.value));state.cpu=rtNumber(customCPU.value);workersControl.value=customCPU.value;groupInput(customCPU);rtCPUButtons();rtQueueForm();},true);
+customCPU.addEventListener('input',event=>{event.stopImmediatePropagation();groupInput(customCPU);rtSelectCPU(String(rtNumber(customCPU.value)));},true);
 workersControl.addEventListener('input',()=>{rtChoice='legacy';rtQueueForm();});
 root.addEventListener('input',event=>{if(event.target.closest('#uc-center-panel-2,#uc-center-panel-3')||event.target===pathInput)rtQueueForm();});
-root.addEventListener('change',event=>{if(event.target.closest('#uc-center-panel-2,#uc-center-panel-3')||event.target===duplicateButton){rtCPUButtons();rtQueueForm();}});
+root.addEventListener('change',event=>{if(event.target.dataset.ucSetting==='cpu_unit')rtSelectCPU(rtChoice==='legacy'?'all':rtChoice);else if(event.target.closest('#uc-center-panel-2,#uc-center-panel-3')||event.target===duplicateButton){rtCPUButtons();rtQueueForm();}});
 bgMode.addEventListener('click',rtQueueForm);resetSettings.onclick=async()=>{try{const data=await rtAPI('reset',{});rtApplyState(data);rtHydrate(data);render();}catch(e){rtError(e);}};
 document.addEventListener('click',event=>{
   const button=event.target.closest('button');if(!button||!root.contains(button))return;
