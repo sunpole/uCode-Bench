@@ -172,6 +172,10 @@ requestStop=async function(){
 };
 forceStop.onclick=requestStop;stopYes.onclick=async()=>{try{await rtAPI('stop',{nonce:rtNonce});stopDialog.close();rtText($('uc-status'),'Остановка собственного процесса…');}catch(error){rtError(error);}};
 finishRun=function(){rtLock(false);};
+let rtClosePending=false;
+window.ucodeRequestClose=()=>{rtClosePending=true;rtLock(true);requestStop();};
+stopNo.addEventListener('click',()=>{rtClosePending=false;});
+stopDialog.addEventListener('click',event=>{if(event.target!==stopDialog||stopNo.disabled)return;const r=stopDialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)rtClosePending=false;});
 function rtApplyState(data){
   const oldSource=rtSourceDigest,wasBusy=runActive;rtState=data;rtSourceDigest=data.source?.digest||'';
   state.count=data.source?.count||0;state.start=data.source?.first||'500000000000';state.page=Math.max(1,Math.min(state.count||1,state.page));
@@ -180,6 +184,7 @@ function rtApplyState(data){
   rtLock(data.busy);refreshFooter();updatePathGate();
   if(oldSource!==rtSourceDigest){state.page=1;render();if(data.source)activateTab(1);}
   if(wasBusy&&!data.busy){rtHydrate(data);render();if(currentView.index===6)showTest(selectedTest);}
+  if(!data.busy&&rtClosePending){rtClosePending=false;window.pywebview?.api.finish_close();}
 }
 refreshFooter=function(){
   if(!rtState)return;

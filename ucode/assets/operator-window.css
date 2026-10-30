@@ -1,0 +1,11 @@
+/* Window constraints only. The approved snapshot remains byte-for-byte intact. */
+html,body{height:100%;overflow:hidden}
+#ucode-layout{height:calc(100dvh - 16px);display:flex;flex-direction:column;min-width:0}
+#ucode-layout .uc-head,#ucode-layout .uc-footer{flex:0 0 auto}
+#ucode-layout .uc-body{flex:1 1 0;min-height:0;display:flex;flex-direction:column}
+#ucode-layout .uc-tabstrip,#ucode-layout .uc-command-band{flex:0 0 auto}
+#ucode-layout .uc-stage{flex:1 1 0;height:0!important;min-height:0;overflow:hidden}
+#ucode-layout .uc-stage>[role=tabpanel]{height:100%;min-height:0;overflow:auto}
+#ucode-layout .uc-stage .uc-work{min-height:0}
+#ucode-layout .uc-telemetry{max-height:22vh;overflow:auto}
+#ucode-layout .uc-file{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

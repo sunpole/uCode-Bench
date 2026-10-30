@@ -1,3 +1,3 @@
 """uCode: local modular QR/PDF benchmark."""
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
