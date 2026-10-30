@@ -1,0 +1,335 @@
+{
+  "kind": "pc-search-verification",
+  "date": "2026-10-28",
+  "scope": "Small real PDFs only; no large-workload winner inferred",
+  "engine_probe": {
+    "adapters": 11,
+    "families": 9,
+    "engines": [
+      {
+        "name": "qpdf",
+        "family": "qpdf",
+        "language": "C++",
+        "version": "qpdf version 12.4.2",
+        "status": "PASS",
+        "repeats": 3,
+        "pages": 2,
+        "merge_seconds": [
+          0.042775399997481145,
+          0.043440400004328694,
+          0.042598799998813774
+        ],
+        "qa_seconds": [
+          0.23823049999919022,
+          0.12855750000016997,
+          0.1271749000006821
+        ],
+        "pdf_bytes": [
+          2646,
+          2646,
+          2646
+        ],
+        "raster_samples": true
+      },
+      {
+        "name": "MuPDF (mutool)",
+        "family": "MuPDF",
+        "language": "C",
+        "version": "mutool version 1.28.5",
+        "status": "PASS",
+        "repeats": 3,
+        "pages": 2,
+        "merge_seconds": [
+          0.03411659999983385,
+          0.03604329999507172,
+          0.03513119999843184
+        ],
+        "qa_seconds": [
+          0.12239250000129687,
+          0.12899810000089929,
+          0.1246090999993612
+        ],
+        "pdf_bytes": [
+          2895,
+          2895,
+          2895
+        ],
+        "raster_samples": true
+      },
+      {
+        "name": "PyMuPDF",
+        "family": "MuPDF",
+        "language": "Python → C",
+        "version": "2.0",
+        "status": "PASS",
+        "repeats": 3,
+        "pages": 2,
+        "merge_seconds": [
+          1.6830942000015057,
+          0.007273100003658328,
+          0.00703349999821512
+        ],
+        "qa_seconds": [
+          0.12649960000271676,
+          0.1294655000019702,
+          0.2384745999952429
+        ],
+        "pdf_bytes": [
+          2968,
+          2968,
+          2968
+        ],
+        "raster_samples": true
+      },
+      {
+        "name": "pikepdf",
+        "family": "qpdf",
+        "language": "Python → C++",
+        "version": "10.17.0",
+        "status": "PASS",
+        "repeats": 3,
+        "pages": 2,
+        "merge_seconds": [
+          0.05796410000039032,
+          0.005072700005257502,
+          0.005371899998863228
+        ],
+        "qa_seconds": [
+          0.1281449000016437,
+          0.12468259999877773,
+          0.2352178000001004
+        ],
+        "pdf_bytes": [
+          2648,
+          2648,
+          2648
+        ],
+        "raster_samples": true
+      },
+      {
+        "name": "pypdf",
+        "family": "pypdf",
+        "language": "Python",
+        "version": "6.21.2",
+        "status": "PASS",
+        "repeats": 3,
+        "pages": 2,
+        "merge_seconds": [
+          0.006463699995947536,
+          0.006050600000889972,
+          0.006038800005626399
+        ],
+        "qa_seconds": [
+          0.1276302999976906,
+          0.12662520000594668,
+          0.126058900001226
+        ],
+        "pdf_bytes": [
+          3082,
+          3082,
+          3082
+        ],
+        "raster_samples": true
+      },
+      {
+        "name": "pdfrw",
+        "family": "pdfrw",
+        "language": "Python",
+        "version": "0.4",
+        "status": "PASS",
+        "repeats": 3,
+        "pages": 2,
+        "merge_seconds": [
+          0.020281299999624025,
+          0.0056984000038937666,
+          0.005968199999188073
+        ],
+        "qa_seconds": [
+          0.12807659999816678,
+          0.13225270000111777,
+          0.12526729999808595
+        ],
+        "pdf_bytes": [
+          2925,
+          2925,
+          2925
+        ],
+        "raster_samples": true
+      },
+      {
+        "name": "PDFium (pypdfium2)",
+        "family": "PDFium",
+        "language": "Python → C++",
+        "version": "5.14.0",
+        "status": "PASS",
+        "repeats": 3,
+        "pages": 2,
+        "merge_seconds": [
+          0.04322099999990314,
+          0.00650389999645995,
+          0.0061084999979357235
+        ],
+        "qa_seconds": [
+          0.12781859999813605,
+          0.12545119999413146,
+          0.12414110000099754
+        ],
+        "pdf_bytes": [
+          3106,
+          3106,
+          3106
+        ],
+        "raster_samples": true
+      },
+      {
+        "name": "pdfcpu",
+        "family": "pdfcpu",
+        "language": "Go",
+        "version": "version: 0.16.3",
+        "status": "PASS",
+        "repeats": 3,
+        "pages": 2,
+        "merge_seconds": [
+          0.07109499999933178,
+          0.07459779999771854,
+          0.07374010000057751
+        ],
+        "qa_seconds": [
+          0.127445500002068,
+          0.12725070000306005,
+          0.12547539999650326
+        ],
+        "pdf_bytes": [
+          3300,
+          3300,
+          3299
+        ],
+        "raster_samples": true
+      },
+      {
+        "name": "Apache PDFBox",
+        "family": "PDFBox",
+        "language": "Java",
+        "version": "3.0.8",
+        "status": "PASS",
+        "repeats": 3,
+        "pages": 2,
+        "merge_seconds": [
+          0.7728488000066136,
+          0.799081400000432,
+          0.7994295000025886
+        ],
+        "qa_seconds": [
+          0.13124640000023646,
+          0.12990029999491526,
+          0.13133180000295397
+        ],
+        "pdf_bytes": [
+          2855,
+          2855,
+          2855
+        ],
+        "raster_samples": true
+      },
+      {
+        "name": "pdf-lib (Node.js)",
+        "family": "pdf-lib",
+        "language": "JavaScript",
+        "version": "1.17.1",
+        "status": "PASS",
+        "repeats": 3,
+        "pages": 2,
+        "merge_seconds": [
+          0.45145229999616276,
+          0.44615739999426296,
+          0.4568876999983331
+        ],
+        "qa_seconds": [
+          0.12897739999607438,
+          0.12670979999529663,
+          0.1274998000008054
+        ],
+        "pdf_bytes": [
+          2467,
+          2467,
+          2467
+        ],
+        "raster_samples": true
+      },
+      {
+        "name": "PDFsharp (.NET)",
+        "family": "PDFsharp",
+        "language": "C# / .NET",
+        "version": "PDFsharp 6.2.4 / .NET 8 helper-v2-exact-boxes",
+        "status": "PASS",
+        "repeats": 3,
+        "pages": 2,
+        "merge_seconds": [
+          0.2663962000005995,
+          0.2668236999961664,
+          0.2673452999952133
+        ],
+        "qa_seconds": [
+          0.1304119999986142,
+          0.1279391999996733,
+          0.12334130000090227
+        ],
+        "pdf_bytes": [
+          4619,
+          4619,
+          4619
+        ],
+        "raster_samples": true
+      }
+    ]
+  },
+  "pc_search": {
+    "status": "COMPLETE",
+    "count": 2,
+    "repeats": 1,
+    "cases": 23,
+    "full_qa_pass": 23,
+    "strategies": [
+      "direct",
+      "split sequential",
+      "split parallel"
+    ],
+    "source_digest": "5e58b9ac5682cc8fbc2f50452997bebbdc2b2598087fefcd0ae2b2ea8209c94f",
+    "split_mergers": [
+      "Apache PDFBox",
+      "MuPDF (mutool)",
+      "PDFium (pypdfium2)",
+      "PDFsharp (.NET)",
+      "PyMuPDF",
+      "pdf-lib (Node.js)",
+      "pdfcpu",
+      "pdfrw",
+      "pikepdf",
+      "pypdf",
+      "qpdf"
+    ]
+  },
+  "regression": {
+    "tests": 218,
+    "passed": 218,
+    "seconds": 82.644,
+    "os": "Windows",
+    "gui_geometry_dpi_percent": [
+      100,
+      125,
+      150
+    ]
+  },
+  "user_check": [
+    "200/1000/10000/100000 page performance",
+    "manual visual acceptance",
+    "physical viewer opening"
+  ],
+  "not_integrated": [
+    "Joblib/loky",
+    "Segno",
+    "python-qrcode",
+    "ZXing-C++",
+    "InterpreterPoolExecutor"
+  ]
+}

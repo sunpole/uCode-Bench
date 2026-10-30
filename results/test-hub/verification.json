@@ -1,0 +1,82 @@
+{
+  "kind": "test-hub-verification",
+  "source_digest": "9873fa25b4af0f7cbe5b5cce05b97105b8a117d39c0f8e91771522019fb8774b",
+  "scope": "Windows small integration; max five pages per real PDF; no throughput claim",
+  "queue_status": "UNVERIFIED",
+  "commands": [
+    "test lab --codes 3 --repeats 1 --qa deferred --module 0.5 --quiet 4 --ink 0,0,0,100 --unit physical --cpu 1,2 --backend process --pdf compact --metrics off --batch 1 --ram auto --activity minimal --warmups 0 --workers 0 --files multipage",
+    "test pipeline --codes 5 --repeats 1 --qa full --module 0.75 --quiet 5 --ink 10,0,0,100 --pdf compact --split cores:1+1,cores:2+0 --schedule equal,queue --batch 1 --ram auto --metrics cpu",
+    "test search --codes 3 --repeats 1 --qa deferred --module 0.5 --quiet 4 --ink 0,0,0,100 --unit physical --cpu 1 --backend serial --pdf compact --metrics off --batch 32 --ram auto --activity minimal --each-cpu off --search full --keep-best 2 --parts 2 --part-mode parallel --mergers pypdf"
+  ],
+  "individual_runs": 3,
+  "text_archive_records": 4,
+  "pdf_in_archive": false,
+  "cases": [
+    {
+      "kind": "resource-lab",
+      "status": "UNVERIFIED",
+      "cases": [
+        {
+          "id": "C0001",
+          "count": 3,
+          "status": "UNVERIFIED",
+          "qa_mode": "deferred"
+        },
+        {
+          "id": "C0002",
+          "count": 3,
+          "status": "UNVERIFIED",
+          "qa_mode": "deferred"
+        }
+      ]
+    },
+    {
+      "kind": "cpu-pipeline-lab",
+      "status": "COMPLETE",
+      "cases": [
+        {
+          "id": "P0001",
+          "count": 5,
+          "status": "PASS",
+          "qa_mode": "full"
+        },
+        {
+          "id": "P0002",
+          "count": 5,
+          "status": "PASS",
+          "qa_mode": "full"
+        },
+        {
+          "id": "P0003",
+          "count": 5,
+          "status": "PASS",
+          "qa_mode": "full"
+        },
+        {
+          "id": "P0004",
+          "count": 5,
+          "status": "PASS",
+          "qa_mode": "full"
+        }
+      ]
+    },
+    {
+      "kind": "pc-performance-search",
+      "status": "UNVERIFIED",
+      "cases": [
+        {
+          "id": "C0001",
+          "count": 3,
+          "status": "UNVERIFIED",
+          "qa_mode": "deferred"
+        },
+        {
+          "id": "C0002",
+          "count": 3,
+          "status": "UNVERIFIED",
+          "qa_mode": "deferred"
+        }
+      ]
+    }
+  ]
+}

@@ -12,8 +12,8 @@ class Experiment:
     threshold_seconds: float = 120.0
 
     def __post_init__(self):
-        if self.count not in (2, 200, 1000):
-            raise ValueError("Supported counts: 2 (smoke), 200, 1000")
+        if self.count not in (2, 200, 1000, 10000):
+            raise ValueError("Supported counts: 2 (smoke), 200, 1000, 10000; resources and qualification are required")
         if self.repeats != 3:
             raise ValueError("Three repeats are required")
         if self.start < 0 or len(str(self.start + self.count - 1)) != 12 or len(str(self.start)) != 12:

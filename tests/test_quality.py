@@ -160,6 +160,18 @@ class QualityTests(unittest.TestCase):
         self.assertEqual([sample["payload"] for sample in qa["decoded_samples"]], [frame.payload for frame in self.frames])
         self.assertTrue(all(Path(sample["png"]).is_file() for sample in qa["decoded_samples"]))
 
+    @unittest.skipUnless(shutil.which("pdftoppm"), "pdftoppm not installed")
+    def test_renderer_handles_long_nested_queue_paths_without_weakening_qa(self):
+        folder=self.root.joinpath(*(f"level-{i}-"+"x"*54 for i in range(4)))
+        folder.mkdir(parents=True)
+        path=folder/"render.pdf"
+        self.assertGreater(len(str(path)),260)
+        write_fixture(path,self.frames)
+        qa=check_pdf(path,self.frames,self.config)
+        self.assertEqual(qa['status'],'PASS',qa)
+        self.assertEqual(len(qa['decoded_samples']),2)
+        self.assertTrue(all(Path(s['png']).is_file() for s in qa['decoded_samples']))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,0 +1,36 @@
+{
+  "kind": "ui-help-ubrand-verification",
+  "source_digest": "63f67cff5d869babcb25c2dbe9c5e653b738f5e72654ff4299c8316323fd7181",
+  "svg_sha256": "0050d768e2c21ec8311c97b45e5fcc3efc80da6fd2ec3d11e01fd10e6eba11d1",
+  "topics": 12,
+  "native_geometry": [
+    {
+      "scale": 1.3333333333333333,
+      "max_width": 983,
+      "max_height": 528
+    },
+    {
+      "scale": 1.6666666666666667,
+      "max_width": 1061,
+      "max_height": 598
+    },
+    {
+      "scale": 2.0,
+      "max_width": 1097,
+      "max_height": 649
+    }
+  ],
+  "saved_result": {
+    "title": "НЕ ВСЕ ТЕСТЫ ВЫПОЛНЕНЫ · ОЗУ",
+    "detail": "Готовых повторов: 6 / 8 · отказов по ОЗУ: 1 · сократите процессы или порцию",
+    "complete": 6,
+    "planned": 8,
+    "resource_only": true,
+    "reason": "Безопасного бюджета ОЗУ недостаточно; уменьшите CPU или кодов за шаг",
+    "tone": "warning",
+    "status": "ERROR"
+  },
+  "saved_json_unchanged": true,
+  "benchmark": "NOT_RUN",
+  "visual_acceptance": "USER-CHECK"
+}

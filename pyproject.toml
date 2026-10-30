@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ucode-bench"
-version = "0.1.0"
+version = "0.3.0"
 description = "Local modular vector CMYK QR/PDF benchmark"
 requires-python = ">=3.10"
 dependencies = ["reportlab>=4.4.9,<5", "pypdf>=6.10,<7", "Pillow>=11,<14"]
@@ -19,3 +19,6 @@ all-python-engines = ["PyMuPDF>=2,<3", "pikepdf>=9,<11", "pdfrw==0.4", "pypdfium
 
 [tool.setuptools.packages.find]
 include = ["ucode*"]
+
+[tool.setuptools.package-data]
+ucode = ["assets/*.png", "assets/*.svg", "assets/*.html", "assets/*.css", "assets/*.js"]

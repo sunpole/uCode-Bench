@@ -41,11 +41,27 @@ try
     }
 
     using var result = new PdfDocument();
+    result.Options.ColorMode = PdfColorMode.Undefined;
     foreach (var source in sources)
     {
         using var imported = PdfReader.Open(source, PdfDocumentOpenMode.Import);
         foreach (var page in imported.Pages)
-            result.AddPage(page);
+        {
+            // PdfRectangle is serialized with only three decimals by 6.2.4.
+            // Preserve the source coordinates as PdfReal array items (seven
+            // decimals) instead of changing the geometry or relaxing QA.
+            var boxes = new Dictionary<string, PdfRectangle>();
+            foreach (var key in new[] { "/MediaBox", "/CropBox", "/TrimBox", "/BleedBox", "/ArtBox" })
+                if (page.Elements.ContainsKey(key))
+                    boxes[key] = page.Elements.GetRectangle(key, false);
+            var added = result.AddPage(page);
+            foreach (var (key, box) in boxes)
+                added.Elements[key] = new PdfArray(result, new PdfItem[]
+                {
+                    new PdfReal(box.X1), new PdfReal(box.Y1),
+                    new PdfReal(box.X2), new PdfReal(box.Y2)
+                });
+        }
     }
 
     var pageCount = result.PageCount;
@@ -57,7 +73,7 @@ try
 
     Console.WriteLine(JsonSerializer.Serialize(new
     {
-        engine = "PDFsharp 6.2.4", inputs = sources.Count, pages = pageCount
+        engine = "PDFsharp 6.2.4 / helper-v2-exact-boxes", inputs = sources.Count, pages = pageCount
     }));
     return 0;
 }

@@ -28,7 +28,10 @@ class PdfSharpAdapter(Adapter):
         executable = resolve_executable("dotnet")
         if not executable:
             return {"available": False, "reason": "dotnet was not found; .NET 8 runtime is required", "version": None}
-        return {"available": True, "reason": "", "version": "PDFsharp 6.2.4 / .NET 8 helper",
+        marker="helper-v2-exact-boxes"
+        binary=HELPER.read_bytes()
+        revision=marker if marker.encode("utf-16le") in binary or marker.encode() in binary else "helper revision unknown"
+        return {"available": True, "reason": "", "version": "PDFsharp 6.2.4 / .NET 8 "+revision,
                 "executable": executable, "helper": str(HELPER.resolve())}
 
     def merge(self, inputs: list[Path], output: Path) -> dict:

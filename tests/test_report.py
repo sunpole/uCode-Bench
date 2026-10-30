@@ -34,7 +34,9 @@ class ReportTests(unittest.TestCase):
     def test_html_escapes_all_external_text_and_csv_keeps_trials(self):
         directory = self.write(result())
         html = (directory / "report.html").read_text(encoding="utf-8")
-        self.assertNotIn("<script>", html)
+        # One fixed offline chart script is owned by uCode; external text is escaped.
+        self.assertEqual(html.count("<script>"), 1)
+        self.assertNotIn("<script>adapter</script>", html)
         self.assertNotIn("<img", html)
         self.assertIn("&lt;script&gt;", html)
         self.assertIn("Объединение готовых PDF", html)

@@ -1,0 +1,6 @@
+# Preserve the user-supplied CorelDRAW SVG byte-for-byte on Windows and Linux.
+ucode/assets/ubrand.svg -text
+
+# Immutable approved interface snapshot.
+docs/design/approved-2026-10-30/prototype.html -text
+ucode/assets/operator-approved.html -text

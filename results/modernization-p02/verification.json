@@ -1,0 +1,286 @@
+{
+  "schema_version": 1,
+  "kind": "modernization-p02-functional-verification",
+  "tested_source_revision": "e77ac05d05b88bed2d40698f2f37f8148fa47ef5",
+  "pull_request": "https://github.com/sunpole/uCode-Bench/pull/4",
+  "ci_url": "https://github.com/sunpole/uCode-Bench/actions/runs/40584314976",
+  "status": "PASS",
+  "methodology": "Small real production PDFs; every page QA in CI, downloaded evidence rechecked for hashes, page counts and progress. Not a performance ranking.",
+  "local_tests": {
+    "total": 119,
+    "passed": 118,
+    "skipped": 1
+  },
+  "ci_tests_per_platform": {
+    "total": 119,
+    "passed": 114,
+    "skipped": 5
+  },
+  "manual_visual_check": "USER-CHECK",
+  "large_benchmarks": "NOT RUN",
+  "temporary_folder_selection": "TODO P06",
+  "cases": [
+    {
+      "platform": "linux",
+      "count": 2,
+      "unique_values": 2,
+      "copies_per_value": 1,
+      "mode": "both",
+      "ink": [
+        0,
+        0,
+        0,
+        100
+      ],
+      "status": "COMPLETE",
+      "qa": "PASS",
+      "engine": {
+        "key": "reportlab",
+        "version": "4.5.1"
+      },
+      "encoded_values": 2,
+      "pdf_pages_written": 4,
+      "progress_monotonic_and_complete": true,
+      "files": [
+        {
+          "name": "all-2-pages.pdf",
+          "pages": 2,
+          "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9"
+        },
+        {
+          "name": "singles/0001_200000000000.pdf",
+          "pages": 1,
+          "sha256": "e80c7f62af276d70d805e162de39a8f34ea2bb8fbe39f10a9f7aad0579bcd4cf"
+        },
+        {
+          "name": "singles/0002_200000000001.pdf",
+          "pages": 1,
+          "sha256": "4efadc15c261b53bf0f82a920a63ccc2138609943c8532f7ffeb1d4ea14d5c91"
+        }
+      ]
+    },
+    {
+      "platform": "linux",
+      "count": 7,
+      "unique_values": 7,
+      "copies_per_value": 1,
+      "mode": "multipage",
+      "ink": [
+        0,
+        0,
+        0,
+        100
+      ],
+      "status": "COMPLETE",
+      "qa": "PASS",
+      "engine": {
+        "key": "reportlab",
+        "version": "4.5.1"
+      },
+      "encoded_values": 7,
+      "pdf_pages_written": 7,
+      "progress_monotonic_and_complete": true,
+      "files": [
+        {
+          "name": "all-7-pages.pdf",
+          "pages": 7,
+          "sha256": "7bfe23d2eafe57d018a925bc98d48db0c18a7e6548422b454d4a39b8094f7571"
+        }
+      ]
+    },
+    {
+      "platform": "linux",
+      "count": 2,
+      "unique_values": 2,
+      "copies_per_value": 1,
+      "mode": "singles",
+      "ink": [
+        100,
+        0,
+        0,
+        0
+      ],
+      "status": "COMPLETE",
+      "qa": "PASS",
+      "engine": {
+        "key": "reportlab",
+        "version": "4.5.1"
+      },
+      "encoded_values": 2,
+      "pdf_pages_written": 2,
+      "progress_monotonic_and_complete": true,
+      "files": [
+        {
+          "name": "singles/0001_200000000000.pdf",
+          "pages": 1,
+          "sha256": "c2ece8af7e0b460935c280f25c5d4e5fcca2a37fe6e41fe75de602804a41535b"
+        },
+        {
+          "name": "singles/0002_200000000001.pdf",
+          "pages": 1,
+          "sha256": "922a0d8473adf2f5789732b679cd16fd7cf04037fa436e06158f0c1a962b1197"
+        }
+      ]
+    },
+    {
+      "platform": "linux",
+      "count": 6,
+      "unique_values": 2,
+      "copies_per_value": 3,
+      "mode": "multipage",
+      "ink": [
+        0,
+        0,
+        0,
+        100
+      ],
+      "status": "COMPLETE",
+      "qa": "PASS",
+      "engine": {
+        "key": "reportlab",
+        "version": "4.5.1"
+      },
+      "encoded_values": 2,
+      "pdf_pages_written": 6,
+      "progress_monotonic_and_complete": true,
+      "files": [
+        {
+          "name": "all-6-pages.pdf",
+          "pages": 6,
+          "sha256": "c1f65ebfa84b7b7f8e2e705ccfbcae33dbf6c7b5294dfe9bd8db15820dcc3044"
+        }
+      ]
+    },
+    {
+      "platform": "windows",
+      "count": 2,
+      "unique_values": 2,
+      "copies_per_value": 1,
+      "mode": "both",
+      "ink": [
+        0,
+        0,
+        0,
+        100
+      ],
+      "status": "COMPLETE",
+      "qa": "PASS",
+      "engine": {
+        "key": "reportlab",
+        "version": "4.5.1"
+      },
+      "encoded_values": 2,
+      "pdf_pages_written": 4,
+      "progress_monotonic_and_complete": true,
+      "files": [
+        {
+          "name": "all-2-pages.pdf",
+          "pages": 2,
+          "sha256": "604254d0395c03cc2ca00f5710d94a123185b5bb3ae85512952ca2820c10c9c9"
+        },
+        {
+          "name": "singles/0001_200000000000.pdf",
+          "pages": 1,
+          "sha256": "e80c7f62af276d70d805e162de39a8f34ea2bb8fbe39f10a9f7aad0579bcd4cf"
+        },
+        {
+          "name": "singles/0002_200000000001.pdf",
+          "pages": 1,
+          "sha256": "4efadc15c261b53bf0f82a920a63ccc2138609943c8532f7ffeb1d4ea14d5c91"
+        }
+      ]
+    },
+    {
+      "platform": "windows",
+      "count": 7,
+      "unique_values": 7,
+      "copies_per_value": 1,
+      "mode": "multipage",
+      "ink": [
+        0,
+        0,
+        0,
+        100
+      ],
+      "status": "COMPLETE",
+      "qa": "PASS",
+      "engine": {
+        "key": "reportlab",
+        "version": "4.5.1"
+      },
+      "encoded_values": 7,
+      "pdf_pages_written": 7,
+      "progress_monotonic_and_complete": true,
+      "files": [
+        {
+          "name": "all-7-pages.pdf",
+          "pages": 7,
+          "sha256": "7bfe23d2eafe57d018a925bc98d48db0c18a7e6548422b454d4a39b8094f7571"
+        }
+      ]
+    },
+    {
+      "platform": "windows",
+      "count": 2,
+      "unique_values": 2,
+      "copies_per_value": 1,
+      "mode": "singles",
+      "ink": [
+        100,
+        0,
+        0,
+        0
+      ],
+      "status": "COMPLETE",
+      "qa": "PASS",
+      "engine": {
+        "key": "reportlab",
+        "version": "4.5.1"
+      },
+      "encoded_values": 2,
+      "pdf_pages_written": 2,
+      "progress_monotonic_and_complete": true,
+      "files": [
+        {
+          "name": "singles/0001_200000000000.pdf",
+          "pages": 1,
+          "sha256": "c2ece8af7e0b460935c280f25c5d4e5fcca2a37fe6e41fe75de602804a41535b"
+        },
+        {
+          "name": "singles/0002_200000000001.pdf",
+          "pages": 1,
+          "sha256": "922a0d8473adf2f5789732b679cd16fd7cf04037fa436e06158f0c1a962b1197"
+        }
+      ]
+    },
+    {
+      "platform": "windows",
+      "count": 6,
+      "unique_values": 2,
+      "copies_per_value": 3,
+      "mode": "multipage",
+      "ink": [
+        0,
+        0,
+        0,
+        100
+      ],
+      "status": "COMPLETE",
+      "qa": "PASS",
+      "engine": {
+        "key": "reportlab",
+        "version": "4.5.1"
+      },
+      "encoded_values": 2,
+      "pdf_pages_written": 6,
+      "progress_monotonic_and_complete": true,
+      "files": [
+        {
+          "name": "all-6-pages.pdf",
+          "pages": 6,
+          "sha256": "c1f65ebfa84b7b7f8e2e705ccfbcae33dbf6c7b5294dfe9bd8db15820dcc3044"
+        }
+      ]
+    }
+  ]
+}

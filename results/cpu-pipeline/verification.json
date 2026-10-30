@@ -1,0 +1,260 @@
+{
+  "scope": "Small Windows integration only; maximum 7 pages per real PDF; no large throughput claim",
+  "source_digest": "b83c9980e45e687f42c2d7a438c70c3993dfbdc950b2c5df633377f2e6a0d8fc",
+  "status": "COMPLETE",
+  "cases": 8,
+  "trials": 8,
+  "config": {
+    "counts": [
+      7
+    ],
+    "allocations": [
+      "physical:2:1",
+      "logical:2:2"
+    ],
+    "schedules": [
+      "equal",
+      "queue"
+    ],
+    "batches": [
+      1
+    ],
+    "repeats": 1,
+    "qa_mode": "full",
+    "ram_mode": "auto",
+    "telemetry_modes": [
+      "off",
+      "cpu"
+    ],
+    "print_settings": {
+      "pdf_profile": "compact"
+    }
+  },
+  "errors": [],
+  "checks": [
+    {
+      "id": "P0001",
+      "allocation": "physical:2:1",
+      "schedule": "equal",
+      "telemetry_mode": "off",
+      "status": "PASS",
+      "qa": [
+        "PASS"
+      ],
+      "worker_pages": [
+        [
+          {
+            "stage": "qr",
+            "pages": 3
+          },
+          {
+            "stage": "qr",
+            "pages": 4
+          },
+          {
+            "stage": "pdf",
+            "pages": 7
+          }
+        ]
+      ]
+    },
+    {
+      "id": "P0002",
+      "allocation": "physical:2:1",
+      "schedule": "equal",
+      "telemetry_mode": "cpu",
+      "status": "PASS",
+      "qa": [
+        "PASS"
+      ],
+      "worker_pages": [
+        [
+          {
+            "stage": "qr",
+            "pages": 4
+          },
+          {
+            "stage": "qr",
+            "pages": 3
+          },
+          {
+            "stage": "pdf",
+            "pages": 7
+          }
+        ]
+      ]
+    },
+    {
+      "id": "P0003",
+      "allocation": "physical:2:1",
+      "schedule": "queue",
+      "telemetry_mode": "off",
+      "status": "PASS",
+      "qa": [
+        "PASS"
+      ],
+      "worker_pages": [
+        [
+          {
+            "stage": "qr",
+            "pages": 4
+          },
+          {
+            "stage": "qr",
+            "pages": 3
+          },
+          {
+            "stage": "pdf",
+            "pages": 7
+          }
+        ]
+      ]
+    },
+    {
+      "id": "P0004",
+      "allocation": "physical:2:1",
+      "schedule": "queue",
+      "telemetry_mode": "cpu",
+      "status": "PASS",
+      "qa": [
+        "PASS"
+      ],
+      "worker_pages": [
+        [
+          {
+            "stage": "qr",
+            "pages": 4
+          },
+          {
+            "stage": "qr",
+            "pages": 3
+          },
+          {
+            "stage": "pdf",
+            "pages": 7
+          }
+        ]
+      ]
+    },
+    {
+      "id": "P0005",
+      "allocation": "logical:2:2",
+      "schedule": "equal",
+      "telemetry_mode": "off",
+      "status": "PASS",
+      "qa": [
+        "PASS"
+      ],
+      "worker_pages": [
+        [
+          {
+            "stage": "qr",
+            "pages": 4
+          },
+          {
+            "stage": "qr",
+            "pages": 3
+          },
+          {
+            "stage": "pdf",
+            "pages": 3
+          },
+          {
+            "stage": "pdf",
+            "pages": 4
+          }
+        ]
+      ]
+    },
+    {
+      "id": "P0006",
+      "allocation": "logical:2:2",
+      "schedule": "equal",
+      "telemetry_mode": "cpu",
+      "status": "PASS",
+      "qa": [
+        "PASS"
+      ],
+      "worker_pages": [
+        [
+          {
+            "stage": "pdf",
+            "pages": 3
+          },
+          {
+            "stage": "qr",
+            "pages": 4
+          },
+          {
+            "stage": "qr",
+            "pages": 3
+          },
+          {
+            "stage": "pdf",
+            "pages": 4
+          }
+        ]
+      ]
+    },
+    {
+      "id": "P0007",
+      "allocation": "logical:2:2",
+      "schedule": "queue",
+      "telemetry_mode": "off",
+      "status": "PASS",
+      "qa": [
+        "PASS"
+      ],
+      "worker_pages": [
+        [
+          {
+            "stage": "qr",
+            "pages": 4
+          },
+          {
+            "stage": "qr",
+            "pages": 3
+          },
+          {
+            "stage": "pdf",
+            "pages": 3
+          },
+          {
+            "stage": "pdf",
+            "pages": 4
+          }
+        ]
+      ]
+    },
+    {
+      "id": "P0008",
+      "allocation": "logical:2:2",
+      "schedule": "queue",
+      "telemetry_mode": "cpu",
+      "status": "PASS",
+      "qa": [
+        "PASS"
+      ],
+      "worker_pages": [
+        [
+          {
+            "stage": "qr",
+            "pages": 3
+          },
+          {
+            "stage": "qr",
+            "pages": 4
+          },
+          {
+            "stage": "pdf",
+            "pages": 2
+          },
+          {
+            "stage": "pdf",
+            "pages": 5
+          }
+        ]
+      ]
+    }
+  ]
+}

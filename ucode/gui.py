@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 import queue
 import threading
-import webbrowser
+from .open_reports import open_html_report
 
 from .config import Experiment
 
@@ -41,7 +41,8 @@ class Application:
         self.run_button = ttk.Button(buttons, text="Запустить бенчмарк", command=lambda: self.start("benchmark"))
         self.open_button = ttk.Button(buttons, text="Открыть результаты", command=self.open_results)
         self.next_button = ttk.Button(buttons, text="Перейти к 1000", command=lambda: self.start("1000"))
-        for index, button in enumerate((self.create_button, self.run_button, self.open_button, self.next_button)):
+        self.batch_button = ttk.Button(buttons, text="TXT → реальные PDF (200 / 1 000 / 10 000)", command=self.open_batch)
+        for index, button in enumerate((self.create_button, self.run_button, self.open_button, self.next_button, self.batch_button)):
             button.grid(row=index // 2, column=index % 2, sticky="ew", padx=(0 if index % 2 == 0 else 5, 5 if index % 2 == 0 else 0), pady=5, ipady=7)
         buttons.columnconfigure(0, weight=1)
         buttons.columnconfigure(1, weight=1)
@@ -79,6 +80,7 @@ class Application:
     def update_buttons(self):
         enabled = "disabled" if self.busy else "normal"
         self.create_button.configure(state=enabled)
+        self.batch_button.configure(state=enabled)
         self.run_button.configure(state=enabled)
         self.open_button.configure(state="normal" if self.latest_directory and not self.busy else "disabled")
         self.next_button.configure(state="normal" if self.qualifying_report and not self.busy else "disabled")
@@ -188,12 +190,17 @@ class Application:
         self.status.set("Отмена запрошена. Ожидание окончания текущего шага; результаты сохраняются.")
         self.update_buttons()
 
+    def open_batch(self):
+        from .batch_gui import open_window
+        open_window(self.root)
+
     def open_results(self):
         if self.latest_directory is None:
             return
         report = self.latest_directory / "report.html"
         if report.exists():
-            webbrowser.open(report.resolve().as_uri())
+            try: open_html_report(report)
+            except (OSError,ValueError) as exc: self.status.set(str(exc))
         elif hasattr(os, "startfile"):
             os.startfile(str(self.latest_directory.resolve()))
 
