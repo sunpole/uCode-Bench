@@ -11,6 +11,11 @@ on:
       - 'ucode/distribution.py'
       - 'ucode/system_check.py'
       - 'ucode/distribution_smoke.py'
+      - 'ucode/updater_integration.py'
+      - 'ucode/operator_web.py'
+      - 'ucode/assets/operator-updates.js'
+      - 'ucode/assets/operator-updates.css'
+      - 'updater/**'
       - 'pyproject.toml'
 
 permissions:
@@ -110,6 +115,20 @@ jobs:
               cmd+=['--windowed']
           cmd+=['scripts/frozen_entry.py']
           subprocess.run(cmd,check=True)
+      - uses: actions/setup-dotnet@v4
+        if: runner.os == 'Windows'
+        with:
+          dotnet-version: '8.0.x'
+      - name: Include independent native updater in Windows portable folder
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          dotnet publish updater/uCode.Updater.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:PublishTrimmed=false -p:DebugType=None -p:DebugSymbols=false -o dist/native-updater
+          if ($LASTEXITCODE -ne 0) { throw 'Native updater build failed' }
+          & ./dist/native-updater/uCode.Updater.exe --self-test
+          if ($LASTEXITCODE -ne 0) { throw 'Native updater self-test failed' }
+          Copy-Item -LiteralPath dist/native-updater/uCode.Updater.exe -Destination dist/uCode/uCode.Updater.exe
+          if (!(Test-Path -LiteralPath dist/uCode/uCode.Updater.exe)) { throw 'Independent updater missing' }
       - name: Binary CLI smoke (no print job and no network)
         shell: python
         run: |
