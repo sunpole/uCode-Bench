@@ -1,5 +1,14 @@
 # Журнал uCode
 
+## 2026-10-30 — ChatGPT: восстановлены 8 Codex WIP файлов и собраны три preview-пакета
+
+Источник: пользователь сохранил рабочие изменения в ветке `codex/portable-wip-20261030` коммитом `f70f748`, после чистого сравнения `git diff --cached --check`. Черновой PR #27 направлен не в `main`, а в рабочую `codex/v034-local-qr-content`.
+
+Реальные проблемы Windows packaging: первый `--help` вызвал блокирующее окно ошибки; после отключения MessageBox для CLI выявлен реальный `UnicodeEncodeError` из-за cp1252. Исправлен UTF-8 stdout/stderr при старте frozen app и при чтении CI smoke. Добавлен `--smoke` для **настоящих двух страниц QR PDF**; ожидаемое качество только `LIMITED` (векторная QA), без заявления полной растровой проверки.
+
+[Portable CI 41062288521](https://github.com/sunpole/uCode-Bench/actions/runs/41062288521) на commit `1ddc17f5b7b3ae8ff38788b86ec8be7b1cd081b5`: **Windows x64 PASS, Linux x64 PASS, macOS ARM64 PASS**; проверены packaged CLI `--help`, packaged `--smoke`, PDF (2 страницы), `SHA256SUMS.txt`, наличие всех трёх artifacts. Никаких релизов, тегов или main merge не создавалось. Установка на чистую машину, запуск GUI/WebView2, Linux Qt, macOS Gatekeeper, подписывание, автоматическое обновление и пользовательская DPI/печать пока НЕ подтверждены. Подробности и PowerShell — `docs/PORTABLE_BUILDS.md`. Стабильный публичный релиз остаётся `v0.3.0`.
+
+
 ## 2026-10-30 — ChatGPT/GitHub: восстановление CI и подготовка переносимых пакетов (без публикации)
 
 Источник: просьба пользователя «ты делаешь в GitHub, а я через PowerShell обновляю». Работа выполнялась **только в рабочей ветке** `codex/v034-local-qr-content`, не в `main`.
