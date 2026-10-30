@@ -20,6 +20,9 @@ def main():
         sys.argv=[module]+sys.argv[3:];runpy.run_module(module,run_name='__main__',alter_sys=True);return 0
     root=user_root();root.mkdir(parents=True,exist_ok=True)
     os.chdir(root)
+    if sys.argv[1:2]==['--check-updates']:
+        from ucode.update_check import cli_main
+        return cli_main()
     if sys.argv[1:2]==['--system-check']:
         from ucode.system_check import main as check
         return check(sys.argv[2:])

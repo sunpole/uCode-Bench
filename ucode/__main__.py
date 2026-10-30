@@ -8,6 +8,9 @@ from .config import Experiment
 
 def main(argv=None):
     command_args=list(sys.argv[1:] if argv is None else argv)
+    if command_args[:1]==["updates"]:
+        from .update_check import cli_main
+        return cli_main()
     if command_args[:1]==["graphs"]:
         from .graphical_report import cli_main
         try: return cli_main(command_args[1:])
