@@ -416,6 +416,17 @@ const rtStyleSplit=el('div',null,'uc-style-preview-split'),rtStyleLeft=el('div')
 [...panels[2].children].filter(node=>!node.classList.contains('uc-section-title')).forEach(node=>rtStyleLeft.append(node));
 const rtStyleImage=el('img'),rtStyleCaption=el('p','', 'uc-small'),rtStyleNote=el('p','Экранный цвет приблизителен. Для печати используйте параметры CMYK и проверку PDF.','uc-small');
 rtStyleImage.alt='Предпросмотр оформления';rtStyleRight.append(rtStyleImage,rtStyleCaption,rtStyleNote);rtStyleSplit.append(rtStyleLeft,rtStyleRight);panels[2].append(rtStyleSplit);
+const rtCorrection=el('section');rtCorrection.id='uc-correction-plan';
+rtCorrection.append(el('h3','Коррекция ошибок QR'),el('p','Сейчас используется M. Выбор других уровней запланирован.','uc-small'));
+const rtCorrectionRow=el('div',null,'uc-row');
+[['L','≈7%'],['M','≈15%'],['Q','≈25%'],['H','≈30%']].forEach(([level,percent])=>{
+  const button=el('button',level+' · '+percent+(level==='M'?' · используется':' · в разработке'));
+  button.type='button';button.disabled=true;button.setAttribute('aria-pressed',String(level==='M'));
+  button.dataset.tooltip=level==='M'?'Текущий уровень генерации и независимой проверки':'Будущий уровень: генерация и QA пока не реализованы';rtCorrectionRow.append(button);
+});
+rtCorrection.append(rtCorrectionRow,el('h3','iQR — отдельный формат'));
+const rtIQRCorrection=el('button','S · ≈50% · в разработке');rtIQRCorrection.type='button';rtIQRCorrection.disabled=true;
+rtCorrection.append(rtIQRCorrection,el('p','iQR требует отдельного генератора и проверки считывания. Проценты не гарантируют чтение при закрытии такой доли площади.','uc-small'));rtStyleLeft.append(rtCorrection);
 function rtStylePreview(data){const key=JSON.stringify([data.source?.digest,data.form.print]);if(key===rtStyleKey)return;rtStyleKey=key;
   rtStyleImage.src=rtBase+'api/preview?page=1&sample='+(data.source?0:1)+'&revision='+data.revision;
   const p=data.form.print,side=p.module_mm*(21+2*p.quiet_modules);rtStyleImage.style.width=Math.min(195,Math.max(70,side/14.5*160))+'px';
@@ -426,6 +437,6 @@ const rtIQ=el('section',null,'uc-type');rtIQ.append(el('h3','iQR'),el('p','От�
   root.querySelectorAll('.uc-telemetry strong').forEach(node=>rtText(node,'—'));
   try{const data=await rtAPI('state');rtApplyState(data);rtHydrate(data);rtConfigs=await rtAPI('configs');showTest('CPU / RAM');rtOther();render();
     const image=el('img');image.src=rtBase+'api/preview?sample=1';image.alt='QR Code';image.style.cssText='height:100%;max-width:100%';$('uc-type-qr').replaceChildren(image);
-    if(!data.source)activateTab(0);rtPoll();
+    activateTab(0);window.ucodeReady=true;rtPoll();
   }catch(error){rtError(error);}
 })();

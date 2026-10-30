@@ -39,6 +39,9 @@ def run():
             raise TimeoutError(expression)
         if '--order-flow' in sys.argv:
             until_js("!!document.querySelector('#uc-output-name')?.value")
+            until_js("window.ucodeReady===true")
+            if window.evaluate_js("document.querySelector('#uc-center-tab-0').getAttribute('aria-selected')")!='true':
+                raise AssertionError('Startup must always show Types, including restored databases')
             window.evaluate_js("document.querySelector('#uc-center-panel-0 .uc-type button').click()")
             until_js("document.querySelector('#uc-center-tab-4').getAttribute('aria-selected')==='true'")
         api(url,'sequence',{'start':'500000000000','count':3,'step':1})
@@ -95,6 +98,11 @@ def start(*args,**kwargs):
 
 
 if __name__=='__main__':
+    if '--restored-source' in sys.argv:
+        from ucode.operator_service import OperatorService
+        service=OperatorService(folder);service.sequence({'start':'500000000000','count':3,'step':1})
+        while service.busy:service.pump();time.sleep(.05)
+        if service.index is None:raise RuntimeError('Fixture source was not saved')
     webview.start=start
     main(root=folder)
     try:
