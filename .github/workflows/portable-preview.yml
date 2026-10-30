@@ -39,7 +39,7 @@ jobs:
           project=tomllib.loads(pathlib.Path('pyproject.toml').read_text(encoding='utf-8'))
           version=project['project']['version']
           init=pathlib.Path('ucode/__init__.py').read_text(encoding='utf-8')
-          match=re.search(r'^__version__\\s*=\\s*[\'"]([^\'"]+)[\'"]', init, re.M)
+          match=re.search(r"""^__version__\s*=\s*['"]([^'"]+)['"]""", init, re.M)
           if not match or match.group(1)!=version:
               raise SystemExit('Version mismatch: pyproject.toml / ucode.__init__')
           with open(os.environ['GITHUB_OUTPUT'],'a',encoding='utf-8') as out:
@@ -125,7 +125,10 @@ jobs:
           else:
               path=out/f'uCode-{version}-{platform}.tar.gz'
               with tarfile.open(path,'w:gz') as tf:tf.add('dist/uCode',arcname='uCode')
-          h=hashlib.sha256(path.read_bytes()).hexdigest()
+          digest=hashlib.sha256()
+          with path.open('rb') as payload:
+              for chunk in iter(lambda:payload.read(1024*1024),b''):digest.update(chunk)
+          h=digest.hexdigest()
           (out/'SHA256SUMS.txt').write_text(f'{h}  {path.name}\n',encoding='utf-8')
           print(path.name, h)
       - uses: actions/upload-artifact@v4
