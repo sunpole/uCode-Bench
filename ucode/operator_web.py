@@ -32,7 +32,8 @@ def document(token):
     marker="activateTab(1);render();$('uc-type-qr').innerHTML="
     if source.count(marker)!=1:raise ValueError('Не найдена точка подключения интерфейса')
     bridge=(ASSETS/'operator-bridge.js').read_text(encoding='utf-8')
-    source=source.replace(marker,bridge+'\n'+marker)
+    updates=(ASSETS/'operator-updates.js').read_text(encoding='utf-8')
+    source=source.replace(marker,bridge+'\n'+updates+'\n'+marker)
     source=source.replace('<script>','<script nonce="'+token+'">')
     prefix='<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>uCode 0.3.0</title><style>html,body{margin:0;background:#0b1220;color:#edf4fc}body{padding:8px;box-sizing:border-box}*{box-sizing:border-box}</style></head><body><script nonce="'+token+'">window.UCODE_RUNTIME=true;window.ucodeRows={};</script>'
     controls=(ASSETS/'operator-controls.js').read_text(encoding='utf-8')
@@ -76,6 +77,11 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if route=='':self.send(document(self.server.token),content_type='text/html; charset=utf-8')
             elif route=='api/health':self.send({'application':'uCode','version':__version__,'project':self.server.project_digest})
+            elif route=='api/update-info':
+                from .update_check import current_platform
+                self.send({'installed':__version__,'channel':'stable','platform':current_platform(),
+                           'release_url':'https://github.com/sunpole/uCode-Bench/releases',
+                           'installer_status':'NOT_AVAILABLE','check_mode':'MANUAL_ONLY'})
             elif route=='api/state':self.send(s.state())
             elif route=='api/rows':self.send(s.rows(int(args.get('page',['1'])[0])))
             elif route=='api/search':self.send({'rows':s.search(args.get('q',[''])[0])})
@@ -114,6 +120,13 @@ class Handler(BaseHTTPRequestHandler):
     def action(self,route,value):
         s=self.server.service
         if route not in ('stop-request','stop','ui'):s.require_idle()
+        if route=='updates-check':
+            from .update_check import inspect_remote
+            return inspect_remote(installed=__version__)
+        if route=='updates-open':
+            import webbrowser
+            webbrowser.open('https://github.com/sunpole/uCode-Bench/releases')
+            return {'opened':True}
         if route=='configure':return s.configure(value)
         if route=='content':s.set_content(value['kind'],value['fields']);return s.state()
         if route=='output-name':
