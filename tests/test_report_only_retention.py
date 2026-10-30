@@ -16,6 +16,10 @@ class ReportOnlyRetentionTests(unittest.TestCase):
             for n in range(3):
                 (pdfs/f"{n}.pdf").write_bytes(b"PDF data"*(n+1))
             (pdfs/"keep.json").write_text('{"status":"PASS"}',encoding="utf-8")
+            (pdfs.parent/"data.sqlite").write_bytes(b"working data")
+            (pdfs.parent/"pdf-index.sqlite").write_bytes(b"page index")
+            (pdfs.parent/"catalog.sqlite").write_bytes(b"report index must survive")
+            (root/"catalog.sqlite").write_bytes(b"test catalog must survive")
             (root/"trial.json").write_text('{"qa":"PASS"}',encoding="utf-8")
             (root/"report.html").write_text("HTML test report",encoding="utf-8")
             neighbor=Path(base)/"production.pdf"
@@ -23,7 +27,12 @@ class ReportOnlyRetentionTests(unittest.TestCase):
             result=discard_trial_pdfs(root)
             self.assertEqual(result["status"],"PASS")
             self.assertEqual(result["pdf_deleted_files"],3)
+            self.assertEqual(result["sqlite_deleted_files"],2)
             self.assertFalse(list(root.rglob("*.pdf")))
+            self.assertFalse((pdfs.parent/"data.sqlite").exists())
+            self.assertFalse((pdfs.parent/"pdf-index.sqlite").exists())
+            self.assertTrue((pdfs.parent/"catalog.sqlite").is_file())
+            self.assertTrue((root/"catalog.sqlite").is_file())
             self.assertTrue((root/"trial.json").is_file())
             self.assertTrue((pdfs/"keep.json").is_file())
             self.assertTrue((root/"report.html").is_file())
