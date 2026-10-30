@@ -1,5 +1,15 @@
 # Журнал uCode
 
+## 2026-10-30 — ChatGPT: U02, новая вкладка + независимый Windows updater
+
+Пожелание пользователя: полнофункциональный в будущем, но независимый от HTML/WebView2/Python `uCode.Updater.exe` и аккуратная информативная **дополнительная вкладка**. Передача Codex с ролями и границами: `docs/UPDATER_V035_HANDOFF.md`, указатели в `AGENTS.md` и `docs/AI_HANDOFF.md`.
+
+Создан PR #29 `codex/v035-native-updater-tab` → `codex/v035-update-check` (PR #28). Реализованы `operator-updates.js/css` без изменения хеша утвержденного HTML; токенизированные GET update-info (только локальные сведения), POST updates-check (проверка latest GitHub) и POST updates-open (фиксированная страница). Кнопка установки намеренно disabled. Независимый `.NET 8` проект `updater/Program.cs`: `--version`, `--self-test`, `--check --installed X`; никакого изменения файлов; `--install` явно отказ. `ucode/updater_integration.py` подключает native бинарник в frozen Windows, и проверяет JSON; при запуске исходников Python fallback. Пакетный Windows CI включает `uCode.Updater.exe` рядом с основным `uCode.exe`.
+
+**Отдельная компиляция Windows updater PASS:** GitHub Actions https://github.com/sunpole/uCode-Bench/actions/runs/41080240902 на `a4770c101`. Наборы `tests/test_update_center.py`, `tests/test_updater_integration.py` созданы, HEAD CI полного Windows/Linux и portable package на момент записи **ожидался / выполнялся**. Не утверждать визуальную приёмку новой вкладки или завершённую установку/rollback. Пользовательскую установленную стабильную `v0.3.4` и `main` не меняли.
+
+**Долги:** CI на последнем SHA, реальная проверка вкладки и packaged bridge на Windows, самостоятельная установка (отдельный патч: download→SHA/signature→backup→close→install→rollback), macOS/Linux updater, выпуск будущей версии после QA. Переменная длина массовых числовых QR исключена из плана пользователем.
+
 ## 2026-10-30 — решение пользователя: массовые QR разной длины отклонены к разработке
 
 Пользователь подтвердил успешное локальное `git pull --ff-only`. После обсуждения числовых QR с переменной длиной отдельно указал отсутствие практической необходимости: реализацию отложить в самый конец как неутверждённую гипотезу, **не выполнять и не включать в релизный план**.

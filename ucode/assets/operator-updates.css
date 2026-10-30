@@ -1,0 +1,24 @@
+
+#ucode-layout .uc-update-center{padding:0 2px 18px;max-width:1050px;margin:0 auto}
+#ucode-layout .uc-up-intro{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:10px 0 18px;flex-wrap:wrap}
+#ucode-layout .uc-up-intro h3{font-size:21px;letter-spacing:-.35px;margin:0 0 5px}
+#ucode-layout .uc-up-intro p{margin:0;color:var(--uc-muted);font-size:12px}
+#ucode-layout .uc-up-chip{padding:6px 11px;border:1px solid var(--uc-line);border-radius:999px;background:var(--uc-panel);font-size:12px;font-weight:700;white-space:nowrap}
+#ucode-layout .uc-up-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:14px}
+#ucode-layout .uc-up-tile{background:var(--uc-panel);border:1px solid var(--uc-line);border-radius:10px;padding:17px;min-height:99px}
+#ucode-layout .uc-up-label{font-size:12px;color:var(--uc-muted);margin-bottom:8px}
+#ucode-layout .uc-up-value{font-size:22px;font-weight:700;line-height:1.2;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+#ucode-layout .uc-up-sub{font-size:11px;color:var(--uc-muted);margin-top:7px}
+#ucode-layout .uc-up-body{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(230px,1fr);gap:13px}
+#ucode-layout .uc-up-card{background:var(--uc-panel);border:1px solid var(--uc-line);border-radius:10px;padding:18px}
+#ucode-layout .uc-up-card h4{font-size:14px;margin:0 0 11px}
+#ucode-layout .uc-up-status{padding:12px;border-radius:8px;background:var(--uc-bg);border:1px solid var(--uc-line);margin:12px 0;min-height:50px}
+#ucode-layout .uc-up-status[data-state="success"]{border-color:var(--uc-active)}
+#ucode-layout .uc-up-status[data-state="error"]{border-color:var(--uc-warn)}
+#ucode-layout .uc-up-actions{display:flex;gap:9px;flex-wrap:wrap}
+#ucode-layout .uc-up-actions button{min-height:36px}
+#ucode-layout .uc-up-note{color:var(--uc-muted);font-size:12px;line-height:1.5;margin:11px 0}
+#ucode-layout .uc-up-step{display:flex;gap:10px;align-items:flex-start;margin:8px 0;font-size:12px;color:var(--uc-muted)}
+#ucode-layout .uc-up-step b{flex:0 0 22px;height:22px;border-radius:6px;background:var(--uc-bg);border:1px solid var(--uc-line);display:grid;place-items:center;color:var(--uc-text)}
+@media(max-width:760px){#ucode-layout .uc-up-tiles{grid-template-columns:1fr 1fr}#ucode-layout .uc-up-body{grid-template-columns:1fr}}
+@media(max-width:500px){#ucode-layout .uc-up-tiles{grid-template-columns:1fr}}

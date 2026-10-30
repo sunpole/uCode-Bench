@@ -75,3 +75,20 @@
 На момент этого handoff идея QR с разной длиной числовых строк **не нужна пользователю**. Она обсуждалась, но **исключена из активных задач и перемещена в конец архива идей**, без сроков, версии или исполнителя. Не выполнять QR-L01/L02/L03/L04, не закреплять их за 0.3.5 и не расширять текущие 12-значные массовые QR на основании прежнего плана. Полное описание гипотезы сохранено для истории в `docs/QR_VARIABLE_DATA_PLAN.md`; карта `docs/MODERNIZATION_PATCHES.md` обновлена. Реализованный отдельный QR со свободным содержимым в 0.3.4 сохранить. Возвращаться к обсуждению лишь после нового явного требования.
 
 Пользователь подтвердил: безопасное `git pull --ff-only` локальной preview-копии прошло успешно. Основные открытые задачи: окончательная GUI/печатная QA 0.3.4, безопасный стабильный релиз и пакетное распространение/обновление. `main` не заменять до завершения приёмки.
+
+
+## АКТУАЛЬНО: после стабильной 0.3.4 — Native updater/вкладка (2026-10-30)
+
+**Внимание Codex:** прежние разделы выше сохраняют исторический контекст (там есть устаревшие заявления о PR #26 и 0.3.4). Актуальная `v0.3.4` опубликована, основная ветка `main` обновлена через PR #26/#27, GitHub Release: https://github.com/sunpole/uCode-Bench/releases/tag/v0.3.4; Windows пользователь проверил GUI и двухстраничный PDF smoke. Выпуск больше не является TODO.
+
+**Следующее утверждённое задание пользователя:** новая информативная вкладка «Обновление» в программе и независимый от WebView2/HTML/Python `uCode.Updater.exe`, чтобы переход на будущий нативный UI не заставлял переписывать механизм обновления.
+
+- `docs/UPDATER_V035_HANDOFF.md` — **сначала читать полностью**. Там роли Senior Architect, .NET Desktop, Python/PyInstaller, UI/UX, AppSec и QA; архитектура, план и недопустимые действия.
+- Исходная read-only проверка: PR #28 `codex/v035-update-check` → main (не слит).
+- Реализация нового tab и отдельного .NET updater: PR #29 `codex/v035-native-updater-tab` → `codex/v035-update-check` (не слит). GitHub Actions: `.github/workflows/native-updater-preview.yml` и `.github/workflows/portable-preview.yml`, проверять новые commit SHA/CI.
+- UI: дополнительные `ucode/assets/operator-updates.js/css`; исходный immutable `operator-approved.html` не изменён. `ucode/operator_web.py` — токенизированный loopback REST, без внешних ссылок от клиента.
+- Native host: `updater/Program.cs`, `updater/uCode.Updater.csproj`, `ucode/updater_integration.py`. Windows CI self-contained EXE (включён в Windows portable). Параметры `--self-test` / `--check --installed 0.3.4`; установка `--install` **НЕ РЕАЛИЗОВАНА** и должна оставаться disabled до полного install/rollback QA.
+- Тесты `tests/test_update_center.py`, `tests/test_updater_integration.py`, `tests/test_update_check.py`. Отдельные CI на каждую ОС и Windows updater.
+- Пользователь отказался от переменной длины массовых числовых QR. Не возвращаться к ней без нового требования.
+
+Ни одна запись о проектировании автоматической установки не даёт разрешения немедленно ставить EXE или менять пользовательские файлы; сначала отдельный safe install патч с планом, SHA-256, backup/rollback и ручным подтверждением.
