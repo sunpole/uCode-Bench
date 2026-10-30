@@ -31,6 +31,10 @@ def main(argv=None):
         while not watch_stop.wait(.1):
             if (folder/'cancel').exists():cancel.set();return
     watcher=threading.Thread(target=watch,name='ucode-cancel-file',daemon=True);watcher.start()
+    if request.get('operation','generate')!='generate':
+        from .operator_test_worker import run
+        try:return run(request,cancel,send)
+        finally:watch_stop.set();watcher.join(1)
     execution=ExecutionOptions(**{**request['execution'],'cpus':tuple(request['execution'].get('cpus',()))})
     settings=PrintSettings(**request['settings']);monitor=None;trace=None;last_event=None;telemetry=None;last_disk_check=0
     if request.get('telemetry','cpu')=='cpu':
@@ -45,6 +49,12 @@ def main(argv=None):
             if shutil.disk_usage(request['destination']).free<256*1024**2:
                 raise OSError('На диске осталось меньше 256 МиБ. Запись остановлена; частичные файлы сохранены.')
         if trace:trace.set_phase(event['stage'])
+        if monitor:
+            event={**event,'live_resources':dict(monitor.data)}
+            if trace:
+                with trace.lock:
+                    group=trace.groups.get('Вся операция')
+                    event['live_resources']['cpu_load_pct']=group['load'].data() if group else None
         if event.get('percent')==100:last_event=event
         else:send('progress',event)
     def execution_seen(value):

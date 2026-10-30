@@ -69,7 +69,7 @@
 
 ## Рабочий перенос 0.3.0
 
-Карта реализована в `operator_layout.py` / `operator_window.py`: существующие лабораторные View подключаются через независимый LaboratoryContext, исходный BatchWindow сохраняется как gui-legacy. Реальные TXT/preview/диск/PDF/QA/операционный процесс и текстовый архив подключены. Фон поддерживается всеми четырьмя PDF-путями и строгой QA. Проверки нового окна выполняются в `test_operator_window`, модели — `test_operator_models`, дочерний процесс — `test_operation_host`, PDF — `test_background_pdf`; прежние тесты сохраняются.
+Итоговый главный интерфейс использует исходную HTML-вёрстку и `operator-bridge.js` с локальным `operator_web` / `operator_service`. Все лабораторные поля читаются из настоящих LabConfig/PipelineConfig/SearchConfig; конфигурации и команды остаются прежними. Исходный BatchWindow сохраняется как gui-legacy, промежуточный native-каркас также сохранён. Реальные TXT/preview/диск/PDF/QA/операционный процесс и текстовый архив подключены. Фон поддерживается всеми четырьмя PDF-путями и строгой QA. Основной API/HTML проверяется в `test_operator_web`, модели — `test_operator_models`, дочерний процесс — `test_operation_host`, PDF — `test_background_pdf`; прежние тесты сохраняются. [Подробная архитектура](WEB_OPERATOR_ARCHITECTURE.md).
 
 ## Границы проверки
 

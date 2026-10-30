@@ -56,6 +56,8 @@ def parser_for(kind):
     p.add_argument("--ink",default="0,0,0,100")
     p.add_argument("--pdf",default="compact"); p.add_argument("--metrics",default="off")
     p.add_argument("--xy",choices=("on","off"),default="off")
+    p.add_argument('--background',choices=('white','color','transparent'),default='white')
+    p.add_argument('--paper',default='0,0,0,0')
     p.add_argument("--batch",default="32"); p.add_argument("--ram",default="auto")
     if kind in ("lab","search"):
         p.add_argument("--unit",default="cores"); p.add_argument("--cpu",default="1")
@@ -88,7 +90,8 @@ def parse_command(line):
     if kind not in ("lab","pipeline","search"): raise ValueError("Неизвестный вид теста: "+kind)
     a=parser_for(kind).parse_args(tokens[2:])
     pdf=values(a.pdf); metrics=values(a.metrics)
-    settings=asdict(PrintSettings(a.module,a.quiet,tuple(float(n.strip()) for n in a.ink.split(",")),pdf[0]))
+    settings=asdict(PrintSettings(a.module,a.quiet,tuple(float(n.strip()) for n in a.ink.split(",")),pdf[0],
+                                 background_mode=a.background,background_ink=tuple(float(n.strip()) for n in a.paper.split(','))))
     common={"counts":values(a.codes,int),"repeats":a.repeats,"qa_mode":QA[a.qa],"print_settings":settings,"timeline_mode":a.xy}
     if kind=="lab":
         if len(values(a.batch,int))!=1: raise ValueError("lab: один размер порции на команду; для нескольких используйте несколько строк")
@@ -130,6 +133,8 @@ def command_text(command):
     settings=PrintSettings(**c.print_settings)
     args=["test",command.kind,"--codes",",".join(map(str,c.counts)),"--repeats",str(c.repeats),"--qa",c.qa_mode,
           "--module",str(settings.module_mm),"--quiet",str(settings.quiet_modules),"--ink",",".join(f"{n:g}" for n in settings.ink)]
+    if settings.background_mode!='white' or any(settings.background_ink):
+        args.extend(['--background',settings.background_mode,'--paper',','.join(f'{n:g}' for n in settings.background_ink)])
     def add(name,value): args.extend(["--"+name,",".join(map(str,value)) if isinstance(value,tuple) else str(value)])
     add("xy",c.timeline_mode)
     if command.kind=="pipeline":

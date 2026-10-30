@@ -171,6 +171,7 @@ class TreeMonitor:
         if all(item["private"] is not None for item in stats):
             self.data["peak_tree_private_bytes"] = max(self.data["peak_tree_private_bytes"] or 0, sum(item["private"] for item in stats))
         self.data["peak_tree_rss_bytes"] = max(self.data["peak_tree_rss_bytes"], rss)
+        self.data['current_tree_rss_bytes']=rss
         self.data["samples"] += 1
         self.data["max_observed_processes"] = max(self.data["max_observed_processes"], len(stats))
         for item in stats: self.peaks[item["identity"]] = max(self.peaks.get(item["identity"], 0), item["cpu_seconds"])

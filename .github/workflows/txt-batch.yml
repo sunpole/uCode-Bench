@@ -65,6 +65,12 @@ jobs:
           $exe.Directory.FullName | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
       - name: Compile new Python modules
         run: python -m py_compile ucode/batch.py ucode/batch_gui.py ucode/__main__.py ucode/gui.py
+      - name: Node for frontend syntax verification (not a user runtime dependency)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify approved renderer integration syntax
+        run: node --check ucode/assets/operator-bridge.js
       - name: Parse opt-in PowerShell installer (Windows)
         if: runner.os == 'Windows'
         shell: pwsh

@@ -1,0 +1,30 @@
+{
+  "version": "0.3.0",
+  "date": "2026-10-30",
+  "scope": "Approved renderer integration; exact final commit and CI are recorded by the release",
+  "approved_html_sha256": "b86287a4413e4e32b51a46a6ca8b8c1a7278d627b0d4b0ee97612992e9bd863a",
+  "source_css_blocks_preserved": 18,
+  "original_configuration_fields_preserved": 69,
+  "local_groups": [
+    {"name": "web-api-renderer", "passed": 8},
+    {"name": "web-host-help-console-archive", "passed": 26},
+    {"name": "existing-console-archive", "passed": 10}
+  ],
+  "groups_overlap": true,
+  "browser_functional_check": {
+    "input_records": 3,
+    "physical_cpu_selected": 1,
+    "actual_output_pdf_pages": 3,
+    "qa_mode": "deferred",
+    "status": "UNVERIFIED",
+    "console_errors": [],
+    "native_file_dialog_clickthrough": false,
+    "viewport_css_pixels": [1280, 720],
+    "root_height_css_pixels": 704,
+    "footer_bottom_css_pixels": 701
+  },
+  "large_automatic_workloads": false,
+  "formal_visual_acceptance": "USER_PENDING",
+  "windows_dpi_acceptance": "USER_PENDING",
+  "limitations": ["English localization, GPU and VPS publication are not implemented", "Closing a browser cannot always be intercepted by page JavaScript; the owned generator keeps running until explicit stop or completion", "CPU observations are sampled own-process measurements, not proof of constant 100% system load"]
+}

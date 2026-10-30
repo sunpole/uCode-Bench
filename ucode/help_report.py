@@ -17,6 +17,8 @@ PARAMETERS = {
     'qa':'full/on — полная проверка; vector — без растра; off/deferred — без проверки, UNVERIFIED.',
     'module':'Размер одной клетки QR в миллиметрах.', 'quiet':'Белое поле в модулях с каждой стороны; минимум 4.',
     'ink':'Четыре компоненты C,M,Y,K в процентах, например 0,0,0,100.',
+    'background':'Подложка: white — белая, color — CMYK, transparent — прозрачная.',
+    'paper':'CMYK подложки: C,M,Y,K в процентах. Пример 0,0,0,100 — чёрная.',
     'xy':'on/off — записывать временной ряд для графика отчёта.',
     'pdf':'standard/compact — обычная или компактная структура PDF.',
     'split':'Распределение CPU: cores:12+2 или smt:24+4. Справа 0 — полный цикл у каждого процесса.',
@@ -41,12 +43,12 @@ PARAMETERS = {
 }
 
 
-def build_help(hardware=None):
+def build_help(hardware=None,*,topics=None):
     esc=html.escape; hardware=hardware or {};cpu=hardware.get('cpu',{})
     core_count=cpu.get('available_physical') or 1
     core_count=max(1,min(256,int(core_count)))
-    chapters=[]
-    for topic in TOPICS:
+    chapters=[];topics=TOPICS if topics is None else topics
+    for topic in topics:
         body=''.join('<p>'+esc(p)+'</p>' for p in topic['paragraphs'])
         if topic['id']=='print':body+='<div id="qr-demo" class="demo"></div>'
         if topic['id']=='queue':body+='<div id="queue-demo" class="demo"></div>'
@@ -69,15 +71,15 @@ def build_help(hardware=None):
             rows.append('<tr><th scope="row"><code>'+esc(', '.join(arg.option_strings))+'</code></th><td>'+esc(str(default))+'</td><td>'+esc(PARAMETERS.get(arg.dest,'Параметр выбранной команды; допустимость значения проверяется до запуска.'))+'</td></tr>')
         appendix.append('<h3>test '+kind+'</h3><div class="table-wrap"><table><thead><tr><th>Параметр</th><th>По умолчанию</th><th>Для чего</th></tr></thead><tbody>'+''.join(rows)+'</tbody></table></div>')
     chapters.append('<section id="command-flags" data-search="параметры команды консоль flags"><h2>Параметры команд <a class="permalink" href="#command-flags">#</a></h2><p>Список получен из текущего парсера программы. Значения через запятую создают варианты там, где параметр поддерживает набор. Допустимые значения проверяет кнопка «Проверить». Научный профиль сохраняет фиксированную методику.</p>'+''.join(appendix)+'<a href="#console">К примерам команд ↑</a></section>')
-    nav=''.join('<a href="#'+t['id']+'">'+esc(t['title'])+'</a>' for t in TOPICS)+'<a href="#command-flags">Все параметры команд</a>'
+    nav=''.join('<a href="#'+t['id']+'">'+esc(t['title'])+'</a>' for t in topics)+'<a href="#command-flags">Все параметры команд</a>'
     machine=esc(str(cpu.get('model') or cpu.get('name') or 'Текущий компьютер')+f' · доступно ядер: {cpu.get("available_physical","—")} · логических CPU: {cpu.get("available_logical","—")}')
     values={'BODY':''.join(chapters),'NAV':nav,'LOGO':image_uri(),'MACHINE':machine,'CORES':str(min(core_count,64))}
     template=(ASSETS/'help.html').read_text(encoding='utf-8')
     return re.sub(r'@@(BODY|NAV|LOGO|MACHINE|CORES)@@',lambda m:values[m.group(1)],template)
 
 
-def write_help(output_root,hardware=None):
+def write_help(output_root,hardware=None,*,topics=None):
     from .batch import _make_directory
     folder=_make_directory(Path(output_root)/'help','guide')
-    target=folder/'help.html';target.write_text(build_help(hardware),encoding='utf-8');return target
+    target=folder/'help.html';target.write_text(build_help(hardware,topics=topics),encoding='utf-8');return target
 

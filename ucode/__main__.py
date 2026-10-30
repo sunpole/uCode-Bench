@@ -61,7 +61,7 @@ def main(argv=None):
         if args.command in ("gui","gui-legacy"):
             try:
                 if args.command=='gui-legacy':from .batch_gui import main as gui_main
-                else:from .operator_window import main as gui_main
+                else:from .operator_web import main as gui_main
                 gui_main()
             except Exception as exc:
                 if sys.platform == "win32":
