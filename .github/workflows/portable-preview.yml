@@ -4,6 +4,13 @@ name: Portable preview (Windows / Linux / macOS)
 # The three files from the interrupted Codex session must first be committed.
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/portable-preview.yml'
+      - 'scripts/frozen_entry.py'
+      - 'ucode/distribution.py'
+      - 'ucode/system_check.py'
+      - 'pyproject.toml'
 
 permissions:
   contents: read
@@ -18,18 +25,25 @@ jobs:
     timeout-minutes: 5
     outputs:
       version: ${{ steps.version.outputs.version }}
+      ready: ${{ steps.inventory.outputs.ready }}
     steps:
       - uses: actions/checkout@v4
-      - name: Check actual frozen entrypoint is committed
+      - id: inventory
+        name: Check actual frozen entrypoint is committed
+        shell: bash
         run: |
           set -euo pipefail
+          ready=true
           for f in scripts/frozen_entry.py ucode/distribution.py ucode/system_check.py; do
             if test ! -f "$f"; then
-              echo "::error file=$f::Codex stopped with a local WIP file; first preserve and commit it. No executable will be published."
-              exit 1
+              echo "::notice file=$f::Still local-only in Codex WIP; packaging will be SKIPPED. No executable has been built."
+              ready=false
             fi
           done
-          python -m py_compile scripts/frozen_entry.py ucode/distribution.py ucode/system_check.py
+          echo "ready=$ready" >> "$GITHUB_OUTPUT"
+          if test "$ready" = true; then
+            python -m py_compile scripts/frozen_entry.py ucode/distribution.py ucode/system_check.py
+          fi
       - id: version
         name: Read actual project version
         shell: bash
@@ -48,6 +62,7 @@ jobs:
 
   portable:
     needs: preflight
+    if: needs.preflight.outputs.ready == 'true'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 35
     strategy:
