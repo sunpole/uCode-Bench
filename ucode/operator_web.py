@@ -39,7 +39,8 @@ def document(token):
     controls=(ASSETS/'operator-controls.js').read_text(encoding='utf-8')
     prefix=prefix.replace('<title>uCode 0.3.0</title>',f'<title>uCode {__version__}</title>')
     constraints=(ASSETS/'operator-window.css').read_text(encoding='utf-8')
-    return (prefix+'<script nonce="'+token+'">'+controls+'</script>'+source+'<style>'+constraints+'</style></body></html>').encode('utf-8')
+    updates_css=(ASSETS/'operator-updates.css').read_text(encoding='utf-8')
+    return (prefix+'<script nonce="'+token+'">'+controls+'</script>'+source+'<style>'+constraints+'\n'+updates_css+'</style></body></html>').encode('utf-8')
 
 
 class OperatorHTTP(ThreadingHTTPServer):
