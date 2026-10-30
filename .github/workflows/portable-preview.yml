@@ -10,6 +10,7 @@ on:
       - 'scripts/frozen_entry.py'
       - 'ucode/distribution.py'
       - 'ucode/system_check.py'
+      - 'ucode/distribution_smoke.py'
       - 'pyproject.toml'
 
 permissions:
@@ -103,6 +104,7 @@ jobs:
                '--noconfirm','--clean','--onedir','--name','uCode',
                '--collect-all','ucode','--collect-all','webview',
                '--collect-all','reportlab','--collect-all','pypdf',
+               '--hidden-import','ucode.distribution_smoke',
                '--add-data','ucode/assets'+sep+'ucode/assets']
           if sys.platform=='darwin':
               cmd+=['--windowed']
@@ -122,6 +124,24 @@ jobs:
                            capture_output=True,timeout=50)
           if p.returncode!=0:
               raise SystemExit(f'Portable CLI smoke FAILED: exit={p.returncode}; stdout={p.stdout[-1000:]}; stderr={p.stderr[-1000:]}')
+      - name: Real packaged QR and PDF smoke (two pages, structural QA)
+        shell: python
+        run: |
+          import json, subprocess, os, sys
+          from pathlib import Path
+          exe=(Path('dist/uCode.app/Contents/MacOS/uCode') if sys.platform=='darwin'
+               else Path('dist/uCode/uCode.exe') if os.name=='nt'
+               else Path('dist/uCode/uCode'))
+          p=subprocess.run([str(exe.resolve()),'--smoke'],text=True,
+                           capture_output=True,encoding='utf-8',errors='replace',timeout=120)
+          if p.returncode:
+              raise SystemExit(f'Packaged QR/PDF smoke failed: {p.returncode}; stdout={p.stdout[-1500:]}; stderr={p.stderr[-1500:]}')
+          rows=p.stdout.strip().splitlines()
+          if not rows:raise SystemExit('Packaged smoke returned no status')
+          result=json.loads(rows[-1])
+          if result.get('status')!='PASS' or result.get('pages')!=2 or result.get('quality_status')!='LIMITED':
+              raise SystemExit('Unexpected packaged PDF evidence: '+str(result))
+          print(json.dumps(result,ensure_ascii=False))
       - name: Package preview and SHA256 checksums
         shell: python
         env:
