@@ -118,6 +118,7 @@ jobs:
                 else Path('dist/uCode/uCode'))
           if not path.is_file():raise SystemExit('Portable executable missing: '+str(path))
           p=subprocess.run([str(path.resolve()),'--help'],text=True,
+                           encoding='utf-8',errors='replace',
                            capture_output=True,timeout=50)
           if p.returncode!=0:
               raise SystemExit(f'Portable CLI smoke FAILED: exit={p.returncode}; stdout={p.stdout[-1000:]}; stderr={p.stderr[-1000:]}')
