@@ -25,7 +25,7 @@
 
 - `docs/DESKTOP_V031.md` описывает pywebview/native окно на Windows и browser fallback; `ucode/operator_desktop.py` реально есть. Linux/macOS GUI, чистая установка и cross-platform native сборки не подтверждены.
 - `docs/STATIC_QR_V034.md` описывает локальный статический QR, тесты кодирования/QA, ограничения и проверки. См. `results/content-v034/verification.json`, `results/desktop-v031/verification.json`.
-- Сейчас в `.github/workflows/` только `txt-batch.yml` (Windows/Linux проверки). Workflow packaging/releases на три ОС отсутствует.
+- В `.github/workflows/` есть `txt-batch.yml` (Windows/Linux регрессия) и **новый** `portable-preview.yml` (три ОС, только CI preview; сборки SKIPPED до появления трёх локальных файлов Codex). **GitHub Release/автообновление ещё отсутствуют.** См. `docs/PORTABLE_BUILDS.md`.
 - `AGENTS.md` и `docs/WORK_LOG.md` уже существуют: продолжать их, не создавать конкурирующий журнал и не уничтожать историю.
 
 ## Очередь безопасной разработки
@@ -51,3 +51,10 @@
 ## Журнал данного handoff
 
 - **2026-10-30, ChatGPT**: проверены два репозитория, текущий `main`, ветка 0.3.4, PR #26, опубликованные релизы, дерево файлов, существующие AGENTS/WORK_LOG, текущее desktop и QR описание. Выявлено отсутствие трёх незакоммиченных frozen/packaging файлов в удалённой ветке. Создан этот документ для продолжения без догадок. **Это документация и проверка, не реализованная сборка.**
+
+## Обновление от ChatGPT 30.10.2026 — этап GitHub-only
+
+- Исправлен Windows CI watchdog до 300 секунд (отдельный job timeout 30 минут). [CI 41056886412](https://github.com/sunpole/uCode-Bench/actions/runs/41056886412) = **Windows SUCCESS + Linux SUCCESS** на коммите `fb8e6f10f07cf48c95c8e0e4613a9a32e5d752f8`.
+- Добавлен `.github/workflows/portable-preview.yml` с безопасным gate по отсутствующим frozen/WIP файлам. [CI 41057338756](https://github.com/sunpole/uCode-Bench/actions/runs/41057338756): preflight SUCCESS, portable **SKIPPED**. Ни один EXE/.app/Linux бинарник не собран и релизы не опубликованы.
+- Описана матрица Windows x64 / Linux x64 / macOS ARM64 и ограничения в `docs/PORTABLE_BUILDS.md`. Код генерации, существующие пользовательские файлы и `main` не затронуты.
+- Следующий шаг: пользователь безопасно обновляет локальное Git-дерево после сохранения трёх локальных файлов, затем делает их доступными в ветке для CI. Не забывать проверять `git status` перед merge/pull.
