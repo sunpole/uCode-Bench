@@ -53,6 +53,9 @@ def audit_job(directory,*,render_samples=True,cancel=None,events=None,progress=N
     from .print_settings import PrintSettings
     root=Path(directory).resolve()
     original=json.loads((root/"manifest.json").read_text(encoding="utf-8"))
+    if original.get('generator')=='qr-content':
+        from .qr_content_job import audit_content
+        return audit_content(root,original,render_samples,cancel)
     if original.get("streaming"):
         from .stream_batch import audit_stream_job
         return audit_stream_job(root,original,render_samples=render_samples,cancel=cancel,events=events)

@@ -1,0 +1,78 @@
+{
+  "version": "0.3.4",
+  "full_pdf_qa": "COMPLETE",
+  "qa": {
+    "content": {
+      "status": "PASS",
+      "errors": [],
+      "decoded_files": 1,
+      "raster": true,
+      "decoder": "independent QR V1–40 BCH + per-block RS + UTF-8 ECI"
+    }
+  },
+  "phone_camera": "USER_PENDING",
+  "payload_types": 15,
+  "regression_tests": 49,
+  "decoder": "independent QR V1–40 + per-block RS + UTF-8 ECI",
+  "pixel_dpi_acceptance": "USER_PENDING",
+  "ui": {
+    "ok": true,
+    "content": "PASS: native content form + Cyrillic; PDF1",
+    "order_flow": "PASS: type/base/path/style; manual name; actual style preview",
+    "session_closed": true,
+    "geometry": [
+      {
+        "viewport": [
+          1184,
+          761
+        ],
+        "root": [
+          1166,
+          743
+        ],
+        "horizontal": false,
+        "bottom": 753,
+        "preview": true
+      },
+      {
+        "viewport": [
+          984,
+          661
+        ],
+        "root": [
+          966,
+          643
+        ],
+        "horizontal": false,
+        "bottom": 653,
+        "preview": true
+      },
+      {
+        "viewport": [
+          884,
+          521
+        ],
+        "root": [
+          866,
+          503
+        ],
+        "horizontal": false,
+        "bottom": 513,
+        "preview": true
+      },
+      {
+        "viewport": [
+          1184,
+          761
+        ],
+        "root": [
+          1166,
+          743
+        ],
+        "horizontal": false,
+        "bottom": 753,
+        "preview": true
+      }
+    ]
+  }
+}

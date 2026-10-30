@@ -71,6 +71,11 @@ def run():
                         time.sleep(.1)
                 result['ecc_controls']='PASS: L/M/Q/H; final PDF H'
 
+        if '--content' in sys.argv:
+            window.evaluate_js("document.querySelector('#uc-center-tab-4').click();document.querySelector('#uc-mode-content').click();document.querySelector('#uc-content-text').value='Привет из uCode!';document.querySelector('#uc-use-content').click()")
+            until_js("document.querySelector('#uc-center-tab-5').getAttribute('aria-selected')==='true' && document.querySelector('#uc-payload-view').value==='Привет из uCode!'")
+            assert api(url,'state')['content_kind']=='text'
+            result['content']='PASS: native content form + Cyrillic; PDF1'
         form=api(url,'state')['form']
         form.update(qa_mode='vector',execution_backend='process',workers=1,cpu_choice='1',cpu_unit='logical',telemetry='off')
         api(url,'configure',form);api(url,'preflight',{});wait()
@@ -92,7 +97,7 @@ def run():
               horizontal:document.documentElement.scrollWidth>innerWidth,
               bottom:r.getBoundingClientRect().bottom,height:innerHeight,
               stageHeight:stage.clientHeight}})()"""))
-        result['ok']=(duplicate.returncode==0 and result['pdf']['count']==3 and result['pdf']['status']=='LIMITED'
+        result['ok']=(duplicate.returncode==0 and result['pdf']['count']==(1 if '--content' in sys.argv else 3) and result['pdf']['status']=='LIMITED'
                       and all(not m['horizontal'] and m['bottom']<=m['viewport'][1] for m in result['geometry'])
                       and all(not m['horizontal'] and m['bottom']<=m['height'] and m['stageHeight']>50 for m in result['tabs']))
     except Exception as exc:

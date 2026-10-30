@@ -81,6 +81,9 @@ class Handler(BaseHTTPRequestHandler):
             elif route=='api/search':self.send({'rows':s.search(args.get('q',[''])[0])})
             elif route=='api/preview':self.send(s.preview_svg(int(args.get('page',['1'])[0]),args.get('sample',['0'])[0]=='1').encode(),content_type='image/svg+xml')
             elif route=='api/configs':self.send(s.lab_configs)
+            elif route=='api/content-kinds':
+                from .qr_payloads import KINDS
+                self.send(KINDS)
             elif route=='api/archive':
                 from .test_archive import KINDS,STATES
                 self.send([{**r,'kind_title':KINDS.get(r['kind'],r['kind']),'status_title':STATES.get(r['status'],r['status'])} for r in s.archive_rows()])
@@ -112,6 +115,7 @@ class Handler(BaseHTTPRequestHandler):
         s=self.server.service
         if route not in ('stop-request','stop','ui'):s.require_idle()
         if route=='configure':return s.configure(value)
+        if route=='content':s.set_content(value['kind'],value['fields']);return s.state()
         if route=='output-name':
             s.set_output_name(value.get('name',''),value.get('automatic',False));return s.state()
         if route=='ui':

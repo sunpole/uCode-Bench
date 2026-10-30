@@ -31,6 +31,11 @@ def main(argv=None):
         while not watch_stop.wait(.1):
             if (folder/'cancel').exists():cancel.set();return
     watcher=threading.Thread(target=watch,name='ucode-cancel-file',daemon=True);watcher.start()
+    if request.get('operation')=='content':
+        from .qr_content_job import run_content_job
+        try:
+            result=run_content_job(request,cancel,send);send('done',str(result));return 0
+        finally:watch_stop.set();watcher.join(1)
     if request.get('operation','generate')!='generate':
         from .operator_test_worker import run
         try:return run(request,cancel,send)
