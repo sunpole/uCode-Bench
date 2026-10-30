@@ -122,8 +122,8 @@ class Handler(BaseHTTPRequestHandler):
         s=self.server.service
         if route not in ('stop-request','stop','ui'):s.require_idle()
         if route=='updates-check':
-            from .update_check import inspect_remote
-            return inspect_remote(installed=__version__)
+            from .updater_integration import check_stable_release
+            return check_stable_release(installed=__version__)
         if route=='updates-open':
             import webbrowser
             webbrowser.open('https://github.com/sunpole/uCode-Bench/releases')
