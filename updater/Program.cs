@@ -69,7 +69,7 @@ internal static class Program
             package,
             installation = comparison > 0 && package is not null ? "AVAILABLE_WITH_CONFIRMATION" : "NOT_APPLICABLE",
             download = "NOT_STARTED",
-            checked_with = "uCode.Updater.exe 0.2.0",
+            checked_with = "uCode.Updater.exe 0.3.0",
         };
     }
 
@@ -77,7 +77,7 @@ internal static class Program
     {
         using var handler = new HttpClientHandler { AllowAutoRedirect = false, UseCookies = false };
         using var client = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(8) };
-        client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("uCodeUpdater", "0.2.0"));
+        client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("uCodeUpdater", "0.3.0"));
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
         using var response = await client.GetAsync(Endpoint, HttpCompletionOption.ResponseHeadersRead);
         if (response.StatusCode != HttpStatusCode.OK)
@@ -129,6 +129,13 @@ internal static class Program
         Console.Error.WriteLine(args.Length == 0 ? "uCode.Updater — безопасная проверка обновлений" : "");
         if (args.Length == 0 && OperatingSystem.IsWindows() &&
             string.Equals(Path.GetDirectoryName(Environment.ProcessPath),
+                          DevelopmentInstaller.InstallRoot, StringComparison.OrdinalIgnoreCase))
+        {
+            try { return DevelopmentInstaller.Launch(); }
+            catch (Exception exc) { Console.Error.WriteLine("DEV_LAUNCH_FAILED: " + exc.Message); return 3; }
+        }
+        if (args.Length == 0 && OperatingSystem.IsWindows() &&
+            string.Equals(Path.GetDirectoryName(Environment.ProcessPath),
                           SafeInstaller.InstallRoot, StringComparison.OrdinalIgnoreCase))
         {
             try { return SafeInstaller.Launch(); }
@@ -140,12 +147,12 @@ internal static class Program
         }
         if (args.Length == 1 && args[0] == "--version")
         {
-            Console.WriteLine("uCode.Updater 0.2.0");
+            Console.WriteLine("uCode.Updater 0.3.0");
             return 0;
         }
         if (args.Length == 1 && args[0] == "--self-test")
         {
-            bool okay = SelfTest() && SafeInstaller.SelfTest();
+            bool okay = SelfTest() && SafeInstaller.SelfTest() && DevelopmentInstaller.SelfTest();
             Console.WriteLine(okay ? "UPDATER_SELF_TEST_PASS" : "UPDATER_SELF_TEST_FAIL");
             return okay ? 0 : 1;
         }
@@ -164,6 +171,58 @@ internal static class Program
                 Console.Error.WriteLine("Проверка версии не выполнена: " + exc.Message);
                 return 2;
             }
+        }
+        if (args.Length == 3 && args[0] == "--check-dev" && args[1] == "--current-sha")
+        {
+            try
+            {
+                var status = await DevelopmentInstaller.CheckAsync(args[2]);
+                Console.WriteLine(JsonSerializer.Serialize(status, new JsonSerializerOptions { WriteIndented = true }));
+                return 0;
+            }
+            catch (Exception exc)
+            {
+                Console.Error.WriteLine("DEV_CHECK_FAILED: " + exc.GetType().Name + ": " + exc.Message);
+                return 2;
+            }
+        }
+        if ((args.Length == 4 || args.Length == 6) && args[0] == "--install-dev" &&
+            args[1] == "--current-sha" && args[3] == "--accept" &&
+            (args.Length == 4 || (args[4] == "--wait-pid" && int.TryParse(args[5], out _))))
+        {
+            try
+            {
+                int result = await DevelopmentInstaller.InstallAsync(args[2], accepted: true);
+                if (result != 0) return result;
+                if (args.Length == 6)
+                {
+                    Console.WriteLine("READY_TO_RESTART");
+                    Console.Out.Flush();
+                    SafeInstaller.WaitForExit(int.Parse(args[5]));
+                    return DevelopmentInstaller.Launch();
+                }
+                return 0;
+            }
+            catch (Exception exc)
+            {
+                Console.Error.WriteLine("DEV_INSTALL_FAILED: " + exc.GetType().Name + ": " + exc.Message);
+                return 3;
+            }
+        }
+        if (args.Length == 2 && args[0] == "--rollback-dev" && args[1] == "--accept")
+        {
+            try { return DevelopmentInstaller.Rollback(accepted: true); }
+            catch (Exception exc) { Console.Error.WriteLine("DEV_ROLLBACK_FAILED: " + exc.Message); return 3; }
+        }
+        if (args.Length == 1 && args[0] == "--launch-dev")
+        {
+            try { return DevelopmentInstaller.Launch(); }
+            catch (Exception exc) { Console.Error.WriteLine("DEV_LAUNCH_FAILED: " + exc.Message); return 3; }
+        }
+        if (args.Length > 0 && args[0] == "--install-dev")
+        {
+            Console.Error.WriteLine("Требуется --install-dev --current-sha SHA40 --accept [--wait-pid PID].");
+            return 3;
         }
         if ((args.Length == 4 || args.Length == 6) && args[0] == "--install" &&
             args[1] == "--installed" && args[3] == "--accept" &&
@@ -215,7 +274,9 @@ internal static class Program
             Console.Error.WriteLine("Требуется точная команда --install --installed X.Y.Z --accept.");
             return 3;
         }
-        Console.WriteLine("Команды: --check --installed X.Y.Z | --install --installed X.Y.Z --accept | --rollback --accept | --launch | --version | --self-test");
+        Console.WriteLine("Stable: --check --installed X.Y.Z | --install --installed X.Y.Z --accept | --rollback --accept | --launch");
+        Console.WriteLine("Dev: --check-dev --current-sha SHA40 | --install-dev --current-sha SHA40 --accept | --rollback-dev --accept | --launch-dev");
+        Console.WriteLine("General: --version | --self-test");
         Console.WriteLine("Установка работает только с официальным более новым stable-релизом, отдельно от пользовательских данных.");
         return args.Length == 0 || (args.Length == 1 && args[0] == "--help") ? 0 : 2;
     }
