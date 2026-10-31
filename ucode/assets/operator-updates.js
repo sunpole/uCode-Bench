@@ -47,7 +47,7 @@ for(const [number,text] of [
 }
 ucUpRight.append(el('p','Новая stable-версия устанавливается в отдельную папку после проверки SHA-256 и тестового запуска. Прежняя версия сохраняется для отката.','uc-up-note'));
 ucUpBody.append(ucUpLeft,ucUpRight);ucUpPanel.append(ucUpBody);
-addMainTab(ucUpPanel,'Обновление',8,'var(--uc-active)');
+addMainTab(ucUpPanel,'Обновление',8,'var(--uc-base-color)');
 const ucUpTabOrder=[0,4,5,2,3,1,6,7,8];tabstrip.append(tabs[8]);
 for(let p=0;p<ucUpTabOrder.length;p++){
   const i=ucUpTabOrder[p];
