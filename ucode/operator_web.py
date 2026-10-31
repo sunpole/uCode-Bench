@@ -81,9 +81,13 @@ class Handler(BaseHTTPRequestHandler):
             elif route=='api/update-info':
                 from .update_check import current_platform
                 from .updater_integration import native_path
+                from .build_info import build_info
                 executable=native_path()
                 available=executable is not None and executable.is_file()
-                self.send({'installed':__version__,'channel':'stable','platform':current_platform(),
+                identity=build_info()
+                self.send({'installed':__version__,'channel':identity['channel'],
+                           'build_commit':identity['commit'],'build_run':identity['build_run'],
+                           'platform':current_platform(),
                            'release_url':'https://github.com/sunpole/uCode-Bench/releases',
                            'installer_status':'AVAILABLE_WITH_CONFIRMATION' if available else 'NOT_AVAILABLE',
                            'check_mode':'MANUAL_ONLY'})
