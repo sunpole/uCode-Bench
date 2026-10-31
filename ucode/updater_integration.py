@@ -47,13 +47,14 @@ def parse_native_result(raw, installed):
                 type(package.get("size_bytes")) is not int or
                 package["size_bytes"] <= 1000):
             raise ValueError("Неверный файл релиза")
-    if raw.get("installation") != "NOT_IMPLEMENTED" or raw.get("download") != "NOT_STARTED":
+    allowed = "AVAILABLE_WITH_CONFIRMATION" if expected == "UPDATE_AVAILABLE" and package else "NOT_APPLICABLE"
+    if raw.get("installation") != allowed or raw.get("download") != "NOT_STARTED":
         raise ValueError("Недопустимое действие обновлятора")
     return {
         "application": "uCode", "installed": installed, "latest": latest,
         "status": expected, "platform": "windows-x64",
         "release_url": raw["release_url"], "package": package,
-        "installation": "NOT_STARTED", "download": "NOT_STARTED",
+        "installation": allowed, "download": "NOT_STARTED",
         "backend": "native",
         "note": "Никаких файлов программа не изменяла.",
     }

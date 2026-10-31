@@ -19,7 +19,7 @@ def native_payload():
             "url": "https://github.com/sunpole/uCode-Bench/releases/download/v0.3.4/uCode-0.3.4-windows-x64.zip",
             "size_bytes": 31091021,
         },
-        "installation": "NOT_IMPLEMENTED",
+        "installation": "NOT_APPLICABLE",
         "download": "NOT_STARTED",
     }
 
@@ -29,7 +29,7 @@ class NativeIntegrationTests(unittest.TestCase):
         status=integration.parse_native_result(native_payload(),"0.3.4")
         self.assertEqual(status["backend"],"native")
         self.assertEqual(status["status"],"CURRENT")
-        self.assertEqual(status["installation"],"NOT_STARTED")
+        self.assertEqual(status["installation"],"NOT_APPLICABLE")
 
     def test_reject_inconsistent_status_and_bad_links(self):
         data=native_payload()

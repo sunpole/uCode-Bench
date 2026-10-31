@@ -5,7 +5,8 @@ const ucUpHeading=el('div',null,'uc-section-title');
 ucUpHeading.append(el('span','Обновление'));ucUpPanel.append(ucUpHeading);
 const ucUpIntro=el('div',null,'uc-up-intro'),ucUpHeader=el('div');
 ucUpHeader.append(el('h3','Центр обновлений'),el('p','Проверка версии не затрагивает PDF, TXT, настройки и результаты тестов.'));
-ucUpIntro.append(ucUpHeader,el('span','Канал: Стабильный','uc-up-chip'));
+const ucUpChannel=el('span','Канал: Определяется','uc-up-chip');
+ucUpIntro.append(ucUpHeader,ucUpChannel);
 ucUpPanel.append(ucUpIntro);
 const ucUpTiles=el('div',null,'uc-up-tiles'),ucUpValues={};
 for(const [key,label,placeholder,hint] of [
@@ -30,7 +31,7 @@ ucUpCheck.type='button';ucUpCheck.setAttribute('data-tooltip','Проверит�
 const ucUpOpen=el('button','Открыть выпуски GitHub');
 ucUpOpen.type='button';ucUpOpen.setAttribute('data-tooltip','Открыть официальную страницу выпусков в браузере.');
 const ucUpInstall=el('button','Установить обновление');
-ucUpInstall.type='button';ucUpInstall.disabled=true;ucUpInstall.setAttribute('data-tooltip','Безопасный установщик с резервной копией и откатом разрабатывается отдельно.');
+ucUpInstall.type='button';ucUpInstall.disabled=true;ucUpInstall.setAttribute('data-tooltip','Установить более новый стабильный релиз после проверки и явного подтверждения.');
 ucUpActions.append(ucUpCheck,ucUpOpen,ucUpInstall);ucUpLeft.append(ucUpActions);
 const ucUpPackage=el('div','Пакет: не проверен','uc-up-note');
 const ucUpResult=el('div','Никаких скачиваний и изменений файлов.','uc-up-note');
@@ -44,9 +45,9 @@ for(const [number,text] of [
 ]){
   const row=el('div',null,'uc-up-step');row.append(el('b',number),el('span',text));ucUpRight.append(row);
 }
-ucUpRight.append(el('p','Сейчас готова только проверка версии. Независимый установщик разрабатывается и ещё не устанавливает файлы.','uc-up-note'));
+ucUpRight.append(el('p','Новая stable-версия устанавливается в отдельную папку после проверки SHA-256 и тестового запуска. Прежняя версия сохраняется для отката.','uc-up-note'));
 ucUpBody.append(ucUpLeft,ucUpRight);ucUpPanel.append(ucUpBody);
-addMainTab(ucUpPanel,'Обновление',8,'var(--uc-active)');
+addMainTab(ucUpPanel,'Обновление',8,'var(--uc-base-color)');
 const ucUpTabOrder=[0,4,5,2,3,1,6,7,8];tabstrip.append(tabs[8]);
 for(let p=0;p<ucUpTabOrder.length;p++){
   const i=ucUpTabOrder[p];
@@ -64,16 +65,64 @@ paintView=function(view){
 };
 function ucUpSetStatus(text,state='idle'){ucUpStatus.textContent=text;ucUpStatus.dataset.state=state;}
 const ucUpPlatform={'windows-x64':'Windows x64','linux-x64':'Linux x64','macos-arm64':'macOS ARM64'};
+let ucUpCandidate=null,ucUpPollTimer=null;
+function ucUpCanInstall(info){
+  return info&&info.status==='UPDATE_AVAILABLE'&&info.package&&info.platform==='windows-x64'
+    &&!!window.pywebview?.api?.finish_close;
+}
+function ucUpStopPolling(){
+  if(ucUpPollTimer!==null){clearInterval(ucUpPollTimer);ucUpPollTimer=null;}
+}
+async function ucUpWatchInstall(){
+  try{
+    const status=await rtAPI('updates-status',{});
+    ucUpSetStatus(status.message,status.state==='FAILED'?'error':'idle');
+    if(status.state==='RESTART_READY'){
+      ucUpStopPolling();
+      ucUpSetStatus('Новая версия готова. Закрываем старую программу и запускаем обновлённую.','success');
+      if(window.pywebview?.api?.finish_close){await window.pywebview.api.finish_close();}
+      else ucUpSetStatus('Закройте текущее окно uCode, чтобы завершить установку.','error');
+    }else if(status.state==='FAILED'||status.state==='FINISHED'){
+      ucUpStopPolling();ucUpCheck.disabled=false;
+      if(status.state==='FAILED')ucUpResult.textContent='Прежняя версия сохранена. Причина записана в локальный журнал.';
+    }
+  }catch(error){
+    ucUpStopPolling();ucUpCheck.disabled=false;
+    ucUpSetStatus('Не удалось прочитать состояние установки: '+error.message,'error');
+  }
+}
+ucUpInstall.onclick=async()=>{
+  if(ucUpInstall.disabled||!ucUpCanInstall(ucUpCandidate))return;
+  if(!window.confirm('Установить uCode v'+ucUpCandidate.latest+'? Программа закроется после проверки новой версии. Ваши TXT, PDF и настройки сохранятся.'))return;
+  ucUpInstall.disabled=true;ucUpCheck.disabled=true;
+  ucUpSetStatus('Запуск независимого установщика…');
+  try{
+    await rtAPI('updates-install',{confirm:true,latest:ucUpCandidate.latest});
+    ucUpResult.textContent='Установка выполняется в отдельной папке. Прежняя версия не удаляется.';
+    ucUpStopPolling();
+    ucUpPollTimer=setInterval(()=>{ucUpWatchInstall();},900);
+    await ucUpWatchInstall();
+  }catch(error){
+    ucUpSetStatus('Установка не запущена: '+error.message,'error');
+    ucUpCheck.disabled=false;
+    ucUpInstall.disabled=!ucUpCanInstall(ucUpCandidate);
+  }
+};
 async function ucUpInitialize(){
   try{
     const info=await rtAPI('update-info');
     ucUpValues.installed.textContent='v'+info.installed;
     ucUpValues.platform.textContent=ucUpPlatform[info.platform]||'Не определена';
+    ucUpChannel.textContent=info.channel==='development'?'Канал: Разработка':'Канал: Стабильный';
+    if(info.channel==='development'&&info.build_commit){
+      ucUpValues.installed.textContent='v'+info.installed+' · dev';
+      ucUpResult.textContent='Тестовая сборка '+info.build_commit.slice(0,12)+'. Устанавливаются только более новые официальные стабильные релизы.';
+    }
   }catch(error){ucUpSetStatus('Не удалось прочитать локальную версию: '+error.message,'error');}
 }
 ucUpCheck.onclick=async()=>{
   if(ucUpCheck.disabled)return;
-  ucUpCheck.disabled=true;ucUpCheck.textContent='Проверка…';
+  ucUpCheck.disabled=true;ucUpInstall.disabled=true;ucUpCandidate=null;ucUpCheck.textContent='Проверка…';
   ucUpSetStatus('Подключение к официальным GitHub Releases…');
   ucUpPackage.textContent='Пакет: проверяется';
   try{
@@ -81,12 +130,13 @@ ucUpCheck.onclick=async()=>{
     ucUpValues.installed.textContent='v'+info.installed;
     ucUpValues.latest.textContent='v'+info.latest;
     ucUpValues.platform.textContent=ucUpPlatform[info.platform]||'Не определена';
-    const descriptions={CURRENT:'Установлена актуальная стабильная версия.',UPDATE_AVAILABLE:'Есть новая стабильная версия. Установка пока выполняется вручную.',LOCAL_NEWER:'Эта локальная версия новее последнего стабильного выпуска.'};
+    const descriptions={CURRENT:'Установлена актуальная стабильная версия.',UPDATE_AVAILABLE:'Есть новая стабильная версия. Можно подтвердить установку.',LOCAL_NEWER:'Эта локальная версия новее последнего стабильного выпуска.'};
+    ucUpCandidate=info;ucUpInstall.disabled=!ucUpCanInstall(info);
     ucUpSetStatus(descriptions[info.status]||'Статус версии не определён.','success');
     ucUpPackage.textContent=info.package?'Доступен пакет: '+info.package.name+' · '+rtBytes(info.package.size_bytes):'Для этой платформы подходящий архив не найден.';
     ucUpResult.textContent='Проверка завершена · файлы, настройки и PDF не изменялись.';
   }catch(error){
-    ucUpValues.latest.textContent='Нет данных';
+    ucUpValues.latest.textContent='Нет данных';ucUpCandidate=null;ucUpInstall.disabled=true;
     ucUpSetStatus('Проверка не удалась: '+error.message,'error');
     ucUpPackage.textContent='Пакет не проверен. Сеть может быть недоступна.';
     ucUpResult.textContent='При ошибке установка не выполняется.';

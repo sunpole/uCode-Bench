@@ -80,9 +80,17 @@ class Handler(BaseHTTPRequestHandler):
             elif route=='api/health':self.send({'application':'uCode','version':__version__,'project':self.server.project_digest})
             elif route=='api/update-info':
                 from .update_check import current_platform
-                self.send({'installed':__version__,'channel':'stable','platform':current_platform(),
+                from .updater_integration import native_path
+                from .build_info import build_info
+                executable=native_path()
+                available=executable is not None and executable.is_file()
+                identity=build_info()
+                self.send({'installed':__version__,'channel':identity['channel'],
+                           'build_commit':identity['commit'],'build_run':identity['build_run'],
+                           'platform':current_platform(),
                            'release_url':'https://github.com/sunpole/uCode-Bench/releases',
-                           'installer_status':'NOT_AVAILABLE','check_mode':'MANUAL_ONLY'})
+                           'installer_status':'AVAILABLE_WITH_CONFIRMATION' if available else 'NOT_AVAILABLE',
+                           'check_mode':'MANUAL_ONLY'})
             elif route=='api/state':self.send(s.state())
             elif route=='api/rows':self.send(s.rows(int(args.get('page',['1'])[0])))
             elif route=='api/search':self.send({'rows':s.search(args.get('q',[''])[0])})
@@ -124,6 +132,13 @@ class Handler(BaseHTTPRequestHandler):
         if route=='updates-check':
             from .updater_integration import check_stable_release
             return check_stable_release(installed=__version__)
+        if route=='updates-install':
+            from .update_install import begin_stable_install
+            return begin_stable_install(s,confirmed=value.get('confirm') is True,
+                                        requested_version=value.get('latest'))
+        if route=='updates-status':
+            from .update_install import stable_install_status
+            return stable_install_status(s)
         if route=='updates-open':
             import webbrowser
             webbrowser.open('https://github.com/sunpole/uCode-Bench/releases')
