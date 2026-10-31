@@ -12,6 +12,9 @@ on:
       - 'scripts/history_capture.py'
       - '.github/workflows/history-capture.yml'
       - 'docs/HISTORY_CAPTURE.md'
+      - 'ucode/operator_web.py'
+      - 'ucode/assets/operator-updates.js'
+      - 'ucode/assets/operator-updates.css'
   workflow_dispatch:
     inputs:
       tag:
@@ -83,6 +86,40 @@ jobs:
         with:
           name: ucode-history-capture-${{ github.run_id }}
           path: capture-output/
+          if-no-files-found: warn
+          retention-days: 30
+
+  capture-development:
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install isolated preview UI and browser
+        run: |
+          python -m pip install -e . 'playwright==1.56.0'
+          python -m playwright install --with-deps chromium
+      - name: Capture current development tabs, including update center
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(python -c 'import ucode; print(ucode.__version__)')"
+          python scripts/history_capture.py \
+            --source-root . \
+            --output "dev-capture/${{ github.sha }}" \
+            --expected-version "$version" \
+            --source-ref development \
+            --source-commit "$(git rev-parse HEAD)"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ucode-development-ui-${{ github.run_id }}
+          path: dev-capture/
           if-no-files-found: warn
           retention-days: 30
 
