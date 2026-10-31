@@ -109,6 +109,7 @@ def capture(source_root: Path, output: Path, expected_version: str, source_ref: 
         "source_ref": source_ref,
         "source_commit": commit,
         "mode": "real-browser-loopback",
+        "channel": "development" if source_ref == "development" else "stable",
         "os": platform.system(),
         "viewport": {"width": 1440, "height": 900, "scale": 1},
         "captured_utc": datetime.now(timezone.utc).isoformat(),
@@ -174,6 +175,12 @@ def capture(source_root: Path, output: Path, expected_version: str, source_ref: 
                         tab.click(timeout=15000)
                         expect(tab).to_have_attribute("aria-selected", "true", timeout=15000)
                         page.wait_for_timeout(250)
+                        if "Обновление" in title:
+                            check_button = page.get_by_role("button", name="Проверить обновления", exact=True)
+                            if check_button.count() != 1 or not check_button.is_visible():
+                                raise RuntimeError("Update check button must be visible")
+                            if not check_button.is_enabled():
+                                raise RuntimeError("Update check button unexpectedly disabled")
                         filename = f"{index + 1:02d}-tab.png"
                         image = output / filename
                         stage = f'capture-tab-{index}'
