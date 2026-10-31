@@ -67,7 +67,7 @@ internal static class Program
             release_url = url,
             platform = "windows-x64",
             package,
-            installation = "NOT_IMPLEMENTED",
+            installation = comparison > 0 && package is not null ? "AVAILABLE_WITH_CONFIRMATION" : "NOT_APPLICABLE",
             download = "NOT_STARTED",
             checked_with = "uCode.Updater.exe 0.1.0",
         };
@@ -109,7 +109,7 @@ internal static class Program
         """;
         using var data = JsonDocument.Parse(payload);
         string result = JsonSerializer.Serialize(ReadRelease(data.RootElement, "0.3.4"));
-        if (!result.Contains("\"CURRENT\"") || !result.Contains("\"NOT_IMPLEMENTED\""))
+        if (!result.Contains("\"CURRENT\"") || !result.Contains("\"NOT_APPLICABLE\""))
             return false;
         try
         {
