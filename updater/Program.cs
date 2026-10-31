@@ -69,7 +69,7 @@ internal static class Program
             package,
             installation = comparison > 0 && package is not null ? "AVAILABLE_WITH_CONFIRMATION" : "NOT_APPLICABLE",
             download = "NOT_STARTED",
-            checked_with = "uCode.Updater.exe 0.1.0",
+            checked_with = "uCode.Updater.exe 0.2.0",
         };
     }
 
@@ -77,7 +77,7 @@ internal static class Program
     {
         using var handler = new HttpClientHandler { AllowAutoRedirect = false, UseCookies = false };
         using var client = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(8) };
-        client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("uCodeUpdater", "0.1.0"));
+        client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("uCodeUpdater", "0.2.0"));
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
         using var response = await client.GetAsync(Endpoint, HttpCompletionOption.ResponseHeadersRead);
         if (response.StatusCode != HttpStatusCode.OK)
@@ -140,7 +140,7 @@ internal static class Program
         }
         if (args.Length == 1 && args[0] == "--version")
         {
-            Console.WriteLine("uCode.Updater 0.1.0");
+            Console.WriteLine("uCode.Updater 0.2.0");
             return 0;
         }
         if (args.Length == 1 && args[0] == "--self-test")
