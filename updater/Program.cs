@@ -1,6 +1,6 @@
 // Independent updater command-line host. Does not import Python or WebView2.
-// v0.1 intentionally implements only read-only stable Release discovery.
-// Download, installation, restart and rollback require separate QA and consent.
+// Versioned stable installation requires explicit consent and Windows QA.
+// Never writes into the portable source folder or user's uCode data root.
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
@@ -134,7 +134,7 @@ internal static class Program
         }
         if (args.Length == 1 && args[0] == "--self-test")
         {
-            bool okay = SelfTest();
+            bool okay = SelfTest() && SafeInstaller.SelfTest();
             Console.WriteLine(okay ? "UPDATER_SELF_TEST_PASS" : "UPDATER_SELF_TEST_FAIL");
             return okay ? 0 : 1;
         }
@@ -154,13 +154,44 @@ internal static class Program
                 return 2;
             }
         }
+        if (args.Length == 4 && args[0] == "--install" && args[1] == "--installed" && args[3] == "--accept")
+        {
+            try { return await SafeInstaller.InstallAsync(args[2], accepted: true); }
+            catch (Exception exc) when (exc is IOException or UnauthorizedAccessException or InvalidOperationException
+                or ArgumentException or HttpRequestException or TaskCanceledException or JsonException
+                or NotSupportedException or System.Security.Cryptography.CryptographicException)
+            {
+                Console.Error.WriteLine("INSTALL_FAILED: " + exc.GetType().Name + ": " + exc.Message);
+                return 3;
+            }
+        }
+        if (args.Length == 2 && args[0] == "--rollback" && args[1] == "--accept")
+        {
+            try { return SafeInstaller.Rollback(accepted: true); }
+            catch (Exception exc) when (exc is IOException or UnauthorizedAccessException or InvalidOperationException
+                or ArgumentException or JsonException or NotSupportedException)
+            {
+                Console.Error.WriteLine("ROLLBACK_FAILED: " + exc.Message);
+                return 3;
+            }
+        }
+        if (args.Length == 1 && args[0] == "--launch")
+        {
+            try { return SafeInstaller.Launch(); }
+            catch (Exception exc) when (exc is IOException or UnauthorizedAccessException or InvalidOperationException
+                or ArgumentException or JsonException or NotSupportedException or System.ComponentModel.Win32Exception)
+            {
+                Console.Error.WriteLine("LAUNCH_FAILED: " + exc.Message);
+                return 3;
+            }
+        }
         if (args.Length > 0 && args[0] == "--install")
         {
-            Console.Error.WriteLine("Установка пока недоступна. Безопасная замена и откат не реализованы.");
+            Console.Error.WriteLine("Требуется точная команда --install --installed X.Y.Z --accept.");
             return 3;
         }
-        Console.WriteLine("Команды: --check --installed 0.3.4 | --version | --self-test");
-        Console.WriteLine("Установка, скачивание и изменение пользовательских данных не выполняются.");
+        Console.WriteLine("Команды: --check --installed X.Y.Z | --install --installed X.Y.Z --accept | --rollback --accept | --launch | --version | --self-test");
+        Console.WriteLine("Установка работает только с официальным более новым stable-релизом, отдельно от пользовательских данных.");
         return args.Length == 0 || (args.Length == 1 && args[0] == "--help") ? 0 : 2;
     }
 }
