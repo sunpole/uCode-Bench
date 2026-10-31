@@ -203,6 +203,7 @@ internal static class SafeInstaller
         string root = InstallRoot;
         AssertRoot(root);
 
+        Console.WriteLine("STAGE:checking-release");
         // The source of truth is a stable, non-draft GitHub Release, never a CI preview.
         string releaseEndpoint = "https://api.github.com/repos/sunpole/uCode-Bench/releases/latest";
         byte[] metadata = await DownloadBytes(new Uri(releaseEndpoint), 256 * 1024);
@@ -240,10 +241,13 @@ internal static class SafeInstaller
         }
         if (!hasChecksums || expectedSize < 1024 || expectedSize > MaxPackage)
             throw new InvalidDataException("Не найдены проверяемый пакет и файл SHA-256.");
+        Console.WriteLine("STAGE:downloading-checksums");
         string checksumText = Encoding.UTF8.GetString(
             await DownloadBytes(new Uri(releaseUrl + "SHA256SUMS.txt"), 32 * 1024));
         string expectedHash = ExpectedHash(checksumText, filename);
+        Console.WriteLine("STAGE:downloading-package");
         byte[] archive = await DownloadBytes(new Uri(releaseUrl + filename), MaxPackage);
+        Console.WriteLine("STAGE:verifying-sha256");
         if (archive.Length != expectedSize ||
             !CryptographicOperations.FixedTimeEquals(
                 Convert.FromHexString(expectedHash),
@@ -259,7 +263,9 @@ internal static class SafeInstaller
         string staging = Path.Combine(root, ".stage-" + Guid.NewGuid().ToString("N"));
         try
         {
+            Console.WriteLine("STAGE:extracting");
             ExtractSafe(archive, staging);
+            Console.WriteLine("STAGE:smoke-test");
             Smoke(Path.Combine(staging, "uCode", "uCode.exe"));
             Directory.Move(staging, dest);
             // The immutable initial launcher is separate from versioned app files.
@@ -273,6 +279,7 @@ internal static class SafeInstaller
             }
             // State switch is last. On failure, the previous version remains selected.
             WriteState(root, new InstallState(version, prior?.current));
+            Console.WriteLine("STAGE:installed");
             Console.WriteLine(JsonSerializer.Serialize(new
             {
                 status = "INSTALLED", version,
@@ -285,6 +292,23 @@ internal static class SafeInstaller
         {
             // Only the private temporary stage created by this invocation.
             if (Directory.Exists(staging)) Directory.Delete(staging, recursive: true);
+        }
+    }
+
+    internal static void WaitForExit(int pid)
+    {
+        if (pid <= 4) throw new InvalidOperationException("Недопустимый PID приложения.");
+        try
+        {
+            using var old = Process.GetProcessById(pid);
+            if (!old.ProcessName.Equals("uCode", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("PID не принадлежит uCode.");
+            if (!old.WaitForExit(120_000))
+                throw new InvalidOperationException("Старая программа не закрылась; новая установлена без автозапуска.");
+        }
+        catch (ArgumentException)
+        {
+            // Old app already exited. No process is being terminated here.
         }
     }
 
