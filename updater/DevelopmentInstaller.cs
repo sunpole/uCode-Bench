@@ -87,30 +87,33 @@ internal static class DevelopmentInstaller
     {
         if (!IsSha(currentSha)) throw new FormatException("Неверный SHA текущей Development-сборки.");
         Candidate? candidate = await LatestAsync();
+        bool managed = ReadState() is not null;
+        string status = candidate is null ? "NO_PUBLISHED_BUILD" :
+            candidate.sha != currentSha ? "UPDATE_AVAILABLE" :
+            managed ? "CURRENT" : "INSTALL_REQUIRED";
         return new
         {
             application = "uCode",
             channel = "development",
             installed_commit = currentSha,
             latest_commit = candidate?.sha,
-            status = candidate is null ? "NO_PUBLISHED_BUILD" :
-                candidate.sha == currentSha ? "CURRENT" : "UPDATE_AVAILABLE",
+            status,
             platform = "windows-x64",
             package = candidate is null ? null : new
             {
                 name = candidate.filename, url = candidate.packageUrl, size_bytes = candidate.size
             },
             release_url = candidate is null ? null : Base + "/releases/tag/" + candidate.tag,
-            installation = candidate is not null && candidate.sha != currentSha ?
+            installation = status is "UPDATE_AVAILABLE" or "INSTALL_REQUIRED" ?
                 "AVAILABLE_WITH_CONFIRMATION" : "NOT_APPLICABLE",
             checked_with = "uCode.Updater.exe 0.3.0"
         };
     }
 
-    private static async Task<(Candidate, byte[])> VerifiedPackageAsync(string currentSha)
+    private static async Task<(Candidate, byte[])> VerifiedPackageAsync(string currentSha, bool allowBootstrap)
     {
         Candidate? release = await LatestAsync();
-        if (release is null || release.sha == currentSha)
+        if (release is null || (release.sha == currentSha && !allowBootstrap))
             throw new InvalidOperationException("Новой проверенной Development-сборки нет.");
         string baseUrl = Base + "/releases/download/" + release.tag + "/";
         string manifest = Encoding.UTF8.GetString(
@@ -149,7 +152,7 @@ internal static class DevelopmentInstaller
             FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
         Console.WriteLine("STAGE:checking-release");
         State? old = ReadState();
-        var (release, zip) = await VerifiedPackageAsync(currentSha);
+        var (release, zip) = await VerifiedPackageAsync(currentSha, allowBootstrap: old is null);
         if (old is not null && old.current == release.sha)
             throw new InvalidOperationException("Эта Development-сборка уже установлена.");
         string target = VersionPath(release.sha);
