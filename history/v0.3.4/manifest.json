@@ -1,0 +1,76 @@
+{
+  "captured_utc": "2026-10-31T09:45:25.655216+00:00",
+  "channel": "stable",
+  "count": 8,
+  "mode": "real-browser-loopback",
+  "os": "Linux",
+  "project": "uCode",
+  "schema": 1,
+  "screenshots": [
+    {
+      "bytes": 126205,
+      "file": "01-tab.png",
+      "sha256": "d0f272acb5c968e386275ad81379227e3bc25994efe4fba59a2fc78dafd2fc09",
+      "tab_index": 0,
+      "tab_title": "Тип"
+    },
+    {
+      "bytes": 109289,
+      "file": "02-tab.png",
+      "sha256": "b4e8cef1ce6caf4bf455b757b8cb5405fc0c7d99f5c4836666cd5aeeba7cdcf3",
+      "tab_index": 1,
+      "tab_title": "База"
+    },
+    {
+      "bytes": 123068,
+      "file": "03-tab.png",
+      "sha256": "3646ec87a1cd29d36970dc1bc476d7ded0a6f33669a60e055f0ebc3a4b5f0760",
+      "tab_index": 2,
+      "tab_title": "Путь"
+    },
+    {
+      "bytes": 127089,
+      "file": "04-tab.png",
+      "sha256": "63c9f1943a9e4a7066924c7ef26482505c8c2044cbf1cc7cec7294c4ddb8703a",
+      "tab_index": 3,
+      "tab_title": "Оформление"
+    },
+    {
+      "bytes": 97456,
+      "file": "05-tab.png",
+      "sha256": "d800ed4cb52da57d64457d7784f3c54d5eea9c6cb93eaba5086634c2d3ce4ae6",
+      "tab_index": 4,
+      "tab_title": "Настройка"
+    },
+    {
+      "bytes": 86146,
+      "file": "06-tab.png",
+      "sha256": "4f5b8f73ab3feef834b06df385faa927bcb979c446b8f2d37c67cfdf956e7d48",
+      "tab_index": 5,
+      "tab_title": "Просмотр"
+    },
+    {
+      "bytes": 108161,
+      "file": "07-tab.png",
+      "sha256": "6d79fb9d22d405e0c0309d8ef476439b64a6bb7e36e8f270feef9f0d37d5b8ac",
+      "tab_index": 6,
+      "tab_title": "Тесты"
+    },
+    {
+      "bytes": 110664,
+      "file": "08-tab.png",
+      "sha256": "35ae5f80a132c8f6d215727b9c33240c163083d42de2e76fa2b767fb66220ca0",
+      "tab_index": 7,
+      "tab_title": "Другое"
+    }
+  ],
+  "source_commit": "b2562a1e0f7b337d7db8509368c7ef4e55a48651",
+  "source_ref": "v0.3.4",
+  "status": "PASS",
+  "version": "0.3.4",
+  "viewport": {
+    "height": 900,
+    "scale": 1,
+    "width": 1440
+  }
+}
