@@ -91,7 +91,7 @@ def shutdown(base: str | None, process: subprocess.Popen | None) -> None:
 
 
 def capture(source_root: Path, output: Path, expected_version: str, source_ref: str, commit: str) -> dict:
-    from playwright.sync_api import sync_playwright
+    from playwright.sync_api import expect, sync_playwright
     import ucode
 
     source_root = source_root.resolve()
@@ -160,8 +160,9 @@ def capture(source_root: Path, output: Path, expected_version: str, source_ref: 
                     stage = 'open-application-page'
                     page.goto(base, wait_until="domcontentloaded", timeout=45000)
                     stage = 'wait-for-application-ready'
-                    page.wait_for_function("window.ucodeReady === true", timeout=60000)
                     page.locator("#ucode-layout").wait_for(state="visible", timeout=15000)
+                    page.locator(".uc-tabstrip [role=tab]").first.wait_for(state="visible", timeout=60000)
+                    expect(page.locator("#uc-filename")).not_to_contain_text("Подключение", timeout=60000)
                     tabs = page.get_by_role("tab")
                     number_of_tabs = tabs.count()
                     if number_of_tabs < 4:
@@ -171,11 +172,7 @@ def capture(source_root: Path, output: Path, expected_version: str, source_ref: 
                         tab = page.get_by_role("tab").nth(index)
                         title = tab.inner_text().strip()
                         tab.click(timeout=15000)
-                        page.wait_for_function(
-                            "i => { const el=document.querySelectorAll('[role=tab]')[i]; return !!el && el.getAttribute('aria-selected')==='true' }",
-                            arg=index,
-                            timeout=15000,
-                        )
+                        expect(tab).to_have_attribute("aria-selected", "true", timeout=15000)
                         page.wait_for_timeout(250)
                         filename = f"{index + 1:02d}-tab.png"
                         image = output / filename
@@ -201,6 +198,7 @@ def capture(source_root: Path, output: Path, expected_version: str, source_ref: 
         safe_message = re.sub(r'http://127\.0\.0\.1:\d+/[A-Za-z0-9_-]+/', '[local-ui]/', str(exc))
         safe_message = re.sub(r'/home/runner/[^\s:]+', '[runner-file]', safe_message)
         safe_message = re.sub(r'/tmp/[^\s:]+', '[temp-file]', safe_message)
+        safe_message = re.sub(r'nonce-[A-Za-z0-9_-]+', 'nonce-[redacted]', safe_message)
         manifest["error_summary"] = safe_message[:750]
         manifest["count"] = len(manifest["screenshots"])
         save_json(output / "manifest.json", manifest)
