@@ -3,6 +3,14 @@ name: Portable preview (Windows / Linux / macOS)
 # Manual PREVIEW ONLY. Never publishes or updates a GitHub Release.
 # The three files from the interrupted Codex session must first be committed.
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/portable-preview.yml'
+      - 'scripts/frozen_entry.py'
+      - 'ucode/**'
+      - 'updater/**'
+      - 'pyproject.toml'
   workflow_dispatch:
   pull_request:
     paths:
