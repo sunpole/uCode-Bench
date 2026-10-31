@@ -179,7 +179,7 @@ jobs:
             git switch -c history-gallery --track origin/history-gallery
           else
             git switch --orphan history-gallery
-            git rm -rf --quiet .
+            # --orphan creates an empty index/worktree. No tracked files exist to remove.
           fi
           if test -e "history/$tag"; then
             echo "::notice::Tag already archived; no overwrite."
