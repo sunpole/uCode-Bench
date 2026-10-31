@@ -43,15 +43,22 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p dist
-          gh run download "$SOURCE_RUN" -R "$REPO" \
-            -n ucode-portable-preview-windows-x64-0.3.4 -D dist
+          artifact="$(gh api "repos/$REPO/actions/runs/$SOURCE_RUN/artifacts?per_page=100" \
+            --jq '[.artifacts[].name | select(startswith("ucode-portable-preview-windows-x64-"))] | unique | .[]')"
+          if [[ ! "$artifact" =~ ^ucode-portable-preview-windows-x64-[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::No unique versioned Windows artifact in approved run."
+            exit 1
+          fi
+          gh run download "$SOURCE_RUN" -R "$REPO" -n "$artifact" -D dist
       - name: Validate package, original SHA256 and source identity
         shell: python
         run: |
           import datetime,hashlib,json,os,pathlib,shutil,zipfile
           root=pathlib.Path('dist')
-          name='uCode-0.3.4-windows-x64.zip'
-          src=root/name
+          archives=list(root.glob('uCode-*-windows-x64.zip'))
+          if len(archives)!=1:raise SystemExit('Missing or ambiguous versioned Windows ZIP')
+          src=archives[0]
+          name=src.name
           if not src.is_file(): raise SystemExit('Windows package missing')
           archive_bytes=src.read_bytes()
           digest=hashlib.sha256(archive_bytes).hexdigest()
@@ -94,7 +101,7 @@ jobs:
             gh release create "$tag" release-work/* -R "$REPO" \
               --target "$SOURCE_SHA" --prerelease \
               --title "uCode Development $(printf '%s' "$SOURCE_SHA" | cut -c1-12)" \
-              --notes "Verified Windows Development build from main commit $SOURCE_SHA, GitHub Actions run $SOURCE_RUN. Not a stable release. Offline QR/PDF smoke and Windows updater self-test passed. Stable v0.3.4 is unchanged."
+              --notes "Verified Windows Development build from main commit $SOURCE_SHA, GitHub Actions run $SOURCE_RUN. Not a stable release. Offline QR/PDF smoke and Windows updater self-test passed. Published Stable releases are unchanged."
           fi
           test "$(gh release view "$tag" -R "$REPO" --json isPrerelease --jq '.isPrerelease')" = true
       - name: Trigger verified Development screenshots
