@@ -329,6 +329,8 @@ internal static class SafeInstaller
         string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
         if (string.IsNullOrWhiteSpace(desktop)) return false;
         string path = Path.Combine(desktop, "uCode.lnk");
+        if (File.Exists(path))
+            path = Path.Combine(desktop, "uCode (автообновление).lnk");
         if (File.Exists(path)) return false; // Never overwrite a user's existing shortcut.
         try
         {
