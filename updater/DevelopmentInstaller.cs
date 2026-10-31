@@ -179,6 +179,7 @@ internal static class DevelopmentInstaller
                 File.Copy(host, persistent, overwrite: false);
             }
             SaveState(new State(release.sha, old?.current));
+            CreateDesktopShortcut(release.sha);
             Console.WriteLine("STAGE:installed");
             Console.WriteLine(JsonSerializer.Serialize(new
             {
@@ -188,6 +189,31 @@ internal static class DevelopmentInstaller
             return 0;
         }
         finally { if (Directory.Exists(stage)) Directory.Delete(stage, recursive: true); }
+    }
+
+    private static void CreateDesktopShortcut(string sha)
+    {
+        if (!OperatingSystem.IsWindows()) return;
+        string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+        if (string.IsNullOrWhiteSpace(desktop)) return;
+        string name = Path.Combine(desktop, "uCode Development.lnk");
+        if (File.Exists(name)) return;
+        try
+        {
+            Type? type = Type.GetTypeFromProgID("WScript.Shell");
+            if (type is null) return;
+            dynamic shell = Activator.CreateInstance(type)!;
+            dynamic shortcut = shell.CreateShortcut(name);
+            shortcut.TargetPath = Path.Combine(InstallRoot, "uCode.Updater.exe");
+            shortcut.WorkingDirectory = InstallRoot;
+            shortcut.IconLocation = Binary(sha) + ",0";
+            shortcut.Description = "uCode Development — запуск проверенной сборки";
+            shortcut.Save();
+        }
+        catch (Exception exc)
+        {
+            Console.Error.WriteLine("DEV_SHORTCUT_FAILED: " + exc.GetType().Name);
+        }
     }
 
     internal static int Launch()
