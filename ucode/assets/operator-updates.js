@@ -72,7 +72,7 @@ function ucUpSetStatus(text,state='idle'){ucUpStatus.textContent=text;ucUpStatus
 const ucUpPlatform={'windows-x64':'Windows x64','linux-x64':'Linux x64','macos-arm64':'macOS ARM64'};
 let ucUpCandidate=null,ucUpPollTimer=null;
 function ucUpCanInstall(info){
-  if(!info||info.status!=='UPDATE_AVAILABLE'||!info.package||
+  if(!info||!['UPDATE_AVAILABLE','INSTALL_REQUIRED'].includes(info.status)||!info.package||
       info.platform!=='windows-x64'||!window.pywebview?.api?.finish_close)return false;
   if(ucUpChannel.value==='development')return info.channel==='development'&&
     typeof info.latest_commit==='string'&&/^[a-f0-9]{40}$/.test(info.latest_commit);
@@ -155,7 +155,7 @@ ucUpCheck.onclick=async()=>{
     }
     ucUpValues.platform.textContent=ucUpPlatform[info.platform]||'Не определена';
     const descriptions=dev?
-      {CURRENT:'Установлена последняя Development-сборка.',UPDATE_AVAILABLE:'Новая проверенная Development-сборка доступна для установки.',NO_PUBLISHED_BUILD:'Пока нет проверенных Development-сборок.'}:
+      {CURRENT:'Установлена последняя Development-сборка.',UPDATE_AVAILABLE:'Новая проверенная Development-сборка доступна для установки.',INSTALL_REQUIRED:'Текущая сборка проверена. Её можно один раз установить в управляемую папку для будущего автообновления.',NO_PUBLISHED_BUILD:'Пока нет проверенных Development-сборок.'}:
       {CURRENT:'Установлена актуальная стабильная версия.',UPDATE_AVAILABLE:'Есть новая стабильная версия. Можно подтвердить установку.',LOCAL_NEWER:'Эта локальная версия новее последнего стабильного выпуска.'};
     ucUpCandidate=info;ucUpInstall.disabled=!ucUpCanInstall(info);
     ucUpSetStatus(descriptions[info.status]||'Статус версии не определён.','success');
