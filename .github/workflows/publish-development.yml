@@ -8,7 +8,7 @@ on:
     types: [completed]
 
 permissions:
-  actions: read
+  actions: write
   contents: write
 
 concurrency:
@@ -90,10 +90,16 @@ jobs:
           tag="dev-$SOURCE_SHA"
           if gh release view "$tag" -R "$REPO" >/dev/null 2>&1; then
             echo "::notice::Immutable development build already published; not replacing it."
-            exit 0
+          else
+            gh release create "$tag" release-work/* -R "$REPO" \
+              --target "$SOURCE_SHA" --prerelease \
+              --title "uCode Development $(printf '%s' "$SOURCE_SHA" | cut -c1-12)" \
+              --notes "Verified Windows Development build from main commit $SOURCE_SHA, GitHub Actions run $SOURCE_RUN. Not a stable release. Offline QR/PDF smoke and Windows updater self-test passed. Stable v0.3.4 is unchanged."
           fi
-          gh release create "$tag" release-work/* -R "$REPO" \
-            --target "$SOURCE_SHA" --prerelease \
-            --title "uCode Development $(printf '%s' "$SOURCE_SHA" | cut -c1-12)" \
-            --notes "Verified Windows Development build from main commit $SOURCE_SHA, GitHub Actions run $SOURCE_RUN. Not a stable release. Offline QR/PDF smoke and Windows updater self-test passed. Stable v0.3.4 is unchanged."
           test "$(gh release view "$tag" -R "$REPO" --json isPrerelease --jq '.isPrerelease')" = true
+      - name: Trigger verified Development screenshots
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh workflow run history-capture.yml -R "$REPO" --ref main \
+            -f tag=v0.3.4 -f publish_history=false -f "dev_tag=dev-$SOURCE_SHA"
