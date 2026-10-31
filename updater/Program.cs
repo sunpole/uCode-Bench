@@ -127,6 +127,17 @@ internal static class Program
     {
         Console.OutputEncoding = new UTF8Encoding(false);
         Console.Error.WriteLine(args.Length == 0 ? "uCode.Updater — безопасная проверка обновлений" : "");
+        if (args.Length == 0 && OperatingSystem.IsWindows() &&
+            string.Equals(Path.GetDirectoryName(Environment.ProcessPath),
+                          SafeInstaller.InstallRoot, StringComparison.OrdinalIgnoreCase))
+        {
+            try { return SafeInstaller.Launch(); }
+            catch (Exception exc)
+            {
+                Console.Error.WriteLine("LAUNCH_FAILED: " + exc.Message);
+                return 3;
+            }
+        }
         if (args.Length == 1 && args[0] == "--version")
         {
             Console.WriteLine("uCode.Updater 0.1.0");
@@ -154,9 +165,23 @@ internal static class Program
                 return 2;
             }
         }
-        if (args.Length == 4 && args[0] == "--install" && args[1] == "--installed" && args[3] == "--accept")
+        if ((args.Length == 4 || args.Length == 6) && args[0] == "--install" &&
+            args[1] == "--installed" && args[3] == "--accept" &&
+            (args.Length == 4 || (args[4] == "--wait-pid" && int.TryParse(args[5], out _))))
         {
-            try { return await SafeInstaller.InstallAsync(args[2], accepted: true); }
+            try
+            {
+                int result = await SafeInstaller.InstallAsync(args[2], accepted: true);
+                if (result != 0) return result;
+                if (args.Length == 6)
+                {
+                    Console.WriteLine("READY_TO_RESTART");
+                    Console.Out.Flush();
+                    SafeInstaller.WaitForExit(int.Parse(args[5]));
+                    return SafeInstaller.Launch();
+                }
+                return 0;
+            }
             catch (Exception exc) when (exc is IOException or UnauthorizedAccessException or InvalidOperationException
                 or ArgumentException or HttpRequestException or TaskCanceledException or JsonException
                 or NotSupportedException or System.Security.Cryptography.CryptographicException)
