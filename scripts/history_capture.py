@@ -118,6 +118,7 @@ def capture(source_root: Path, output: Path, expected_version: str, source_ref: 
     save_json(output / "manifest.json", manifest)
     base = None
     process = None
+    stage = 'start-local-server'
 
     try:
         with tempfile.TemporaryDirectory(prefix="ucode-history-") as temp:
@@ -136,6 +137,7 @@ def capture(source_root: Path, output: Path, expected_version: str, source_ref: 
             base, health = wait_for_server(project, process)
             if health.get("version") != expected_version:
                 raise RuntimeError("Running server version does not match the historical release")
+            stage = 'start-browser'
             with sync_playwright() as pw:
                 browser = pw.chromium.launch(headless=True)
                 try:
@@ -155,13 +157,16 @@ def capture(source_root: Path, output: Path, expected_version: str, source_ref: 
                             route.abort()
                     context.route("**/*", route_request)
                     page = context.new_page()
+                    stage = 'open-application-page'
                     page.goto(base, wait_until="domcontentloaded", timeout=45000)
+                    stage = 'wait-for-application-ready'
                     page.wait_for_function("window.ucodeReady === true", timeout=60000)
                     page.locator("#ucode-layout").wait_for(state="visible", timeout=15000)
                     tabs = page.get_by_role("tab")
                     number_of_tabs = tabs.count()
                     if number_of_tabs < 4:
                         raise RuntimeError("Expected uCode navigation tabs were not detected")
+                    stage = 'capture-tabs'
                     for index in range(number_of_tabs):
                         tab = page.get_by_role("tab").nth(index)
                         title = tab.inner_text().strip()
@@ -174,6 +179,7 @@ def capture(source_root: Path, output: Path, expected_version: str, source_ref: 
                         page.wait_for_timeout(250)
                         filename = f"{index + 1:02d}-tab.png"
                         image = output / filename
+                        stage = f'capture-tab-{index}'
                         page.screenshot(path=str(image), full_page=True, animations="disabled")
                         manifest["screenshots"].append({
                             **file_info(image), "tab_index": index, "tab_title": title
@@ -191,6 +197,11 @@ def capture(source_root: Path, output: Path, expected_version: str, source_ref: 
         # Never print the capability token, local directory or personal data.
         manifest["status"] = "FAILED"
         manifest["error_type"] = type(exc).__name__
+        manifest["error_stage"] = stage
+        safe_message = re.sub(r'http://127\.0\.0\.1:\d+/[A-Za-z0-9_-]+/', '[local-ui]/', str(exc))
+        safe_message = re.sub(r'/home/runner/[^\s:]+', '[runner-file]', safe_message)
+        safe_message = re.sub(r'/tmp/[^\s:]+', '[temp-file]', safe_message)
+        manifest["error_summary"] = safe_message[:750]
         manifest["count"] = len(manifest["screenshots"])
         save_json(output / "manifest.json", manifest)
         raise RuntimeError("History capture failed; see manifest status and CI steps") from None
