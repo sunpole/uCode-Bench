@@ -5,7 +5,8 @@ const ucUpHeading=el('div',null,'uc-section-title');
 ucUpHeading.append(el('span','Обновление'));ucUpPanel.append(ucUpHeading);
 const ucUpIntro=el('div',null,'uc-up-intro'),ucUpHeader=el('div');
 ucUpHeader.append(el('h3','Центр обновлений'),el('p','Проверка версии не затрагивает PDF, TXT, настройки и результаты тестов.'));
-ucUpIntro.append(ucUpHeader,el('span','Канал: Стабильный','uc-up-chip'));
+const ucUpChannel=el('span','Канал: Определяется','uc-up-chip');
+ucUpIntro.append(ucUpHeader,ucUpChannel);
 ucUpPanel.append(ucUpIntro);
 const ucUpTiles=el('div',null,'uc-up-tiles'),ucUpValues={};
 for(const [key,label,placeholder,hint] of [
@@ -112,6 +113,11 @@ async function ucUpInitialize(){
     const info=await rtAPI('update-info');
     ucUpValues.installed.textContent='v'+info.installed;
     ucUpValues.platform.textContent=ucUpPlatform[info.platform]||'Не определена';
+    ucUpChannel.textContent=info.channel==='development'?'Канал: Разработка':'Канал: Стабильный';
+    if(info.channel==='development'&&info.build_commit){
+      ucUpValues.installed.textContent='v'+info.installed+' · dev';
+      ucUpResult.textContent='Тестовая сборка '+info.build_commit.slice(0,12)+'. Устанавливаются только более новые официальные стабильные релизы.';
+    }
   }catch(error){ucUpSetStatus('Не удалось прочитать локальную версию: '+error.message,'error');}
 }
 ucUpCheck.onclick=async()=>{
