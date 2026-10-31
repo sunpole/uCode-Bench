@@ -1,0 +1,99 @@
+name: Publish verified development Windows build
+
+# Public prerelease delivery channel. Never modifies the stable/latest Release.
+# workflow_run gets write permission only after verifying the exact main source.
+on:
+  workflow_run:
+    workflows: ['Portable preview (Windows / Linux / macOS)']
+    types: [completed]
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: ucode-development-release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
+      SOURCE_RUN: ${{ github.event.workflow_run.id }}
+      REPO: ${{ github.repository }}
+    steps:
+      - name: Verify source commit is still current main
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$SOURCE_SHA" = "$(gh api "repos/$REPO/commits/main" --jq '.sha')"
+          [[ "$SOURCE_SHA" =~ ^[a-f0-9]{40}$ ]]
+          test "$(gh api "repos/$REPO/actions/runs/$SOURCE_RUN" --jq '.conclusion')" = success
+          echo "APPROVED_SOURCE=$SOURCE_SHA"
+      - name: Download successful Windows artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          gh run download "$SOURCE_RUN" -R "$REPO" \
+            -n ucode-portable-preview-windows-x64-0.3.4 -D dist
+      - name: Validate package, original SHA256 and source identity
+        shell: python
+        run: |
+          import datetime,hashlib,json,os,pathlib,shutil,zipfile
+          root=pathlib.Path('dist')
+          name='uCode-0.3.4-windows-x64.zip'
+          src=root/name
+          if not src.is_file(): raise SystemExit('Windows package missing')
+          archive_bytes=src.read_bytes()
+          digest=hashlib.sha256(archive_bytes).hexdigest()
+          line=(root/'SHA256SUMS.txt').read_text(encoding='ascii').strip().replace('\r','')
+          if line!=digest+'  '+name:raise SystemExit('Original package SHA256 mismatch')
+          with zipfile.ZipFile(src) as archive:
+            if archive.testzip() is not None:raise SystemExit('Corrupt ZIP')
+            names=archive.namelist()
+            if 'uCode/uCode.exe' not in names or 'uCode/uCode.Updater.exe' not in names:
+              raise SystemExit('Required binaries missing')
+            info=[n for n in names if n.endswith('/ucode/assets/build-info.json')]
+            if len(info)!=1:raise SystemExit('Build-info missing/ambiguous')
+            data=json.loads(archive.read(info[0]))
+            if data.get('channel')!='development' or data.get('commit')!=os.environ['SOURCE_SHA'] or str(data.get('build_run'))!=os.environ['SOURCE_RUN']:
+              raise SystemExit('Build provenance mismatch')
+          sha=os.environ['SOURCE_SHA']
+          tag='dev-'+sha
+          filename='uCode-dev-'+sha[:12]+'-windows-x64.zip'
+          out=pathlib.Path('release-work')
+          out.mkdir()
+          shutil.copy2(src,out/filename)
+          (out/'SHA256SUMS.txt').write_bytes(f'{digest}  {filename}\n'.encode('ascii'))
+          manifest={
+            'schema':1,'application':'uCode','channel':'development',
+            'source_commit':sha,'build_run':os.environ['SOURCE_RUN'],
+            'tag':tag,'platform':'windows-x64','package':filename,
+            'size_bytes':len(archive_bytes),'sha256':digest,
+            'published_utc':datetime.datetime.now(datetime.timezone.utc).isoformat()
+          }
+          (out/'development.json').write_text(json.dumps(manifest,sort_keys=True,indent=2)+'\n',encoding='utf-8')
+          print('VERIFIED_DEVELOPMENT',tag,filename,digest)
+      - name: Publish immutable prerelease without altering latest stable
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="dev-$SOURCE_SHA"
+          if gh release view "$tag" -R "$REPO" >/dev/null 2>&1; then
+            echo "::notice::Immutable development build already published; not replacing it."
+            exit 0
+          fi
+          gh release create "$tag" release-work/* -R "$REPO" \
+            --target "$SOURCE_SHA" --prerelease \
+            --title "uCode Development $(printf '%s' "$SOURCE_SHA" | cut -c1-12)" \
+            --notes "Verified Windows Development build from main commit $SOURCE_SHA, GitHub Actions run $SOURCE_RUN. Not a stable release. Offline QR/PDF smoke and Windows updater self-test passed. Stable v0.3.4 is unchanged."
+          test "$(gh release view "$tag" -R "$REPO" --json isPrerelease --jq '.isPrerelease')" = true
