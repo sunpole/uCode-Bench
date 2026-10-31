@@ -103,7 +103,10 @@ def check_development_release() -> dict:
         not isinstance(latest, str) or re.fullmatch(r"[a-f0-9]{40}", latest) is None
     ):
         raise ValueError("Недопустимый SHA Development-релиза.")
-    status = "NO_PUBLISHED_BUILD" if latest is None else "CURRENT" if latest == current else "UPDATE_AVAILABLE"
+    status = data.get("status")
+    expected_statuses = {"NO_PUBLISHED_BUILD"} if latest is None else ({"CURRENT", "INSTALL_REQUIRED"} if latest == current else {"UPDATE_AVAILABLE"})
+    if status not in expected_statuses:
+        raise ValueError("Неверный статус Development-обновления.")
     if data.get("application") != "uCode" or data.get("channel") != "development" or (
         data.get("installed_commit") != current or data.get("status") != status
         or data.get("platform") != "windows-x64"
@@ -140,7 +143,7 @@ def begin_development_install(service, *, confirmed: bool, requested_commit: str
     if getattr(service, "update_process", None) is not None and service.update_process.poll() is None:
         raise ValueError("Установка уже запущена.")
     verified = check_development_release()
-    if verified.get("status") != "UPDATE_AVAILABLE" or verified.get("latest_commit") != requested_commit:
+    if verified.get("status") not in ("UPDATE_AVAILABLE", "INSTALL_REQUIRED") or verified.get("latest_commit") != requested_commit:
         raise ValueError("Подтверждённая Development-сборка больше не актуальна.")
     folder = user_root() / "updates" / "logs"
     folder.mkdir(parents=True, exist_ok=True)
