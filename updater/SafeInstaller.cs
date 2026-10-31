@@ -191,8 +191,15 @@ internal static class SafeInstaller
             throw new InvalidDataException("Превышено время самопроверки новой версии.");
         }
         Task.WaitAll(output, errors);
-        if (process.ExitCode != 0 || !output.Result.Contains("\"status\": \"PASS\"", StringComparison.Ordinal))
+        if (process.ExitCode != 0)
             throw new InvalidDataException("Новая версия не прошла проверку QR/PDF.");
+        string last = output.Result.Split('\n', StringSplitOptions.RemoveEmptyEntries).LastOrDefault() ?? "";
+        using JsonDocument smoke = JsonDocument.Parse(last);
+        JsonElement result = smoke.RootElement;
+        if (result.GetProperty("status").GetString() != "PASS" ||
+            result.GetProperty("pages").GetInt32() != 2 ||
+            result.GetProperty("quality_status").GetString() != "LIMITED")
+            throw new InvalidDataException("Новый PDF не прошёл структурную QA.");
     }
 
     internal static async Task<int> InstallAsync(string installed, bool accepted)
@@ -202,7 +209,9 @@ internal static class SafeInstaller
         Program.ParseVersion(installed);
         string root = InstallRoot;
         AssertRoot(root);
-
+        Directory.CreateDirectory(root);
+        using var gate = new FileStream(Path.Combine(root, "installer.lock"), FileMode.OpenOrCreate,
+            FileAccess.ReadWrite, FileShare.None);
         Console.WriteLine("STAGE:checking-release");
         // The source of truth is a stable, non-draft GitHub Release, never a CI preview.
         string releaseEndpoint = "https://api.github.com/repos/sunpole/uCode-Bench/releases/latest";
@@ -318,6 +327,8 @@ internal static class SafeInstaller
         if (!accepted) throw new InvalidOperationException("Откат требует --accept.");
         string root = InstallRoot;
         AssertRoot(root);
+        using var gate = new FileStream(Path.Combine(root, "installer.lock"), FileMode.OpenOrCreate,
+            FileAccess.ReadWrite, FileShare.None);
         InstallState state = ReadState(root) ??
             throw new InvalidDataException("Нет управляемой установки.");
         if (state.previous is null || !File.Exists(Binary(root, state.previous)))
@@ -335,6 +346,7 @@ internal static class SafeInstaller
         InstallState state = ReadState(root) ??
             throw new InvalidDataException("Сначала выполните управляемую установку.");
         string binary = Binary(root, state.current);
+        RequireNoLinks(binary);
         if (!File.Exists(binary))
         {
             // Boot attempt failed: restore last known available version.
@@ -342,6 +354,7 @@ internal static class SafeInstaller
                 throw new InvalidDataException("Текущий и резервный исполняемые файлы отсутствуют.");
             WriteState(root, new InstallState(state.previous, state.current));
             binary = Binary(root, state.previous);
+            RequireNoLinks(binary);
         }
         var start = new ProcessStartInfo(binary)
         {
