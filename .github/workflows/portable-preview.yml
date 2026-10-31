@@ -184,7 +184,7 @@ jobs:
           with path.open('rb') as payload:
               for chunk in iter(lambda:payload.read(1024*1024),b''):digest.update(chunk)
           h=digest.hexdigest()
-          (out/'SHA256SUMS.txt').write_text(f'{h}  {path.name}\n',encoding='utf-8')
+          (out/'SHA256SUMS.txt').write_bytes(f'{h}  {path.name}\n'.encode('ascii'))
           print(path.name, h)
       - uses: actions/upload-artifact@v4
         with:
