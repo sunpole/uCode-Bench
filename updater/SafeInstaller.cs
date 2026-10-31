@@ -288,7 +288,9 @@ internal static class SafeInstaller
             }
             // State switch is last. On failure, the previous version remains selected.
             WriteState(root, new InstallState(version, prior?.current));
+            bool shortcut = EnsureDesktopShortcut(root, version);
             Console.WriteLine("STAGE:installed");
+            Console.WriteLine(shortcut ? "DESKTOP_SHORTCUT_CREATED" : "DESKTOP_SHORTCUT_UNCHANGED");
             Console.WriteLine(JsonSerializer.Serialize(new
             {
                 status = "INSTALLED", version,
@@ -318,6 +320,33 @@ internal static class SafeInstaller
         catch (ArgumentException)
         {
             // Old app already exited. No process is being terminated here.
+        }
+    }
+
+    private static bool EnsureDesktopShortcut(string root, string version)
+    {
+        string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+        if (string.IsNullOrWhiteSpace(desktop)) return false;
+        string path = Path.Combine(desktop, "uCode.lnk");
+        if (File.Exists(path)) return false; // Never overwrite a user's existing shortcut.
+        try
+        {
+            Type? type = Type.GetTypeFromProgID("WScript.Shell");
+            if (type is null) return false;
+            dynamic shell = Activator.CreateInstance(type)!;
+            dynamic shortcut = shell.CreateShortcut(path);
+            shortcut.TargetPath = Path.Combine(root, "uCode.Updater.exe");
+            shortcut.WorkingDirectory = root;
+            shortcut.IconLocation = Binary(root, version) + ",0";
+            shortcut.Description = "uCode — управляемый запуск с восстановлением версии";
+            shortcut.Save();
+            return true;
+        }
+        catch (Exception ex) when (ex is System.Runtime.InteropServices.COMException or
+            InvalidOperationException or UnauthorizedAccessException or IOException)
+        {
+            Console.Error.WriteLine("Не удалось создать ярлык: " + ex.GetType().Name);
+            return false;
         }
     }
 
