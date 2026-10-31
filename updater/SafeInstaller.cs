@@ -325,6 +325,7 @@ internal static class SafeInstaller
 
     private static bool EnsureDesktopShortcut(string root, string version)
     {
+        if (!OperatingSystem.IsWindows()) return false;
         string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
         if (string.IsNullOrWhiteSpace(desktop)) return false;
         string path = Path.Combine(desktop, "uCode.lnk");
