@@ -81,10 +81,10 @@ def stable_install_status(service) -> dict:
             text = stream.read(12_000).decode("utf-8", errors="replace")
     except OSError:
         text = ""
-    if "READY_TO_RESTART" in text:
-        return {"state": "RESTART_READY", "message": "Новая версия проверена. Закрываем старую программу."}
     if "INSTALL_FAILED:" in text or process.poll() not in (None, 0):
         return {"state": "FAILED", "message": "Не удалось установить обновление. Проверьте журнал обновлятора."}
+    if "READY_TO_RESTART" in text:
+        return {"state": "RESTART_READY", "message": "Новая версия проверена. Закрываем старую программу."}
     stages = {
         "checking-release": "Проверка стабильного релиза…",
         "downloading-checksums": "Получение контрольных сумм…",
