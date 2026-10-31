@@ -27,6 +27,11 @@ on:
         required: false
         default: false
         type: boolean
+      dev_tag:
+        description: 'Verified immutable Development prerelease tag (dev-<SHA40>)'
+        required: false
+        default: ''
+        type: string
   release:
     types: [published]
 
@@ -90,14 +95,14 @@ jobs:
           retention-days: 30
 
   capture-development:
-    if: github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'release' && github.event.release.prerelease == true)
+    if: github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'release' && github.event.release.prerelease == true) || (github.event_name == 'workflow_dispatch' && startsWith(inputs.dev_tag, 'dev-'))
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-          ref: ${{ github.event_name == 'release' && github.event.release.tag_name || github.sha }}
+          ref: ${{ github.event_name == 'release' && github.event.release.tag_name || github.event_name == 'workflow_dispatch' && inputs.dev_tag || github.sha }}
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -195,16 +200,17 @@ jobs:
   publish-development-history:
     needs: capture-development
     if: >-
-      github.event_name == 'release' &&
-      github.event.release.prerelease == true &&
-      startsWith(github.event.release.tag_name, 'dev-')
+      (github.event_name == 'release' &&
+       github.event.release.prerelease == true &&
+       startsWith(github.event.release.tag_name, 'dev-'))
+      || (github.event_name == 'workflow_dispatch' && startsWith(inputs.dev_tag, 'dev-'))
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
       contents: write
       actions: read
     env:
-      DEV_TAG: ${{ github.event.release.tag_name }}
+      DEV_TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.dev_tag }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -214,6 +220,14 @@ jobs:
         with:
           name: ucode-development-ui-${{ github.run_id }}
           path: captured
+      - name: Verify official prerelease exists for dev tag
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          [[ "$DEV_TAG" =~ ^dev-[a-f0-9]{40}$ ]]
+          test "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$DEV_TAG" --jq '.prerelease')" = true
       - name: Verify tagged source and all PNG checksums
         shell: python
         run: |
