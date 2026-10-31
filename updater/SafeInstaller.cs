@@ -262,6 +262,15 @@ internal static class SafeInstaller
             ExtractSafe(archive, staging);
             Smoke(Path.Combine(staging, "uCode", "uCode.exe"));
             Directory.Move(staging, dest);
+            // The immutable initial launcher is separate from versioned app files.
+            string launcher = Path.Combine(root, "uCode.Updater.exe");
+            if (!File.Exists(launcher))
+            {
+                string host = Environment.ProcessPath ?? "";
+                if (!host.EndsWith("uCode.Updater.exe", StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidDataException("Невозможно создать launcher из непроверенного процесса.");
+                File.Copy(host, launcher, overwrite: false);
+            }
             // State switch is last. On failure, the previous version remains selected.
             WriteState(root, new InstallState(version, prior?.current));
             Console.WriteLine(JsonSerializer.Serialize(new
@@ -341,7 +350,7 @@ internal static class SafeInstaller
         if (!File.Exists(System.IO.Path.Combine(output, "uCode", "_internal", "value.txt"))) return false;
         if (ExpectedHash(new string('a', 64) + "  example.zip\r\n", "example.zip") != new string('a', 64))
             return false;
-        using (var zip = ZipFile.Open(archivePath, ZipArchiveMode.Create))
+        using (var zip = ZipFile.Open(archivePath, ZipArchiveMode.Update))
         {
             zip.CreateEntry("uCode/../../outside.txt");
         }
