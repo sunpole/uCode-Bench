@@ -27,6 +27,11 @@ on:
         required: false
         default: false
         type: boolean
+      dev_tag:
+        description: 'Verified immutable Development prerelease tag (dev-<SHA40>)'
+        required: false
+        default: ''
+        type: string
   release:
     types: [published]
 
@@ -90,13 +95,14 @@ jobs:
           retention-days: 30
 
   capture-development:
-    if: github.event_name == 'pull_request' || github.event_name == 'push'
+    if: github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'release' && github.event.release.prerelease == true) || (github.event_name == 'workflow_dispatch' && startsWith(inputs.dev_tag, 'dev-'))
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+          ref: ${{ github.event_name == 'release' && github.event.release.tag_name || github.event_name == 'workflow_dispatch' && inputs.dev_tag || github.sha }}
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -189,4 +195,78 @@ jobs:
           cp -a "../history-captured/$tag/." "history/$tag/"
           git add "history/$tag"
           git commit -m "history: preserve verified UI capture $tag"
+          git push origin HEAD:refs/heads/history-gallery
+
+  publish-development-history:
+    needs: capture-development
+    if: >-
+      (github.event_name == 'release' &&
+       github.event.release.prerelease == true &&
+       startsWith(github.event.release.tag_name, 'dev-'))
+      || (github.event_name == 'workflow_dispatch' && startsWith(inputs.dev_tag, 'dev-'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      actions: read
+    env:
+      DEV_TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.dev_tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: gallery-repo
+          persist-credentials: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: ucode-development-ui-${{ github.run_id }}
+          path: captured
+      - name: Verify official prerelease exists for dev tag
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          [[ "$DEV_TAG" =~ ^dev-[a-f0-9]{40}$ ]]
+          test "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$DEV_TAG" --jq '.prerelease')" = true
+      - name: Verify tagged source and all PNG checksums
+        shell: python
+        run: |
+          import hashlib,json,os,pathlib,re
+          tag=os.environ['DEV_TAG']
+          if not re.fullmatch(r'dev-[a-f0-9]{40}',tag):
+              raise SystemExit('Unexpected Development tag')
+          commit=tag[4:]
+          folder=pathlib.Path('captured')/commit
+          doc=json.loads((folder/'manifest.json').read_text(encoding='utf-8'))
+          if doc.get('status')!='PASS' or doc.get('channel')!='development' or doc.get('source_commit')!=commit:
+              raise SystemExit('Development screenshot provenance mismatch')
+          images=doc.get('screenshots',[])
+          if not 4<=len(images)<=32:raise SystemExit('Unexpected PNG count')
+          for record in images:
+              filename=record.get('file')
+              if not isinstance(filename,str) or not re.fullmatch(r'[0-9]{2}-tab\.png',filename):
+                  raise SystemExit('Unsafe PNG name')
+              content=(folder/filename).read_bytes()
+              if len(content)!=record['bytes'] or hashlib.sha256(content).hexdigest()!=record['sha256']:
+                  raise SystemExit('Development PNG SHA-256 mismatch')
+          print('VERIFIED_DEV_HISTORY',tag,len(images))
+      - name: Preserve immutable Development screenshots in history-gallery
+        working-directory: gallery-repo
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin refs/heads/history-gallery:refs/remotes/origin/history-gallery
+          git switch -c history-gallery --track origin/history-gallery
+          dest="history/development/$DEV_TAG"
+          if test -e "$dest"; then
+            echo "::notice::This Development screenshot archive already exists."
+            exit 0
+          fi
+          mkdir -p "$dest"
+          commit="$(printf '%s' "$DEV_TAG" | sed 's/^dev-//')"
+          cp -a "../captured/$commit/." "$dest/"
+          git add "$dest"
+          git commit -m "history: preserve Development UI $DEV_TAG"
           git push origin HEAD:refs/heads/history-gallery

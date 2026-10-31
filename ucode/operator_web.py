@@ -132,10 +132,17 @@ class Handler(BaseHTTPRequestHandler):
         if route=='updates-check':
             from .updater_integration import check_stable_release
             return check_stable_release(installed=__version__)
+        if route=='updates-check-dev':
+            from .update_install import check_development_release
+            return check_development_release()
         if route=='updates-install':
             from .update_install import begin_stable_install
             return begin_stable_install(s,confirmed=value.get('confirm') is True,
                                         requested_version=value.get('latest'))
+        if route=='updates-install-dev':
+            from .update_install import begin_development_install
+            return begin_development_install(s,confirmed=value.get('confirm') is True,
+                                             requested_commit=value.get('latest_commit'))
         if route=='updates-status':
             from .update_install import stable_install_status
             return stable_install_status(s)

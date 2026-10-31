@@ -37,7 +37,7 @@ internal static class SafeInstaller
         return Path.GetFullPath(path).StartsWith(parent, StringComparison.OrdinalIgnoreCase);
     }
 
-    private static void RequireNoLinks(string path)
+    internal static void RequireNoLinks(string path)
     {
         string full = Path.GetFullPath(path);
         for (string? item = full; item is not null; item = Path.GetDirectoryName(item))
@@ -91,7 +91,7 @@ internal static class SafeInstaller
     private static string Binary(string root, string version) =>
         Path.Combine(VersionFolder(root, version), "uCode", "uCode.exe");
 
-    private static async Task<byte[]> DownloadBytes(Uri url, long maxBytes)
+    internal static async Task<byte[]> DownloadBytes(Uri url, long maxBytes)
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, url);
         request.Headers.UserAgent.Add(new ProductInfoHeaderValue("uCodeUpdater", "0.2.0"));
@@ -114,7 +114,7 @@ internal static class SafeInstaller
         return buffer.ToArray();
     }
 
-    private static string ExpectedHash(string manifest, string filename)
+    internal static string ExpectedHash(string manifest, string filename)
     {
         foreach (string line in manifest.Replace("\r", "").Split('\n'))
         {
@@ -127,7 +127,7 @@ internal static class SafeInstaller
         throw new InvalidDataException("SHA256SUMS.txt не содержит контрольную сумму нужного пакета.");
     }
 
-    private static void ExtractSafe(byte[] archiveBytes, string destination)
+    internal static void ExtractSafe(byte[] archiveBytes, string destination)
     {
         Directory.CreateDirectory(destination);
         using var input = new MemoryStream(archiveBytes, writable: false);
@@ -171,7 +171,7 @@ internal static class SafeInstaller
             throw new InvalidDataException("Отсутствуют исполняемые файлы uCode и независимого обновлятора.");
     }
 
-    private static void Smoke(string binary)
+    internal static void Smoke(string binary)
     {
         var start = new ProcessStartInfo(binary)
         {

@@ -5,7 +5,12 @@ const ucUpHeading=el('div',null,'uc-section-title');
 ucUpHeading.append(el('span','Обновление'));ucUpPanel.append(ucUpHeading);
 const ucUpIntro=el('div',null,'uc-up-intro'),ucUpHeader=el('div');
 ucUpHeader.append(el('h3','Центр обновлений'),el('p','Проверка версии не затрагивает PDF, TXT, настройки и результаты тестов.'));
-const ucUpChannel=el('span','Канал: Определяется','uc-up-chip');
+const ucUpChannel=el('select',null,'uc-up-chip');
+ucUpChannel.setAttribute('aria-label','Канал обновлений');
+for(const [value,title] of [['stable','Stable · релизы'],['development','Development · main']]){
+  const choice=el('option',title);choice.value=value;ucUpChannel.append(choice);
+}
+ucUpChannel.value='stable';
 ucUpIntro.append(ucUpHeader,ucUpChannel);
 ucUpPanel.append(ucUpIntro);
 const ucUpTiles=el('div',null,'uc-up-tiles'),ucUpValues={};
@@ -67,9 +72,18 @@ function ucUpSetStatus(text,state='idle'){ucUpStatus.textContent=text;ucUpStatus
 const ucUpPlatform={'windows-x64':'Windows x64','linux-x64':'Linux x64','macos-arm64':'macOS ARM64'};
 let ucUpCandidate=null,ucUpPollTimer=null;
 function ucUpCanInstall(info){
-  return info&&info.status==='UPDATE_AVAILABLE'&&info.package&&info.platform==='windows-x64'
-    &&!!window.pywebview?.api?.finish_close;
+  if(!info||!['UPDATE_AVAILABLE','INSTALL_REQUIRED'].includes(info.status)||!info.package||
+      info.platform!=='windows-x64'||!window.pywebview?.api?.finish_close)return false;
+  if(ucUpChannel.value==='development')return info.channel==='development'&&
+    typeof info.latest_commit==='string'&&/^[a-f0-9]{40}$/.test(info.latest_commit);
+  return info.channel!=='development'&&typeof info.latest==='string';
 }
+ucUpChannel.onchange=()=>{
+  ucUpCandidate=null;ucUpInstall.disabled=true;
+  ucUpValues.latest.textContent='Не проверено';
+  ucUpPackage.textContent='Пакет: не проверен';
+  ucUpSetStatus('Выбран канал '+ucUpChannel.value+'. Нажмите «Проверить обновления».');
+};
 function ucUpStopPolling(){
   if(ucUpPollTimer!==null){clearInterval(ucUpPollTimer);ucUpPollTimer=null;}
 }
@@ -93,11 +107,14 @@ async function ucUpWatchInstall(){
 }
 ucUpInstall.onclick=async()=>{
   if(ucUpInstall.disabled||!ucUpCanInstall(ucUpCandidate))return;
-  if(!window.confirm('Установить uCode v'+ucUpCandidate.latest+'? Программа закроется после проверки новой версии. Ваши TXT, PDF и настройки сохранятся.'))return;
+  const dev=ucUpChannel.value==='development';
+  const version=dev?'Development '+ucUpCandidate.latest_commit.slice(0,12):'v'+ucUpCandidate.latest;
+  if(!window.confirm('Установить uCode '+version+'? После проверки программа закроется и запустится новая сборка. TXT, PDF и настройки сохраняются.'))return;
   ucUpInstall.disabled=true;ucUpCheck.disabled=true;
   ucUpSetStatus('Запуск независимого установщика…');
   try{
-    await rtAPI('updates-install',{confirm:true,latest:ucUpCandidate.latest});
+    await rtAPI(dev?'updates-install-dev':'updates-install',
+      dev?{confirm:true,latest_commit:ucUpCandidate.latest_commit}:{confirm:true,latest:ucUpCandidate.latest});
     ucUpResult.textContent='Установка выполняется в отдельной папке. Прежняя версия не удаляется.';
     ucUpStopPolling();
     ucUpPollTimer=setInterval(()=>{ucUpWatchInstall();},900);
@@ -113,7 +130,7 @@ async function ucUpInitialize(){
     const info=await rtAPI('update-info');
     ucUpValues.installed.textContent='v'+info.installed;
     ucUpValues.platform.textContent=ucUpPlatform[info.platform]||'Не определена';
-    ucUpChannel.textContent=info.channel==='development'?'Канал: Разработка':'Канал: Стабильный';
+    ucUpChannel.value=info.channel==='development'?'development':'stable';
     if(info.channel==='development'&&info.build_commit){
       ucUpValues.installed.textContent='v'+info.installed+' · dev';
       ucUpResult.textContent='Тестовая сборка '+info.build_commit.slice(0,12)+'. Устанавливаются только более новые официальные стабильные релизы.';
@@ -123,14 +140,23 @@ async function ucUpInitialize(){
 ucUpCheck.onclick=async()=>{
   if(ucUpCheck.disabled)return;
   ucUpCheck.disabled=true;ucUpInstall.disabled=true;ucUpCandidate=null;ucUpCheck.textContent='Проверка…';
-  ucUpSetStatus('Подключение к официальным GitHub Releases…');
+  ucUpSetStatus('Проверяем канал '+ucUpChannel.value+' через GitHub Releases…');
   ucUpPackage.textContent='Пакет: проверяется';
   try{
-    const info=await rtAPI('updates-check',{});
-    ucUpValues.installed.textContent='v'+info.installed;
-    ucUpValues.latest.textContent='v'+info.latest;
+    const dev=ucUpChannel.value==='development';
+    const info=await rtAPI(dev?'updates-check-dev':'updates-check',{});
+    if(dev){
+      ucUpValues.installed.textContent='Development';
+      ucUpValues.latest.textContent=info.latest_commit?
+        info.latest_commit.slice(0,12):'Нет опубликованных сборок';
+    }else{
+      ucUpValues.installed.textContent='v'+info.installed;
+      ucUpValues.latest.textContent='v'+info.latest;
+    }
     ucUpValues.platform.textContent=ucUpPlatform[info.platform]||'Не определена';
-    const descriptions={CURRENT:'Установлена актуальная стабильная версия.',UPDATE_AVAILABLE:'Есть новая стабильная версия. Можно подтвердить установку.',LOCAL_NEWER:'Эта локальная версия новее последнего стабильного выпуска.'};
+    const descriptions=dev?
+      {CURRENT:'Установлена последняя Development-сборка.',UPDATE_AVAILABLE:'Новая проверенная Development-сборка доступна для установки.',INSTALL_REQUIRED:'Текущая сборка проверена. Её можно один раз установить в управляемую папку для будущего автообновления.',NO_PUBLISHED_BUILD:'Пока нет проверенных Development-сборок.'}:
+      {CURRENT:'Установлена актуальная стабильная версия.',UPDATE_AVAILABLE:'Есть новая стабильная версия. Можно подтвердить установку.',LOCAL_NEWER:'Эта локальная версия новее последнего стабильного выпуска.'};
     ucUpCandidate=info;ucUpInstall.disabled=!ucUpCanInstall(info);
     ucUpSetStatus(descriptions[info.status]||'Статус версии не определён.','success');
     ucUpPackage.textContent=info.package?'Доступен пакет: '+info.package.name+' · '+rtBytes(info.package.size_bytes):'Для этой платформы подходящий архив не найден.';
